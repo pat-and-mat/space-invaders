@@ -38,9 +38,9 @@ game:
 
     ; Main loop.
 
-    ; Here is where you will place your game logic.
+    ; Here is where you should place your game's logic.
     ; Develop procedures like paint_map and update_content,
-    ; declare it extern and use here.
+    ; declare them extern and use them here.
 
     jmp game.loop
 
@@ -61,7 +61,8 @@ get_input:
     ; The value of the input is on 'word [esp]'
 
     ; Your bindings here
-    
+    bind KEY.UP, draw.green
+    bind KEY.DOWN, draw.red
 
     add esp, 2 ; free the stack
     ret
