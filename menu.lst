@@ -1,4 +1,4 @@
 default 0
 timeout 0
-title SNAKASM
-kernel /boot/snakasm.elf
+title SPACE_INVADERS
+kernel /boot/space_invaders.elf
