@@ -26,6 +26,18 @@ video.clear:
     rep stosw
     FUNC.END
 
+; video.set_buffer(dword *buffer)
+; Fill the screen with the given values
+global video.set_buffer
+video.set_buffer:
+    FUNC.START
+    mov esi, [PARAM(0)]
+    mov edi, FBUFFER
+    mov ecx, ROWS * COLS
+    cld
+    rep movsw
+    FUNC.END
+
 ; video.putc(dword chr-attrs, dword r, dword c)
 global video.putc
 video.print:
