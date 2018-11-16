@@ -1,39 +1,36 @@
-%include "video.mac"
+%include "video.inc"
+%include "stack.inc"
 
 ; Frame buffer location
 %define FBUFFER 0xB8000
 
-; FBOFFSET(byte row, byte column)
+; FBOFFSET(word row, word column)
 %macro FBOFFSET 2.nolist
-    xor eax, eax
-    mov al, COLS
-    mul byte %1
-    add al, %2
-    adc ah, 0
-    shl ax, 1
+    mov eax, COLS
+    mul word %1
+    add eax, %2
+    shl eax, 1
 %endmacro
-
 
 section .text
 
-; clear(byte char, byte attrs)
+; video.clear(dword char-attrs)
 ; Clear the screen by filling it with char and attributes.
-global clear
-clear:
-  mov ax, [esp + 4] ; char, attrs
-  mov edi, FBUFFER
-  mov ecx, COLS * ROWS
-  cld
-  rep stosw
-  ret
+global video.clear
+video.clear:
+    FUNC.START
+    mov eax, [PARAM(0)] ; char, attrs
+    mov edi, FBUFFER
+    mov ecx, COLS * ROWS
+    cld
+    rep stosw
+    FUNC.END
 
-
-; putc(char chr, byte color, byte r, byte c)
-;      4         5           6       7
-global putc
-putc:
-    ; calc framebuffer offset 2 * (r * COLS + c)
-    FBOFFSET [esp + 6], [esp + 7]
-
-    mov bx, [esp + 4]
-    mov [FBUFFER + eax], bx
+; video.putc(dword chr-attrs, dword r, dword c)
+global video.putc
+video.print:
+    FUNC.START
+    mov edx, [PARAM(0)]
+    FBOFFSET [PARAM(1)], [PARAM(2)]
+    mov [FBUFFER + eax], dx
+    FUNC.END
