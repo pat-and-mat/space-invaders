@@ -2,9 +2,9 @@
 %include "video.inc"
 %include "keyboard.inc"
 
-extern print
-extern clear
-extern erase
+extern video.print_at
+extern video.print
+extern video.clear
 extern scan
 
 %define SHIP.COORDS 6
@@ -24,67 +24,105 @@ extern scan
 ; Data section is meant to hold constant values, do not modify
 section .data
 
-graphics dw 'A'|FG.YELLOW|BG.BLACK,\
+graphics dd 'H'|FG.YELLOW|BG.BLACK,\
             '('|FG.YELLOW|BG.BLACK,\
             ')'|FG.YELLOW|BG.BLACK,\
             '^'|FG.YELLOW|BG.BLACK,\
             'W'|FG.YELLOW|BG.BLACK,\
             'W'|FG.YELLOW|BG.BLACK,
+            
+rows dd 0, 1, 1, 2, 2, 2
+cols dd 1, 0, 2, 1, 0, 2
 
-rows dw 0, 1, 1, 3, 3, 3
-cols dw 2, 1, 3, 2, 1, 3
+row.top dd 0
+row.bottom dd 3
 
-row.top dw 0
-row.bottom dw 0
-
-col.left dw 0
-col.right dw 4
+col.left dd 0
+col.right dd 3
 
 section .bss
 
-map resd 1
-canvas resd 1
-
 lives resw 1
 
-row.offset resw 1
-col.offset resw 1
+row.offset resd 1
+col.offset resd 1
 
-hash resw 1
+hash resd 1
 
 section .text
 
-; init(word lives, word r.offset, word c.offset, word hash, dword map, dword canvas)
+; init(word lives, dword r.offset, dword c.offset, word hash)
 ; Initialize player
 global player.init
 player.init:
     FUNC.START
     ;filling local vars of player
-    mov bx, [PARAM.DW(0)]
+    mov bx, [PARAM(0)]
     mov [lives], bx
     
-    mov bx, [PARAM.DW(1)]
-    mov [row.offset], bx
+    mov ebx, [PARAM(1)]
+    mov [row.offset], ebx
     
-    mov bx, [PARAM.DW(2)]
-    mov [col.offset], bx
+    mov ebx, [PARAM(2)]
+    mov [col.offset], ebx
     
-    mov bx, [PARAM.DW(3)]
+    mov bx, [PARAM(3)]
     mov [hash], bx
-    
-    mov bx, [PARAM.DW(4)]
-    mov [map], bx
-    
-    mov bx, [PARAM.DW(5)]
-    mov [canvas], bx
-    
     FUNC.END
 
-; update(dword *map)
+; update(dword key, dword *map)
 ; It is here where all the actions related to this object will be taking place
 global player.update
 player.update:
     FUNC.START
+
+    .input:
+       mov eax, [PARAM(0)]    
+    ;   see imput and compare with keys      
+
+    ;   call scan  
+      ;up botton
+      cmp eax, dword "up"
+      jz up
+
+      ;down botton
+      cmp eax, dword "down"
+      je down  
+
+      ;left botton
+      cmp eax, dword "left"
+      je left  
+
+      ;right botton
+      cmp eax, dword "right"
+      je right  
+
+      ;enter botton
+      cmp eax, dword "ent"
+      je ent
+
+      jmp update.out
+
+      up:
+      sub dword [row.offset], 1
+      jmp update.out
+
+      down:
+      add dword [row.offset], 1
+      jmp update.out
+
+      left:
+      sub dword [col.offset], 1
+      jmp update.out
+
+      right:
+      add dword [col.offset], 1
+      jmp update.out
+
+      ent:
+
+      update.out:
+
     FUNC.END
 
 ; collision(dword hash, dword row, dword col)
@@ -99,6 +137,33 @@ player.collision:
 global player.paint
 player.paint:
     FUNC.START
+    RESERVE(2)
+
+    mov ecx, 0
+
+    xor ebx, ebx
+    xor edx, edx
+
+    while:
+
+        cmp ecx, SHIP.COORDS * 4
+        jnl while.end
+        
+        mov eax, [row.offset]
+        add eax, [rows + ecx]
+        mov ebx, eax
+
+        mov eax, [col.offset]
+        add eax, [cols + ecx]
+        mov edx, eax
+
+        CALL video.print, [graphics + ecx], ebx, edx
+        add ecx, 4
+        jmp while
+        while.end:
+        FUNC.END
+
+
     FUNC.END
 
 ; player.take_damage(dword damage)
@@ -107,4 +172,12 @@ player.paint:
 global player.take_damage
 player.take_damage:
     FUNC.START
+    
+    cmp dword [lives], 0
+    jz destroyed
+    sub dword [lives], 1
+    FUNC.END
+
+    destroyed:
+
     FUNC.END

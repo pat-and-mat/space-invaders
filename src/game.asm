@@ -1,11 +1,16 @@
-%include "video.mac"
-%include "keyboard.mac"
+%include "video.inc"
+%include "keyboard.inc"
+%include "stack.inc"
 
 section .text
 
-extern clear
+extern video.clear
 extern scan
 extern calibrate
+extern player.paint
+extern player.init
+extern video.print
+extern player.update
 
 ; Bind a key to a procedure
 %macro bind 2
@@ -18,7 +23,7 @@ extern calibrate
 ; Fill the screen with the given background color
 %macro FILL_SCREEN 1
   push word %1
-  call clear
+  call video.clear
   add esp, 2
 %endmacro
 
@@ -30,11 +35,15 @@ game:
 
   ; Calibrate the timing
   call calibrate
+  CALL player.init, 1, 20, 38, 1
 
   ; Snakasm main loop
   game.loop:
     .input:
       call get_input
+      
+      ; call player.update
+      call player.paint
 
     ; Main loop.
 
@@ -45,24 +54,34 @@ game:
     jmp game.loop
 
 
-draw.red:
-  FILL_SCREEN BG.RED
+move.up:
+  CALL player.update, dword "up"
+  ret
+
+move.down:
+  CALL player.update, dword "down"
+  ret
+
+move.left:
+  CALL player.update, dword "left"
   ret
 
 
-draw.green:
-  FILL_SCREEN BG.GREEN
+move.right:
+  CALL player.update, dword "right"
   ret
 
 
 get_input:
     call scan
-    push ax
-    ; The value of the input is on 'word [esp]'
+    push eax
+    ; The value of the input is on 'dword [esp]'
 
-    ; Your bindings here
-    bind KEY.UP, draw.green
-    bind KEY.DOWN, draw.red
+    ; Your bindings here    
+    bind KEY.UP, move.up
+    bind KEY.DOWN, move.down
+    bind KEY.LEFT, move.left
+    bind KEY.RIGHT, move.right
 
-    add esp, 2 ; free the stack
+    add esp, 4 ; free the stack
     ret
