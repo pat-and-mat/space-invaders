@@ -16,23 +16,43 @@ canvas resw COLS * ROWS
 
 section .text
 
+extern player.update
+extern weapons.update
+
+extern player.paint
+extern weapons.paint
+extern video.set_buffer
+
 ; update()
 ; It is here where all the actions related to this object will be taking place
-global engine.update
 engine.update:
     FUNC.START
+    CLEAR map, 0
+    CALL player.update, map
+    CALL weapons.update, map
     FUNC.END
 
 ; paint()
 ; Puts the object's graphics in the canvas
-global engine.paint
 engine.paint:
     FUNC.START
+    CLEAR canvas, BG.BLACK
+    CALL player.paint, canvas
+    CALL weapons.paint, canvas
+    CALL video.set_buffer, canvas
     FUNC.END
 
 ; collision()
 ; It is here where collisions will be handled
-global engine.collision
 engine.collision:
     FUNC.START
+    FUNC.END
+
+; engine.run()
+; Runs a whole iteration of the engine
+global engine.run
+engine.run:
+    FUNC.START
+    call engine.update
+    call engine.paint
     FUNC.END
