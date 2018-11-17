@@ -38,8 +38,8 @@ video.set_buffer:
     rep movsw
     FUNC.END
 
-; video.putc(dword chr-attrs, dword r, dword c)
-global video.putc
+; video.print(dword chr-attrs, dword r, dword c)
+global video.print
 video.print:
     FUNC.START
     mov edx, [PARAM(0)]

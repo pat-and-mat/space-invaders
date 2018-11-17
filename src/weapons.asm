@@ -1,4 +1,5 @@
 %include "video.inc"
+%include "stack.inc"
 
 %define SHOTS.COORDS 1
 

@@ -1,9 +1,9 @@
-%include "video.mac"
-%include "keyboard.mac"
+%include "video.inc"
+%include "keyboard.inc"
 
 section .text
 
-extern clear
+extern video.clear
 extern scan
 extern calibrate
 
@@ -18,7 +18,7 @@ extern calibrate
 ; Fill the screen with the given background color
 %macro FILL_SCREEN 1
   push word %1
-  call clear
+  call video.clear
   add esp, 2
 %endmacro
 
@@ -31,7 +31,7 @@ game:
   ; Calibrate the timing
   call calibrate
 
-  ; Snakasm main loop
+  ; Game main loop
   game.loop:
     .input:
       call get_input

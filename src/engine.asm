@@ -18,14 +18,14 @@ section .text
 
 ; update()
 ; It is here where all the actions related to this object will be taking place
-global weapons.update
+global engine.update
 engine.update:
     FUNC.START
     FUNC.END
 
 ; paint()
 ; Puts the object's graphics in the canvas
-global weapons.paint
+global engine.paint
 engine.paint:
     FUNC.START
     FUNC.END
