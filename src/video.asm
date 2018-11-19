@@ -47,14 +47,14 @@ video.print:
     mov [FBUFFER + eax], bx
     FUNC.END
 
-; video.putc_at(dword map, dword chr-attrs, dword r, dword c)
+; video.putc_at(dword *map, dword chr-attrs, dword r, dword c)
 ; for printing at the given map or canvas
 global video.print_at
 video.print_at:
     FUNC.START
-    mov edx, [PARAM(1)]
+    mov ebx, [PARAM(1)]
     FBOFFSET [PARAM(2)], [PARAM(3)]
     mov ecx, [PARAM(0)]
-    mov [ecx + eax], dx
+    mov [ecx + eax], bx
     FUNC.END
 

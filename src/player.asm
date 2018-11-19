@@ -6,6 +6,7 @@ extern video.print_at
 extern video.print
 extern video.clear
 extern scan
+extern input
 
 %define SHIP.COORDS 6
 
@@ -40,8 +41,6 @@ row.bottom dd 3
 col.left dd 0
 col.right dd 3
 
-hash dd 1
-
 section .bss
 
 lives resw 1
@@ -53,7 +52,7 @@ col.offset resd 1
 
 section .text
 
-; init(word lives, dword r.offset, dword c.offset, word hash)
+; init(word lives, dword r.offset, dword c.offset)
 ; Initialize player
 global player.init
 player.init:
@@ -67,41 +66,29 @@ player.init:
     
     mov ebx, [PARAM(2)]
     mov [col.offset], ebx
-    
-    mov bx, [PARAM(3)]
-    mov [hash], bx
+
     FUNC.END
 
-; update(dword key, dword *map)
+; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
 global player.update
 player.update:
     FUNC.START
 
-    .input:
-       mov eax, [PARAM(0)]    
-    ;   see imput and compare with keys      
-
-    ;   call scan  
-      ;up botton
-      cmp eax, dword "up"
-      jz up
+      cmp byte [input], KEY.UP
+      je up
 
       ;down botton
-      cmp eax, dword "down"
+      cmp byte [input], KEY.DOWN
       je down  
 
       ;left botton
-      cmp eax, dword "left"
+      cmp byte [input], KEY.LEFT
       je left  
 
       ;right botton
-      cmp eax, dword "right"
-      je right  
-
-      ;enter botton
-      cmp eax, dword "ent"
-      je ent
+      cmp byte [input], KEY.RIGHT
+      je right
 
       jmp update.out
 
@@ -120,8 +107,6 @@ player.update:
       right:
       add dword [col.offset], 1
       jmp update.out
-
-      ent:
 
       update.out:
 
@@ -156,8 +141,10 @@ player.paint:
         add eax, [cols + ecx]
         mov [LOCAL(1)], eax
 
-        ;CALL video.print_at, [PARAM(0)], [graphics + ecx], ebx, edx
-         CALL video.print, [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
+        push ecx
+        CALL video.print_at, [PARAM(0)], [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
+        pop ecx
+
         add ecx, 4
         jmp while
         while.end:

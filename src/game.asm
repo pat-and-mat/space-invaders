@@ -15,6 +15,7 @@ extern calibrate
 extern menu.main
 extern menu.pause
 extern engine.run
+extern engine.start
 
 global game
 game:
@@ -24,6 +25,7 @@ game:
 
   ; Calibrate the timing
   call calibrate
+  call engine.start
 
   ; Game main loop
   game.loop:
