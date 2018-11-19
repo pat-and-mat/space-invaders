@@ -24,6 +24,7 @@ game:
 
   ; Calibrate the timing
   call calibrate
+  CALL player.init, 1, 20, 38, 1
 
   ; Game main loop
   game.loop:

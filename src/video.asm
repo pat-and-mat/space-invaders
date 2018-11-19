@@ -42,7 +42,19 @@ video.set_buffer:
 global video.print
 video.print:
     FUNC.START
-    mov edx, [PARAM(0)]
+    mov ebx, [PARAM(0)]
     FBOFFSET [PARAM(1)], [PARAM(2)]
-    mov [FBUFFER + eax], dx
+    mov [FBUFFER + eax], bx
     FUNC.END
+
+; video.putc_at(dword map, dword chr-attrs, dword r, dword c)
+; for printing at the given map or canvas
+global video.print_at
+video.print_at:
+    FUNC.START
+    mov edx, [PARAM(1)]
+    FBOFFSET [PARAM(2)], [PARAM(3)]
+    mov ecx, [PARAM(0)]
+    mov [ecx + eax], dx
+    FUNC.END
+
