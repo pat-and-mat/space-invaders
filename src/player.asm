@@ -40,6 +40,8 @@ row.bottom dd 3
 col.left dd 0
 col.right dd 3
 
+hash dd 1
+
 section .bss
 
 lives resw 1
@@ -47,7 +49,7 @@ lives resw 1
 row.offset resd 1
 col.offset resd 1
 
-hash resd 1
+
 
 section .text
 
@@ -139,10 +141,7 @@ player.paint:
     FUNC.START
     RESERVE(2)
 
-    mov ecx, 0
-
-    xor ebx, ebx
-    xor edx, edx
+    mov ecx, 0    
 
     while:
 
@@ -151,13 +150,14 @@ player.paint:
         
         mov eax, [row.offset]
         add eax, [rows + ecx]
-        mov ebx, eax
+        mov [LOCAL(0)], eax
 
         mov eax, [col.offset]
         add eax, [cols + ecx]
-        mov edx, eax
+        mov [LOCAL(1)], eax
 
-        CALL video.print, [graphics + ecx], ebx, edx
+        ;CALL video.print_at, [PARAM(0)], [graphics + ecx], ebx, edx
+         CALL video.print, [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
         add ecx, 4
         jmp while
         while.end:
