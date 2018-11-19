@@ -12,14 +12,15 @@ section .text
 extern video.clear
 extern scan
 extern calibrate
-
+extern menu.main
+extern menu.pause
 extern engine.run
 
 global game
 game:
   ; Initialize game
 
-  CALL video.clear, BG.BLACK
+  call menu.main
 
   ; Calibrate the timing
   call calibrate
@@ -31,7 +32,10 @@ game:
       mov [input], al
 
     ; Main loop.
-
-    engine.run
+    cmp byte [input], KEY.ENTER
+    jne .continue
+    call menu.pause
+    .continue:
+      call engine.run
 
     jmp game.loop
