@@ -35,7 +35,17 @@ video.set_buffer:
     mov edi, FBUFFER
     mov ecx, ROWS * COLS
     cld
-    rep movsw
+    
+    .lp:
+        cmpsw
+        je .cont
+
+        sub esi, 2
+        sub edi, 2
+        movsw
+
+        .cont:
+            loop .lp
     FUNC.END
 
 ; video.print(dword chr-attrs, dword r, dword c)

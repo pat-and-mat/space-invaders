@@ -40,8 +40,6 @@ row.bottom dd 3
 col.left dd 0
 col.right dd 3
 
-hash dd 1
-
 section .bss
 
 lives resw 1
@@ -53,7 +51,7 @@ col.offset resd 1
 
 section .text
 
-; init(word lives, dword r.offset, dword c.offset, word hash)
+; init(word lives, dword r.offset, dword c.offset)
 ; Initialize player
 global player.init
 player.init:
@@ -67,9 +65,7 @@ player.init:
     
     mov ebx, [PARAM(2)]
     mov [col.offset], ebx
-    
-    mov bx, [PARAM(3)]
-    mov [hash], bx
+
     FUNC.END
 
 ; update(dword key, dword *map)
@@ -156,8 +152,8 @@ player.paint:
         add eax, [cols + ecx]
         mov [LOCAL(1)], eax
 
-        ;CALL video.print_at, [PARAM(0)], [graphics + ecx], ebx, edx
-         CALL video.print, [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
+        CALL video.print_at, [PARAM(0)], [graphics + ecx], [LOCAL(0)], [LOCAL(0)]
+        ; CALL video.print, [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
         add ecx, 4
         jmp while
         while.end:

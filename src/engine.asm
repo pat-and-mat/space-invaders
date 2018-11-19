@@ -16,6 +16,8 @@ canvas resw COLS * ROWS
 
 section .text
 
+extern player.init
+
 extern player.update
 extern weapons.update
 
@@ -46,6 +48,14 @@ engine.paint:
 ; It is here where collisions will be handled
 engine.collision:
     FUNC.START
+    FUNC.END
+
+; engine.start()
+; Initializes the game
+global engine.start
+engine.start:
+    FUNC.START
+    CALL player.init, 100, 20, 38
     FUNC.END
 
 ; engine.run()
