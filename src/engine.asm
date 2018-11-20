@@ -12,7 +12,6 @@
 section .bss
 
 map resw COLS * ROWS
-canvas resw COLS * ROWS
 
 section .text
 
@@ -23,7 +22,8 @@ extern weapons.update
 
 extern player.paint
 extern weapons.paint
-extern video.set_buffer
+extern video.clear
+extern video.refresh
 
 ; update()
 ; It is here where all the actions related to this object will be taking place
@@ -35,13 +35,13 @@ engine.update:
     FUNC.END
 
 ; paint()
-; Puts the object's graphics in the canvas
+; Puts the object's graphics in the screen
 engine.paint:
     FUNC.START
-    CLEAR canvas, BG.BLACK
-    CALL player.paint, canvas
-    CALL weapons.paint, canvas
-    CALL video.set_buffer, canvas
+    CALL video.clear, BG.BLACK
+    call player.paint
+    call weapons.paint
+    call video.refresh
     FUNC.END
 
 ; collision()

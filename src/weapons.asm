@@ -33,8 +33,8 @@ weapons.update:
     FUNC.START
     FUNC.END
 
-; paint(dword *canvas)
-; Puts the object's graphics in the canvas
+; paint()
+; Puts the object's graphics in the screen
 global weapons.paint
 weapons.paint:
     FUNC.START

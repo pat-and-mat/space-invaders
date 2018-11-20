@@ -2,7 +2,6 @@
 %include "video.inc"
 %include "keyboard.inc"
 
-extern video.print_at
 extern video.print
 extern video.clear
 extern scan
@@ -119,17 +118,15 @@ player.collision:
     FUNC.START
     FUNC.END
 
-; paint(dword *canvas)
-; Puts the object's graphics in the canvas
+; paint()
+; Puts the object's graphics in the screen
 global player.paint
 player.paint:
     FUNC.START
     RESERVE(2)
 
     mov ecx, 0    
-
     while:
-
         cmp ecx, SHIP.COORDS * 4
         jnl while.end
         
@@ -142,14 +139,12 @@ player.paint:
         mov [LOCAL(1)], eax
 
         push ecx
-        CALL video.print_at, [PARAM(0)], [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
+        CALL video.print, [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
         pop ecx
 
         add ecx, 4
         jmp while
         while.end:
-        FUNC.END
-
 
     FUNC.END
 
