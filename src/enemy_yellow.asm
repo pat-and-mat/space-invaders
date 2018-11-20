@@ -78,8 +78,11 @@ enemy_yellow.init:
 ;update()
 ;move all the yellow enemies
 global enemy_yellow.update
-enemy_blue.update:
+enemy_yellow.update:
     FUNC.START
+
+    cmp dword [count], 0
+    je working.on.map
    
     mov ecx, 0
 
@@ -153,6 +156,9 @@ global enemy_yellow.paint
 enemy_yellow.paint:
     FUNC.START
     RESERVE(2)
+
+    cmp dword [count], 0
+    je while.end
    
     mov esi, 0    
     mov ecx, 0 

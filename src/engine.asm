@@ -19,9 +19,11 @@ extern player.init
 
 extern player.update
 extern weapons.update
+extern enemy.update
 
 extern player.paint
 extern weapons.paint
+extern enemy.paint
 extern video.clear
 extern video.refresh
 
@@ -32,6 +34,7 @@ engine.update:
     CLEAR map, 0
     CALL player.update, map
     CALL weapons.update, map
+    CALL enemy.update, map
     FUNC.END
 
 ; paint()
@@ -41,6 +44,7 @@ engine.paint:
     CALL video.clear, BG.BLACK
     call player.paint
     call weapons.paint
+    call enemy.paint
     call video.refresh
     FUNC.END
 

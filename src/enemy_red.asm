@@ -80,6 +80,9 @@ enemy_red.init:
 global enemy_red.update
 enemy_red.update:
     FUNC.START
+
+    cmp dword [count], 0
+    je working.on.map
    
     mov ecx, 0
 
@@ -153,6 +156,9 @@ global enemy_red.paint
 enemy_red.paint:
     FUNC.START
     RESERVE(2)
+
+    cmp dword [count], 0
+    je while.end
    
     mov esi, 0    
     mov ecx, 0 
