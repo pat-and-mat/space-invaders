@@ -48,8 +48,9 @@ video.clear_rect:
         rep stosw
         pop ecx
         
-        add edi, [PARAM(4)]
-        add edi, [PARAM(4)] ; edi += 2*cols
+        add edi, 2 * COLS
+        sub edi, [PARAM(4)]
+        sub edi, [PARAM(4)]
         loop .rows_lp
     FUNC.END
 
@@ -74,7 +75,6 @@ video.set_rect:
     mov edi, screen
 
     OFFSET [PARAM(1)], [PARAM(2)]
-    add esi, eax
     add edi, eax
     
     mov ecx, [PARAM(3)] ; rows
@@ -85,10 +85,9 @@ video.set_rect:
         rep movsw
         pop ecx
         
-        add esi, [PARAM(4)]
-        add esi, [PARAM(4)] ; esi += 2*cols
-        add edi, [PARAM(4)]
-        add edi, [PARAM(4)] ; edi += 2*cols
+        sub edi, [PARAM(4)]
+        sub edi, [PARAM(4)]
+        add edi, 2 * COLS
         loop .rows_lp
     FUNC.END
 
