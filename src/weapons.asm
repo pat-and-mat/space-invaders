@@ -33,8 +33,8 @@ weapons.update:
     FUNC.START
     FUNC.END
 
-; paint()
-; Puts the object's graphics in the screen
+; paint(dword *canvas)
+; Puts the object's graphics in the canvas
 global weapons.paint
 weapons.paint:
     FUNC.START
@@ -54,5 +54,32 @@ weapons.collision:
 global weapons.shoot
 weapons.shoot:
     FUNC.START
-    FUNC.END
+    CALL weapons.find_shot, [PARAM(0)], [PARAM(1)]
+    cmp ax, [shots.count]
+    jne .end
+    mov word [shots.rows + ecx], [PARAM(0)]
+    mov word [shots.cols + ecx], [PARAM(1)]
+    mov word [shots.dirs + ecx], [PARAM(2)]
+    inc word [shots.count]
+    .end:
+        FUNC.END
 
+; find_shot(dword row, dword col)
+; returns index of a shot at row, col
+weapons.find_shot:
+    FUNC.START
+    mov ecx, 0
+    .while:
+        cmp cx, [shots.count]
+        jnl .end_while
+        cmp word [shots.rows + ecx], [PARAM(0)]
+        jne .continue
+        cmp word [shots.cols + ecx], [PARAM(1)]
+        jne .continue
+        jmp .end_while
+        .continue:
+            inc ecx
+            jmp .while
+        .end_while:
+    mov eax, ecx
+    FUNC.END
