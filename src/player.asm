@@ -150,16 +150,24 @@ player.paint:
 
 ; player.take_damage(dword damage)
 ; Takes lives away from player
-; returns 0 if player remains alive after damage, 1 otherwise
+; returns 1 if player remains alive after damage, 0 otherwise
 global player.take_damage
 player.take_damage:
     FUNC.START
     
-    cmp dword [lives], 0
-    jz destroyed
-    sub dword [lives], 1
-    FUNC.END
+    cmp word [lives], [PARAM(0)]
+    jng .destroyed
+    sub word [lives], [PARAM(0)]
+    jmp .alive
 
-    destroyed:
+    .destroyed:
+        mov eax, 0
+        mov word [lives], 0
+        ; TODO: do something if player is destroyed
+        jmp .end
 
-    FUNC.END
+    .alive:
+        mov eax, 1
+
+    .end:
+        FUNC.END
