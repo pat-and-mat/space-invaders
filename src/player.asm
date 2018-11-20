@@ -74,42 +74,42 @@ global player.update
 player.update:
     FUNC.START
 
-      cmp byte [input], KEY.UP
-      je up
+    ;down button
+    cmp byte [input], KEY.UP
+    je up
 
-      ;down botton
-      cmp byte [input], KEY.DOWN
-      je down  
+    ;down button
+    cmp byte [input], KEY.DOWN
+    je down  
 
-      ;left botton
-      cmp byte [input], KEY.LEFT
-      je left  
+    ;left button
+    cmp byte [input], KEY.LEFT
+    je left  
 
-      ;right botton
-      cmp byte [input], KEY.RIGHT
-      je right
+    ;right button
+    cmp byte [input], KEY.RIGHT
+    je right
 
-      jmp update.out
+    jmp update.end
 
-      up:
-      sub dword [row.offset], 1
-      jmp update.out
+    up:
+        sub dword [row.offset], 1
+        jmp update.end
 
-      down:
-      add dword [row.offset], 1
-      jmp update.out
+    down:
+        add dword [row.offset], 1
+        jmp update.end
 
-      left:
-      sub dword [col.offset], 1
-      jmp update.out
+    left:
+        sub dword [col.offset], 1
+        jmp update.end
 
-      right:
-      add dword [col.offset], 1
-      jmp update.out
+    right:
+        add dword [col.offset], 1
+        jmp update.end
 
-      update.out:
-
-    FUNC.END
+    update.end:
+        FUNC.END
 
 ; collision(dword hash, dword row, dword col)
 ; It is here where collisions will be handled
@@ -150,16 +150,25 @@ player.paint:
 
 ; player.take_damage(dword damage)
 ; Takes lives away from player
-; returns 0 if player remains alive after damage, 1 otherwise
+; returns 1 if player remains alive after damage, 0 otherwise
 global player.take_damage
 player.take_damage:
     FUNC.START
     
-    cmp dword [lives], 0
-    jz destroyed
-    sub dword [lives], 1
-    FUNC.END
+    mov eax, [PARAM(0)]
+    cmp [lives], ax
+    jng .destroyed
+    sub [lives], ax
+    jmp .alive
 
-    destroyed:
+    .destroyed:
+        mov eax, 0
+        mov word [lives], 0
+        ; TODO: do something if player is destroyed
+        jmp .end
 
-    FUNC.END
+    .alive:
+        mov eax, 1
+
+    .end:
+        FUNC.END
