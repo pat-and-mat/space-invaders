@@ -4,7 +4,7 @@
 
 extern video.print
 extern video.clear
-extern scan
+extern weapons.shoot
 extern input
 
 %define SHIP.COORDS 6
@@ -39,6 +39,9 @@ row.bottom dd 3
 
 col.left dd 0
 col.right dd 3
+
+weapon.row dw 0
+weapon.col dw 1
 
 section .bss
 
@@ -106,6 +109,12 @@ player.update:
 
     right:
         add dword [col.offset], 1
+        jmp update.end
+
+    space:
+        xor edx, edx
+        mov dx, [weapon.row]
+        CALL weapons.shoot, edx, [weapon.col], 1
         jmp update.end
 
     update.end:
