@@ -5,11 +5,12 @@
 section .data
 
 main.gr times ROWS*COLS dw '.'|FG.RED|BG.BLACK
-pause.gr times ROWS*COLS dw 'II'|FG.BLUE|BG.BLACK
+pause.gr times ROWS*COLS//25 dw 'II'|FG.BLUE|BG.BLACK
 
 section .text
 
 extern video.set
+extern video.set_rect
 extern video.refresh
 extern scan
 
@@ -28,7 +29,7 @@ menu.main:
 global menu.pause
 menu.pause:
     FUNC.START
-    CALL video.set, pause.gr
+    CALL video.set_rect, pause.gr, 2*ROWS//5, 2*COLS//5, ROWS//5, COLS//5
     call video.refresh
     CALL menu.wait_for_key, KEY.ENTER
     FUNC.END
