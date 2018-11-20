@@ -90,25 +90,25 @@ player.update:
     cmp byte [input], KEY.RIGHT
     je right
 
-    jmp .end
+    jmp update.end
 
     up:
         sub dword [row.offset], 1
-        jmp .end
+        jmp update.end
 
     down:
         add dword [row.offset], 1
-        jmp .end
+        jmp update.end
 
     left:
         sub dword [col.offset], 1
-        jmp .end
+        jmp update.end
 
     right:
         add dword [col.offset], 1
-        jmp .end
+        jmp update.end
 
-    .end:
+    update.end:
         FUNC.END
 
 ; collision(dword hash, dword row, dword col)
@@ -155,9 +155,10 @@ global player.take_damage
 player.take_damage:
     FUNC.START
     
-    cmp word [lives], [PARAM(0)]
+    mov eax, [PARAM(0)]
+    cmp [lives], ax
     jng .destroyed
-    sub word [lives], [PARAM(0)]
+    sub [lives], ax
     jmp .alive
 
     .destroyed:
