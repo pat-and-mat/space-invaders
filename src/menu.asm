@@ -9,7 +9,8 @@ pause.gr times ROWS*COLS dw 'II'|FG.BLUE|BG.BLACK
 
 section .text
 
-extern video.set_buffer
+extern video.set
+extern video.refresh
 extern scan
 
 ; main()
@@ -17,7 +18,8 @@ extern scan
 global menu.main
 menu.main:
     FUNC.START
-    CALL video.set_buffer, main.gr
+    CALL video.set, main.gr
+    call video.refresh
     CALL menu.wait_for_key, KEY.ENTER
     FUNC.END
 
@@ -26,7 +28,8 @@ menu.main:
 global menu.pause
 menu.pause:
     FUNC.START
-    CALL video.set_buffer, pause.gr
+    CALL video.set, pause.gr
+    call video.refresh
     CALL menu.wait_for_key, KEY.ENTER
     FUNC.END
 
