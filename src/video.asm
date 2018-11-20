@@ -4,13 +4,17 @@
 ; Frame buffer location
 %define FBUFFER 0xB8000
 
-; FBOFFSET(word row, word column)
-%macro FBOFFSET 2.nolist
+; OFFSET(dword row, dword column)
+%macro OFFSET 2.nolist
     mov eax, COLS
     mul word %1
     add eax, %2
     shl eax, 1
 %endmacro
+
+section .data
+
+screen times ROWS*COLS dw BG.BLACK
 
 section .text
 
@@ -20,22 +24,72 @@ global video.clear
 video.clear:
     FUNC.START
     mov eax, [PARAM(0)] ; char, attrs
-    mov edi, FBUFFER
+    mov edi, screen
     mov ecx, COLS * ROWS
     cld
     rep stosw
     FUNC.END
 
-; video.set_buffer(dword *buffer)
+; video.clear_rect(dword char-attrs, dword r, dword c, dword rows, dword cols)
 ; Fill the screen with the given values
-global video.set_buffer
-video.set_buffer:
+global video.clear_rect
+video.clear_rect:
+    FUNC.START
+    mov edi, screen
+    OFFSET [PARAM(1)], [PARAM(2)]
+    add edi, eax
+
+    mov eax, [PARAM(0)]    
+    mov ecx, [PARAM(3)] ; rows
+    cld
+    .rows_lp:
+        push ecx
+        mov ecx, [PARAM(4)]
+        rep stosw
+        pop ecx
+        
+        add edi, [PARAM(4)]
+        add edi, [PARAM(4)] ; edi += 2*cols
+        loop .rows_lp
+    FUNC.END
+
+; video.set(dword *screen)
+; Fill screen with the given values
+global video.set
+video.set:
     FUNC.START
     mov esi, [PARAM(0)]
-    mov edi, FBUFFER
+    mov edi, screen
     mov ecx, ROWS * COLS
     cld
     rep movsw
+    FUNC.END
+
+; video.set_rect(dword *rect, dword r, dword c, dword rows, dword cols)
+; Fill the specified rectangle with the given values
+global video.set_rect
+video.set_rect:
+    FUNC.START
+    mov esi, [PARAM(0)]
+    mov edi, screen
+
+    OFFSET [PARAM(1)], [PARAM(2)]
+    add esi, eax
+    add edi, eax
+    
+    mov ecx, [PARAM(3)] ; rows
+    cld
+    .rows_lp:
+        push ecx
+        mov ecx, [PARAM(4)]
+        rep movsw
+        pop ecx
+        
+        add esi, [PARAM(4)]
+        add esi, [PARAM(4)] ; esi += 2*cols
+        add edi, [PARAM(4)]
+        add edi, [PARAM(4)] ; edi += 2*cols
+        loop .rows_lp
     FUNC.END
 
 ; video.print(dword chr-attrs, dword r, dword c)
@@ -43,18 +97,17 @@ global video.print
 video.print:
     FUNC.START
     mov ebx, [PARAM(0)]
-    FBOFFSET [PARAM(1)], [PARAM(2)]
-    mov [FBUFFER + eax], bx
+    OFFSET [PARAM(1)], [PARAM(2)]
+    mov [screen + eax], bx
     FUNC.END
 
-; video.putc_at(dword *map, dword chr-attrs, dword r, dword c)
-; for printing at the given map or canvas
-global video.print_at
-video.print_at:
+; video.refresh()
+global video.refresh
+video.refresh:
     FUNC.START
-    mov ebx, [PARAM(1)]
-    FBOFFSET [PARAM(2)], [PARAM(3)]
-    mov ecx, [PARAM(0)]
-    mov [ecx + eax], bx
+    mov esi, screen
+    mov edi, FBUFFER
+    mov ecx, ROWS * COLS
+    cld
+    rep movsw
     FUNC.END
-
