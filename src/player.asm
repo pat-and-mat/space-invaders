@@ -74,42 +74,42 @@ global player.update
 player.update:
     FUNC.START
 
-      cmp byte [input], KEY.UP
-      je up
+    ;down button
+    cmp byte [input], KEY.UP
+    je up
 
-      ;down botton
-      cmp byte [input], KEY.DOWN
-      je down  
+    ;down button
+    cmp byte [input], KEY.DOWN
+    je down  
 
-      ;left botton
-      cmp byte [input], KEY.LEFT
-      je left  
+    ;left button
+    cmp byte [input], KEY.LEFT
+    je left  
 
-      ;right botton
-      cmp byte [input], KEY.RIGHT
-      je right
+    ;right button
+    cmp byte [input], KEY.RIGHT
+    je right
 
-      jmp update.out
+    jmp .end
 
-      up:
-      sub dword [row.offset], 1
-      jmp update.out
+    up:
+        sub dword [row.offset], 1
+        jmp .end
 
-      down:
-      add dword [row.offset], 1
-      jmp update.out
+    down:
+        add dword [row.offset], 1
+        jmp .end
 
-      left:
-      sub dword [col.offset], 1
-      jmp update.out
+    left:
+        sub dword [col.offset], 1
+        jmp .end
 
-      right:
-      add dword [col.offset], 1
-      jmp update.out
+    right:
+        add dword [col.offset], 1
+        jmp .end
 
-      update.out:
-
-    FUNC.END
+    .end:
+        FUNC.END
 
 ; collision(dword hash, dword row, dword col)
 ; It is here where collisions will be handled
