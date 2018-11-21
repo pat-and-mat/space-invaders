@@ -3,7 +3,6 @@
 %include "keyboard.inc"
 
 extern video.print
-extern video.clear
 extern weapons.shoot
 extern input
 
@@ -40,8 +39,8 @@ row.bottom dd 3
 col.left dd 0
 col.right dd 3
 
-weapon.row dw 0
-weapon.col dw 1
+weapon.row dd 0
+weapon.col dd 1
 
 section .bss
 
@@ -76,6 +75,7 @@ player.init:
 global player.update
 player.update:
     FUNC.START
+    RESERVE(2)
 
     ;down button
     cmp byte [input], KEY.UP
@@ -92,6 +92,10 @@ player.update:
     ;right button
     cmp byte [input], KEY.RIGHT
     je right
+
+    ; space button
+    cmp byte [input], KEY.SPACE
+    je space
 
     jmp update.end
 
@@ -112,9 +116,17 @@ player.update:
         jmp update.end
 
     space:
-        xor edx, edx
-        mov dx, [weapon.row]
-        CALL weapons.shoot, edx, [weapon.col], 1
+        mov eax, [weapon.row]
+        add eax, [row.offset]
+        sub eax, 1
+        mov [LOCAL(0)], eax
+
+        mov eax, [weapon.col]
+        add eax, [col.offset]
+        mov [LOCAL(1)], eax
+
+        CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
+        
         jmp update.end
 
     update.end:
