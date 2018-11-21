@@ -8,6 +8,7 @@ extern video.print
 extern video.clear
 extern scan
 extern delay
+extern rand
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
@@ -36,20 +37,26 @@ col.right dd 3
 
 hash dd 3
 
-;ship's IA
-cicle.x dd 2, 1, 0, 1
-cicle.y dd 1, 2, 1, 0
+;1-moving right 2-moving left
+dir dd 1
+
+; ;ship's IA
+; cicle.x dd 2, 1, 0, 1
+; cicle.y dd 1, 2, 1, 0
 
 
 section .bss
+
+;1-moving right 2-moving left
+dir dd ZIZE
 
 row.offset resd ZIZE
 col.offset resd ZIZE
 
 lives resd ZIZE
 
-cicle.x_pointer resd ZIZE
-cicle.y_pointer resd ZIZE
+; cicle.x_pointer resd ZIZE
+; cicle.y_pointer resd ZIZE
 
 section .text
 
@@ -70,9 +77,11 @@ enemy_red.init:
 
     mov dword [lives + eax], 1
 
+    mov dword [dir + eax], 1
+
     ;pointer of the actual moviment
-    mov dword [cicle.x_pointer + eax], 0
-    mov dword [cicle.y_pointer + eax], 0
+    ; mov dword [cicle.x_pointer + eax], 0
+    ; mov dword [cicle.y_pointer + eax], 0
 
     add dword [count], 4   
 
