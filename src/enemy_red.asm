@@ -7,12 +7,15 @@ extern video.print_at
 extern video.print
 extern video.clear
 extern scan
+extern delay
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
 %define SHIP.COORDS 5
 
 section .data
+
+timer dd 0
 
 count dd 0
 
@@ -81,6 +84,12 @@ global enemy_red.update
 enemy_red.update:
     FUNC.START
 
+    ; xor ebx, ebx
+    ; xor edx, edx
+    ; CALL delay, timer, 1000
+    ; cmp eax, 0
+    ; je end
+
     cmp dword [count], 0
     je working.on.map
    
@@ -148,6 +157,8 @@ enemy_red.update:
         
         working.on.map:
 
+        end:
+
     FUNC.END
 
 ;paint()
@@ -156,6 +167,7 @@ global enemy_red.paint
 enemy_red.paint:
     FUNC.START
     RESERVE(2)
+    
 
     cmp dword [count], 0
     je while.end
