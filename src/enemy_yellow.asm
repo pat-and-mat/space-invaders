@@ -217,6 +217,8 @@ destroy.ship:
         mov dword [row.offset + eax], ebx
         mov ebx, [col.offset + eax + 4]
         mov dword [col.offset + eax], ebx
+        add eax, 4
+        jmp while    
 
     end.while:
 

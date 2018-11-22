@@ -48,6 +48,8 @@ lives resd ZIZE
 ;1-Rigth 0-left
 dir resd ZIZE
 
+animation.count resd ZIZE
+
 timer.blue resd 2
 
 section .text
@@ -71,6 +73,8 @@ enemy_blue.init:
 
     ;pointer of the actual moviment
     mov dword [dir + eax], 1
+
+    mov dword [animation.count + eax], 0
 
     add dword [count], 4   
 
@@ -150,6 +154,7 @@ enemy_blue.update:
         CALL destroy.ship, ecx
         sub ecx, 4
         jmp condition
+
         
     working.on.map:
 
@@ -173,7 +178,7 @@ enemy_blue.paint:
     ;painting ship number esi * 4
     while.internal:       
         cmp ecx, SHIP.COORDS * 4
-        jnl while.external
+        jnl restore.form
         
         mov eax, [row.offset + esi]
         add eax, [rows + ecx]
@@ -183,7 +188,6 @@ enemy_blue.paint:
         add eax, [cols + ecx]
         mov [LOCAL(1)], eax
 
-        ;CALL video.print_at, [PARAM(0)], [graphics + ecx], ebx, edx
         CALL video.print, [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
         add ecx, 4
         jmp while.internal
@@ -192,11 +196,31 @@ enemy_blue.paint:
     while.external:
         mov ecx, 0  
         add esi, 4
+        jmp change.form
+        continue:
         cmp esi, dword [count]
         jl while.internal
         while.end:
-
     FUNC.END
+
+    restore.form:
+        mov dword [graphics + 8], 'O'|FG.BLUE|BG.BLACK
+        jmp while.external
+
+    change.form:
+        cmp dword [animation.count + esi], 0
+        jg set.form2
+        mov dword [animation.count + esi], 1
+        jmp continue
+
+    set.form2:
+        mov dword [graphics + 8], 'o'|FG.BLUE|BG.BLACK
+        mov dword [animation.count + esi], 0
+        jmp continue
+
+
+
+    
 
 ; enemy_blue.take_damage(dword damage)
 ; Takes lives away from player
@@ -224,6 +248,8 @@ destroy.ship:
         mov dword [col.offset + eax], ebx
         mov ebx, [dir + eax + 4]
         mov dword [dir + eax], ebx
+        add eax, 4
+        jmp while
 
     end.while:
 

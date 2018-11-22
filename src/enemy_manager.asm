@@ -53,11 +53,11 @@ enemy.generate:
     FUNC.END
 
     blue:
-    CALL enemy_blue.init, 2, eax
+    CALL enemy_blue.init, 1, eax
     jmp Continue
 
     red:
-    CALL enemy_red.init, 0, eax
+    CALL enemy_red.init, 1, eax
     jmp Continue
     
     yellow:
