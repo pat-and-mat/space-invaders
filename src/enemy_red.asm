@@ -45,7 +45,7 @@ col.offset resd ZIZE
 
 lives resd ZIZE
 
-;1-Rigth 0-left
+;2-Rigth 1-left
 dir resd ZIZE
 
 down.count resd ZIZE
@@ -70,7 +70,7 @@ enemy_red.init:
     mov dword [lives + eax], 1
 
     ;pointer of the actual moviment
-    mov dword [dir + eax], 0
+    mov dword [dir + eax], 1
     mov dword [down.count + eax], 0
 
     add dword [count], 4   
@@ -96,7 +96,7 @@ enemy_red.update:
         CALL rand, 3
         mov dword [dir + ecx], eax
         
-        cmp dword [dir + ecx], 0
+        cmp dword [dir + ecx], 1
         je left
         jg right
 
@@ -117,11 +117,11 @@ enemy_red.update:
         jmp working.on.map  ;end cicle
 
         move.right:        
-        add dword [col.offset + ecx] , 1
+        add dword [col.offset + ecx] , 2
         jmp condition
 
         move.left:
-        sub dword [col.offset + ecx] , 1
+        sub dword [col.offset + ecx] , 2
         jmp condition
 
         move.up:

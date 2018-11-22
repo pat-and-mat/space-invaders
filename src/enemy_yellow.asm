@@ -45,7 +45,7 @@ col.offset resd ZIZE
 
 lives resd ZIZE
 
-;1-Rigth 0-left
+;2-Rigth 1-left
 dir resd ZIZE
 
 section .text
@@ -92,7 +92,7 @@ enemy_yellow.update:
         CALL rand, 3
         mov dword [dir + ecx], eax
         
-        cmp dword [dir + ecx], 0
+        cmp dword [dir + ecx], 1
         je left
         jg right
 
@@ -135,7 +135,7 @@ enemy_yellow.update:
         move.down:
         ;check position
 
-        add dword [row.offset + ecx] , 2
+        add dword [row.offset + ecx] , 1
         jmp continue
         
         

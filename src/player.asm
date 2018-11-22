@@ -24,9 +24,9 @@ extern input
 ; Data section is meant to hold constant values, do not modify
 section .data
 
-graphics dd 'H'|FG.YELLOW|BG.BLACK,\
-            '('|FG.YELLOW|BG.BLACK,\
-            ')'|FG.YELLOW|BG.BLACK,\
+graphics dd 'M'|FG.YELLOW|BG.BLACK,\
+            '['|FG.YELLOW|BG.BLACK,\
+            ']'|FG.YELLOW|BG.BLACK,\
             '^'|FG.YELLOW|BG.BLACK,\
             'W'|FG.YELLOW|BG.BLACK,\
             'W'|FG.YELLOW|BG.BLACK,
