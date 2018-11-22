@@ -72,7 +72,8 @@ weapons.update:
 
         .update.move.cont:
             CALL weapons.check_boundaries, [LOCAL(0)]
-
+            cmp eax, 0
+            je .update.move
             inc dword [LOCAL(0)]
             jmp .update.move
     .update.move.end:
@@ -230,10 +231,12 @@ weapons.check_boundaries:
     cmp word [shots.rows + ecx], ROWS
     jae .check.rm
 
+    mov eax, 1
     jmp .check.end
-
+    
     .check.rm:
         CALL weapons.remove, [PARAM(0)]
+        mov eax, 0
 
     .check.end:
         FUNC.END
@@ -262,6 +265,7 @@ weapons.remove:
         mov [shots.dirs + ecx - 2], ax
 
         inc dword [PARAM(0)]
+        jmp .remove.while
     .remove.while.end:
 
     dec word [shots.count]
