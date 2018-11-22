@@ -125,11 +125,11 @@ enemy_blue.update:
         jne set.left
         set.right:
         mov dword [dir + ecx], 1
-        add dword [row.offset + ecx] , 3
+        add dword [row.offset + ecx] , 2
         jmp condition
         set.left:
         mov dword [dir + ecx], 0
-        add dword [row.offset + ecx] , 3
+        add dword [row.offset + ecx] , 2
         jmp condition
         
     working.on.map:

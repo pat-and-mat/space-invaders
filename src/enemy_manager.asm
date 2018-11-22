@@ -55,7 +55,7 @@ enemy.generate:
     FUNC.END
 
     blue:
-    CALL enemy_blue.init, 3, eax
+    CALL enemy_blue.init, 2, eax
     jmp Continue
 
     red:
@@ -78,7 +78,7 @@ enemy.update:
     je end
 
     
-    CALL rand, 5   ;max number of enemy generate
+    CALL rand, 5   ;max number of enemy generate is 6
     mov edx, dword 4
     mul edx  
     mov [LOCAL(0)], eax
