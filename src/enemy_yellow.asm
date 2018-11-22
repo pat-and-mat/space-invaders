@@ -8,6 +8,7 @@ extern video.print
 extern video.clear
 extern scan
 extern delay
+extern rand
 
 ;each ship will have a minimum of 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
@@ -36,9 +37,6 @@ col.right dd 3
 hash dd 3
 
 ;ship's IA
-cicle.x dd 2, 1, 0, 1
-cicle.y dd 1, 2, 1, 0
-
 
 section .bss
 
@@ -47,8 +45,8 @@ col.offset resd ZIZE
 
 lives resd ZIZE
 
-cicle.x_pointer resd ZIZE
-cicle.y_pointer resd ZIZE
+;1-Rigth 0-left
+dir resd ZIZE
 
 section .text
 
@@ -70,8 +68,8 @@ enemy_yellow.init:
     mov dword [lives + eax], 1
 
     ;pointer of the actual moviment
-    mov dword [cicle.x_pointer + eax], 0
-    mov dword [cicle.y_pointer + eax], 0
+    mov dword [dir + eax], 0
+   
 
     add dword [count], 4   
 
@@ -83,82 +81,71 @@ global enemy_yellow.update
 enemy_yellow.update:
     FUNC.START
 
-    ; xor ebx, ebx
-    ; xor edx, edx
-    ; CALL delay, timer, 1000
-    ; cmp eax, 0
-    ; je end
-
     cmp dword [count], 0
     je working.on.map
    
     mov ecx, 0
 
-    update.x:
-        xor ebx, ebx        
-        ;updating x position of all ships
-        mov ebx, dword [cicle.x_pointer + ecx]
-        add dword [cicle.x_pointer + ecx], 4
-        cmp dword [cicle.x_pointer + ecx], 12  ;checking if is necesary reset the movements cicle
-        jg restart.cicle.x
-
-        continue.x:   ;for come back from the reset
-
-        cmp dword [cicle.x + ebx], 1
-        jl move.left
-        jg move.right
-        ;if there is not movement in x, continue to update.y
-
-    update.y:
-        ;updating y position of all ships
-        mov ebx, dword [cicle.y_pointer + ecx]
-        add dword [cicle.y_pointer + ecx], 4
-        cmp dword [cicle.y_pointer + ecx], 12  ;checking if is necesary reset the movements cicle
-        jg restart.cicle.y
+    start:
+        jmp move.down
+        continue: 
+        CALL rand, 3
+        mov dword [dir + ecx], eax
         
-        continue.y:   ;for come back from the reset
+        cmp dword [dir + ecx], 0
+        je left
+        jg right
 
-        cmp dword [cicle.y + ebx], 1
-        jl move.up
-        jg move.down
-        ;if there is not movement in x, continue to condition
+        left:
+        cmp dword [col.offset + ecx], 0
+        je move.right
+        cmp dword [col.offset + ecx], 1
+        je move.right
+        cmp dword [col.offset + ecx], 2
+        je move.right
+        jmp move.left
+
+        right:
+        cmp dword [col.offset + ecx], 77
+        je move.left
+        cmp dword [col.offset + ecx], 76
+        je move.left
+        cmp dword [col.offset + ecx], 75
+        je move.left
+        jmp move.right
 
         condition:  ;the stop condition is reached when all the ships are moved
         add ecx, 4
         cmp ecx, dword [count]  ;compare ecx with the number of blue ships on map * 4
-        jl update.x
+        jl start
         jmp working.on.map  ;end cicle
 
         move.right:        
-        add dword [col.offset + ecx] , 1
-        jmp update.y
+        add dword [col.offset + ecx] , 3
+        jmp condition
 
         move.left:
-        sub dword [col.offset + ecx] , 1
-        jmp update.y
+        sub dword [col.offset + ecx] , 3
+        jmp condition
 
         move.up:
         sub dword [row.offset + ecx] , 1
         jmp condition
 
         move.down:
-        add dword [row.offset + ecx] , 1
-        jmp condition
+        ;check position
 
-        restart.cicle.x:
-        mov dword [cicle.x_pointer + ecx], 0
-        jmp continue.x
-
-        restart.cicle.y:
-        mov dword [cicle.y_pointer + ecx], 0
-        jmp continue.y
-
+        add dword [row.offset + ecx] , 2
+        jmp continue
         
-        working.on.map:
+        
+    working.on.map:
 
-        end:
+    end:
 
     FUNC.END
+
+    
 
 ;paint()
 ;move all the yellow enemies
