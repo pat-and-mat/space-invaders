@@ -129,13 +129,26 @@ enemy_blue.update:
 
         cmp dword [dir + ecx], 0
         jne set.left
+       
+
         set.right:
         mov dword [dir + ecx], 1
         add dword [row.offset + ecx] , 2
+        cmp dword [row.offset + ecx] , 23
+        jge destroy 
+
         jmp condition
         set.left:
         mov dword [dir + ecx], 0
         add dword [row.offset + ecx] , 2
+        cmp dword [row.offset + ecx] , 23
+        jge destroy 
+
+        jmp condition
+
+        destroy:
+        CALL destroy.ship, ecx
+        sub ecx, 4
         jmp condition
         
     working.on.map:
@@ -192,4 +205,30 @@ global enemy_blue.take_damage
 enemy_blue.take_damage:
     FUNC.START
     FUNC.END
+
+
+;destroy.ship(dword index)
+;destroyes the ship that is in the index position
+destroy.ship:
+    FUNC.START
+
+    mov eax, [PARAM(0)]
+    while:
+        cmp eax, dword [count]
+        je end.while
+        mov ebx, [lives + eax + 4]
+        mov dword [lives + eax], ebx
+        mov ebx, [row.offset + eax + 4]
+        mov dword [row.offset + eax], ebx
+        mov ebx, [col.offset + eax + 4]
+        mov dword [col.offset + eax], ebx
+        mov ebx, [dir + eax + 4]
+        mov dword [dir + eax], ebx
+
+    end.while:
+
+    sub dword [count], 4
+
+    FUNC.END
+
 

@@ -45,9 +45,6 @@ col.offset resd ZIZE
 
 lives resd ZIZE
 
-;2-Rigth 1-left
-dir resd ZIZE
-
 down.count resd ZIZE
 
 timer.red resd 2
@@ -71,8 +68,7 @@ enemy_red.init:
 
     mov dword [lives + eax], 1
 
-    ;pointer of the actual moviment
-    mov dword [dir + eax], 1
+    ;pointer of the actual moviment    
     mov dword [down.count + eax], 0
 
     add dword [count], 4   
@@ -99,12 +95,10 @@ enemy_red.update:
         je move.down
         add dword [down.count + ecx], 1
 
-        CALL rand, 3
-        mov dword [dir + ecx], eax
+        CALL rand, 4
+        cmp eax, 2
+        jge right
         
-        cmp dword [dir + ecx], 1
-        je left
-        jg right
 
         left:
         cmp dword [col.offset + ecx], 0
@@ -139,6 +133,13 @@ enemy_red.update:
 
         mov dword [down.count + ecx], 0
         add dword [row.offset + ecx] , 2
+        cmp dword [row.offset + ecx] , 23
+        jge destroy
+        jmp condition
+
+        destroy:
+        CALL destroy.ship, ecx
+        sub ecx, 4
         jmp condition
         
         
@@ -196,4 +197,30 @@ enemy_red.paint:
 global enemy_red.take_damage
 enemy_red.take_damage:
     FUNC.START
+    FUNC.END
+
+;destroy.ship(dword index)
+;destroyes the ship that is in the index position
+destroy.ship:
+    FUNC.START
+
+    mov eax, [PARAM(0)]
+    while:
+        cmp eax, dword [count]
+        je end.while
+        mov ebx, [lives + eax + 4]
+        mov dword [lives + eax], ebx
+        mov ebx, [row.offset + eax + 4]
+        mov dword [row.offset + eax], ebx
+        mov ebx, [col.offset + eax + 4]
+        mov dword [col.offset + eax], ebx
+        mov ebx, [down.count + eax + 4]
+        mov dword [down.count + eax], ebx
+        add eax, 4
+        jmp while
+
+    end.while:
+
+    sub dword [count], 4
+
     FUNC.END
