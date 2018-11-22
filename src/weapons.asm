@@ -38,7 +38,7 @@ weapons.update:
     FUNC.START
     RESERVE(1)  ; i
 
-    CALL delay, timer, 50
+    CALL delay, timer, 500
     cmp eax, 0
     je .update.move.end
 
@@ -72,7 +72,8 @@ weapons.update:
 
         .update.move.cont:
             CALL weapons.check_boundaries, [LOCAL(0)]
-
+            cmp eax, 0
+            je .update.move
             inc dword [LOCAL(0)]
             jmp .update.move
     .update.move.end:
@@ -108,6 +109,12 @@ weapons.paint:
         inc dword [LOCAL(0)]
         jmp .paint.while
     .paint.while.end:
+
+    xor eax, eax
+    mov ax ,[shots.count]
+    add eax, 48
+    or eax, FG.RED
+    CALL video.print, eax, 24, 79
     
     FUNC.END
 
@@ -230,10 +237,12 @@ weapons.check_boundaries:
     cmp word [shots.rows + ecx], ROWS
     jae .check.rm
 
+    mov eax, 1
     jmp .check.end
-
+    
     .check.rm:
         CALL weapons.remove, [PARAM(0)]
+        mov eax, 0
 
     .check.end:
         FUNC.END
@@ -262,6 +271,7 @@ weapons.remove:
         mov [shots.dirs + ecx - 2], ax
 
         inc dword [PARAM(0)]
+        jmp .remove.while
     .remove.while.end:
 
     dec word [shots.count]
