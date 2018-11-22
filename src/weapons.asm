@@ -24,15 +24,57 @@ shots.rows resw ROWS * COLS
 shots.cols resw ROWS * COLS
 shots.dirs resw ROWS * COLS
 
+timer resd 1
+
 section .text
 
 extern video.print
+extern delay
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
 global weapons.update
 weapons.update:
     FUNC.START
+    RESERVE(1)  ; i
+
+    CALL delay, timer, 50
+    cmp eax, 0
+    je .update.move.end
+
+    mov dword [LOCAL(0)], 0
+    .update.move:
+        mov ecx, [LOCAL(0)]
+        
+        cmp cx, [shots.count]
+        je .update.move.end
+
+        shl ecx, 1
+
+        xor eax, eax
+        mov ax, [shots.dirs + ecx]
+        
+        cmp eax, 0
+        je .move.down
+
+        cmp eax, 1
+        je .move.up
+
+        jmp .update.move.end
+
+        .move.up:
+            dec word [shots.rows + ecx]
+            jmp .update.move.cont
+
+        .move.down:
+            inc word [shots.rows + ecx]
+            jmp .update.move.cont
+
+        .update.move.cont:
+            inc dword [LOCAL(0)]
+            jmp .update.move
+    .update.move.end:
+
     FUNC.END
 
 ; paint()
