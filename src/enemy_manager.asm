@@ -55,7 +55,7 @@ enemy.generate:
     FUNC.END
 
     blue:
-    CALL enemy_blue.init, 0, eax
+    CALL enemy_blue.init, 3, eax
     jmp Continue
 
     red:
@@ -94,7 +94,7 @@ enemy.update:
 
     end:  
 
-    CALL delay, timer2, 1000  ;timing condition to update
+    CALL delay, timer2, 500  ;timing condition to update
     cmp eax, 0
     je finish
     
