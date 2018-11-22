@@ -13,6 +13,9 @@ extern delay
 %define ZIZE 500
 %define SHIP.COORDS 4
 
+;the blue enemies will move right or left until find a border of the screen,
+;then will go down and change their direction
+
 section .data
 
 timer dd 0
@@ -35,8 +38,6 @@ col.left dd 0
 col.right dd 3
 
 hash dd 3
-
-;ship's IA
 
 section .bss
 
@@ -93,20 +94,20 @@ enemy_blue.update:
     cmp dword [count], 0
     je working.on.map
    
-    mov ecx, 0
+    mov ecx, 0   ;actual ship * 4
 
-    start:
+    start:                          ;while start
         cmp dword [dir + ecx], 0
         je left
         jg right
 
         left:
-        cmp dword [col.offset + ecx], 0
+        cmp dword [col.offset + ecx], 0     ;if the offset arrive the left border, then go down
         je move.down
         jmp move.left
 
         right:
-        cmp dword [col.offset + ecx], 77
+        cmp dword [col.offset + ecx], 77    ;if the offset arrive the right border, then go down
         je move.down
         jmp move.right
 
@@ -131,22 +132,19 @@ enemy_blue.update:
         move.down:
         ;check position
 
-        cmp dword [row.offset + ecx] , 23
-        jge destroy 
+        cmp dword [row.offset + ecx] , 23      ;if the ship arrive de lower edge of the screen,
+        jge destroy                            ;then will be destroyed
 
         cmp dword [dir + ecx], 0
+        add dword [row.offset + ecx] , 2      ;change direction
         jne set.left
 
         set.right:
-        mov dword [dir + ecx], 1
-        add dword [row.offset + ecx] , 2
-
+        mov dword [dir + ecx], 1   
         jmp condition
+
         set.left:
         mov dword [dir + ecx], 0
-        add dword [row.offset + ecx] , 2
-
-
         jmp condition
 
         destroy:
@@ -162,7 +160,7 @@ enemy_blue.update:
     FUNC.END
 
 ;paint()
-;move all the blue enemies
+;paint all the blue enemies
 global enemy_blue.paint
 enemy_blue.paint:
     FUNC.START
@@ -187,17 +185,18 @@ enemy_blue.paint:
         CALL video.print, [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
         add ecx, 4
         cmp ecx, SHIP.COORDS * 4
-        jl while.internal
-
+        jl while.internal   
+        ;while end
 
         mov dword [graphics + 8], 'O'|FG.BLUE|BG.BLACK  ;restoring form in case of animation
+        
 
     ;updating esi
     while.external:
         mov ecx, 0  
         add esi, 4
-        jmp change.form
-        continue:
+        jmp change.form      ;change caraters of the ships to create animations
+        continue:      ;place to retorn from de animation creation
         cmp esi, dword [count]
         jl while.internal
         while.end:

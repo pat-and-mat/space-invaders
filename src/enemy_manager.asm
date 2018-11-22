@@ -33,9 +33,9 @@ enemy.generate:
     mov ecx, [PARAM(0)]
 
     while:
-        mov eax, [PARAM(1)]
+        mov eax, [PARAM(1)]  ;number of ships to generate
         add eax, ecx
-        cmp [PARAM(2)], dword 0
+        cmp [PARAM(2)], dword 0  ;type of ships to generate
         je blue
         cmp [PARAM(2)], dword 1
         je red
@@ -52,6 +52,7 @@ enemy.generate:
     end.while:
     FUNC.END
 
+    ;the enemies are generate in the upper section of the screen
     blue:
     CALL enemy_blue.init, 1, eax
     jmp Continue
@@ -103,7 +104,7 @@ enemy.update:
 global enemy.paint
 enemy.paint:
     FUNC.START
-    call enemy_blue.paint
+    call enemy_blue.paint    ;each subprogram paint all the ships of the mentioned color
     call enemy_red.paint
     call enemy_yellow.paint
     FUNC.END
