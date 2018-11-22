@@ -40,77 +40,66 @@ weapons.update:
 global weapons.paint
 weapons.paint:
     FUNC.START
-    RESERVE(2)
-    push ebx
-    xor ebx, ebx
-    mov bx, [shots.count]
-    shl ebx, 1
+    RESERVE(3)  ; i, row, col
 
-    mov ecx, 0  ; ecx = 0
+    mov dword [LOCAL(0)], 0
     .paint.while:
-        cmp ecx, ebx    ; if cx >= shots.count:
-        je .paint.while.end    ;   break
+        mov ecx, [LOCAL(0)]
+        
+        cmp cx, [shots.count]
+        je .paint.while.end
+
+        shl ecx, 1
 
         xor eax, eax
         mov ax, [shots.rows + ecx]
-        mov dword [LOCAL(0)], eax   ; local0 = shots.rows[ecx]
-        
+        mov [LOCAL(1)], eax
+
         xor eax, eax
         mov ax, [shots.cols + ecx]
-        mov dword [LOCAL(1)], eax   ; local1 = shots.cols[ecx]
+        mov [LOCAL(2)], eax
 
-        mov byte [graphics], cl
-        add byte [graphics], 48
-
-        push ecx
-
-        mov eax, [LOCAL(0)]
-        mov edi, [LOCAL(1)]
-        or eax, FG.RED
-        or edi, FG.RED
-
-        cmp eax,edi
-        je .paint.while.end
-
-        CALL video.print, eax, ecx, 0
-        CALL video.print, edi, ecx, 2
-
-        CALL weapons.paint_shot, [LOCAL(0)], [LOCAL(1)] ; paint_shot(local0, local1)
-        pop ecx
+        CALL weapons.paint_shot, [LOCAL(1)], [LOCAL(2)]
         
-        add ecx, 2 ; ecx+=2
+        inc dword [LOCAL(0)]
         jmp .paint.while
     .paint.while.end:
-    pop ebx
+
     FUNC.END
 
 ; weapons.paint_shot(dword row, dword col)
 ; Paints one shot at row, col
 weapons.paint_shot:
     FUNC.START
-    mov ecx, 0
-    .ps.while:
-        cmp ecx, SHOTS.COORDS * 2
-        je .ps.while.end
+    RESERVE(2)  ; coord, graphics
 
-        mov eax, [PARAM(0)]
-        add eax, [rows + ecx]
-        mov [PARAM(0)], eax
+    mov dword [LOCAL(0)], 0
+    .pshot.while:
+        mov ecx, [LOCAL(0)]
 
-        mov eax, [PARAM(1)]
-        add eax, [cols + ecx]
-        mov [PARAM(1)], eax
+        cmp ecx, SHOTS.COORDS
+        je .pshot.while.end
+
+        shl ecx, 1
+        
+        xor eax, eax
+        mov ax, [rows + ecx]
+        add [PARAM(0)], eax
+        
+        xor eax, eax
+        mov ax, [cols + ecx]
+        add [PARAM(1)], eax
 
         xor eax, eax
         mov ax, [graphics + ecx]
+        mov [LOCAL(1)], eax
 
-        push ecx
-        CALL video.print, eax, [PARAM(0)], [PARAM(1)]
-        pop ecx
-        
-        add ecx, 2
-        jmp .ps.while
-    .ps.while.end:
+        CALL video.print, [LOCAL(1)], [PARAM(0)], [PARAM(1)]
+
+        inc dword [LOCAL(0)]
+        jmp .pshot.while
+    .pshot.while.end:
+
     FUNC.END
 
 ; collision(dword other_hash, dword row, dword col)
@@ -127,52 +116,60 @@ weapons.collision:
 global weapons.shoot
 weapons.shoot:
     FUNC.START
-    CALL weapons.find_shot, [PARAM(0)], [PARAM(1)]
-    push ebx
-    xor ebx, ebx
-    mov bx, [shots.count]
-    shl ebx, 1
 
-    cmp eax, ebx
-    jne .end
-    mov edx, [PARAM(0)]
-    mov word [shots.rows + eax], dx
-    mov edx, [PARAM(1)]
-    mov word [shots.cols + eax], dx
-    mov edx, [PARAM(2)]
-    mov word [shots.dirs + eax], dx
-    inc word [shots.count]
+    CALL weapons.find_shot, [PARAM(0)], [PARAM(1)]
+
+    mov ecx, eax
+
+    cmp cx, [shots.count]
+    jne .shoot.end
+
+    shl ecx, 1
+
+    mov eax, [PARAM(0)]
+    mov [shots.rows + ecx], ax
     
-    .end:
-        pop ebx
+    mov eax, [PARAM(1)]
+    mov [shots.cols + ecx], ax
+
+    mov eax, [PARAM(2)]
+    mov [shots.dirs + ecx], ax
+
+    inc word [shots.count]
+
+    .shoot.end:
         FUNC.END
 
 ; find_shot(dword row, dword col)
 ; returns index of a shot at row, col
 weapons.find_shot:
     FUNC.START
-    push ebx
+    RESERVE(1)  ; i
 
-    xor ebx, ebx
-    mov bx, [shots.count]
-    shl ebx, 1
+    mov dword [LOCAL(0)], 0
+    .find.while:
+        mov ecx, [LOCAL(0)]
+        
+        cmp cx, [shots.count]
+        je .find.while.end
 
-    mov ecx, 0
-    .while:
-        cmp ecx, ebx
-        je .end_while
+        shl ecx, 1
+
         mov eax, [PARAM(0)]
-        cmp [shots.rows + ecx], ax
-        jne .continue
-        mov eax, [PARAM(1)]
-        cmp [shots.cols + ecx], ax
-        jne .continue
-        jmp .end_while
-        .continue:
-            add ecx, 2
-            jmp .while
-        .end_while:
-    mov eax, ecx
+        cmp [shots.rows + ecx], eax
+        jne .find.while.cont
 
-    pop ebx
+        mov eax, [PARAM(1)]
+        cmp [shots.cols + ecx], eax
+        jne .find.while.cont
+
+        jmp .find.while.end
+        
+        .find.while.cont:
+            inc dword [LOCAL(0)]
+            jmp .find.while
+    .find.while.end:
+
+    mov eax, [LOCAL(0)]
+
     FUNC.END
