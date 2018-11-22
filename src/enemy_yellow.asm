@@ -45,8 +45,9 @@ col.offset resd ZIZE
 
 lives resd ZIZE
 
-
 timer.yellow resd 2
+
+animation.count resd ZIZE
 
 section .text
 
@@ -90,9 +91,9 @@ enemy_yellow.update:
     start:
         jmp move.down
         continue: 
-        CALL rand, 4       
+        CALL rand, 15       
         
-        cmp eax, 2        
+        cmp eax, 3        
         jge right
 
         left:
@@ -134,10 +135,12 @@ enemy_yellow.update:
         move.down:
         ;check position
 
-        add dword [row.offset + ecx] , 1
-        jmp continue
         cmp dword [row.offset + ecx] , 23
         jge destroy
+
+        add dword [row.offset + ecx] , 1
+        jmp continue
+
 
         destroy:
         CALL destroy.ship, ecx
@@ -159,7 +162,7 @@ global enemy_yellow.paint
 enemy_yellow.paint:
     FUNC.START
     RESERVE(2)
-
+    
     cmp dword [count], 0
     je while.end
    
@@ -167,10 +170,7 @@ enemy_yellow.paint:
     mov ecx, 0 
     
     ;painting ship number esi * 4
-    while.internal:       
-        cmp ecx, SHIP.COORDS * 4
-        jnl while.external
-        
+    while.internal:           
         mov eax, [row.offset + esi]
         add eax, [rows + ecx]
         mov [LOCAL(0)], eax
@@ -179,20 +179,35 @@ enemy_yellow.paint:
         add eax, [cols + ecx]
         mov [LOCAL(1)], eax
 
-        ;CALL video.print_at, [PARAM(0)], [graphics + ecx], ebx, edx
         CALL video.print, [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
         add ecx, 4
-        jmp while.internal
+        cmp ecx, SHIP.COORDS * 4
+        jl while.internal
+
+        mov dword [graphics + 8], 'O'|FG.YELLOW|BG.BLACK  ;restoring form in case of animation
 
     ;updating esi
     while.external:
         mov ecx, 0  
         add esi, 4
+        jmp change.form
+        changed:
         cmp esi, dword [count]
         jl while.internal
         while.end:
-
     FUNC.END
+
+    change.form:
+        cmp dword [animation.count + esi], 0
+        jg set.form2
+        mov dword [animation.count + esi], 1
+        jmp changed
+
+    set.form2:
+        mov dword [graphics + 8], 'o'|FG.YELLOW|BG.BLACK
+        mov dword [animation.count + esi], 0
+        jmp changed
+
 
 ; enemy_yellow.take_damage(dword damage)
 ; Takes lives away from an enemy

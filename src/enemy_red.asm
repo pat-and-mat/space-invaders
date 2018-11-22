@@ -22,7 +22,7 @@ count dd 0
 
 graphics dd 'W'|FG.RED|BG.BLACK,\
             'W'|FG.RED|BG.BLACK,\
-            '^'|FG.RED|BG.BLACK,\
+            '_'|FG.RED|BG.BLACK,\
             'V'|FG.RED|BG.BLACK,
             
 rows dd 0, 0, 0, 1
@@ -48,6 +48,8 @@ lives resd ZIZE
 down.count resd ZIZE
 
 timer.red resd 2
+
+animation.count resd ZIZE
 
 section .text
 
@@ -95,19 +97,27 @@ enemy_red.update:
         je move.down
         add dword [down.count + ecx], 1
 
-        CALL rand, 4
-        cmp eax, 2
+        CALL rand, 10
+        cmp eax, 4
         jge right
         
 
         left:
         cmp dword [col.offset + ecx], 0
-        je move.down
+        je move.right
+        cmp dword [col.offset + ecx], 1
+        je move.right
+        cmp dword [col.offset + ecx], 2
+        je move.right
         jmp move.left
 
         right:
         cmp dword [col.offset + ecx], 77
-        je move.down
+        je move.left
+        cmp dword [col.offset + ecx], 76
+        je move.left
+        cmp dword [col.offset + ecx], 75
+        je move.left
         jmp move.right
 
         condition:  ;the stop condition is reached when all the ships are moved
@@ -131,10 +141,11 @@ enemy_red.update:
         move.down:
         ;check position
 
-        mov dword [down.count + ecx], 0
-        add dword [row.offset + ecx] , 2
         cmp dword [row.offset + ecx] , 23
         jge destroy
+        mov dword [down.count + ecx], 0
+        add dword [row.offset + ecx] , 2
+
         jmp condition
 
         destroy:
@@ -156,7 +167,6 @@ enemy_red.paint:
     FUNC.START
     RESERVE(2)
     
-
     cmp dword [count], 0
     je while.end
    
@@ -164,10 +174,7 @@ enemy_red.paint:
     mov ecx, 0 
     
     ;painting ship number esi * 4
-    while.internal:       
-        cmp ecx, SHIP.COORDS * 4
-        jnl while.external
-        
+    while.internal:           
         mov eax, [row.offset + esi]
         add eax, [rows + ecx]
         mov [LOCAL(0)], eax
@@ -176,20 +183,39 @@ enemy_red.paint:
         add eax, [cols + ecx]
         mov [LOCAL(1)], eax
 
-        ;CALL video.print_at, [PARAM(0)], [graphics + ecx], ebx, edx
         CALL video.print, [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
         add ecx, 4
-        jmp while.internal
+        cmp ecx, SHIP.COORDS * 4
+        jl while.internal
+
+        mov dword [graphics], 'W'|FG.RED|BG.BLACK
+        mov dword [graphics + 4], 'W'|FG.RED|BG.BLACK  ;restoring form in case of animation
 
     ;updating esi
     while.external:
         mov ecx, 0  
         add esi, 4
+        jmp change.form
+        continue:
         cmp esi, dword [count]
         jl while.internal
         while.end:
-
     FUNC.END
+
+    change.form:
+        cmp dword [animation.count + esi], 4
+        jg set.form2
+        add dword [animation.count + esi], 1
+        jmp continue
+
+    set.form2:
+        mov dword [graphics], 'w'|FG.RED|BG.BLACK
+        mov dword [graphics + 4 ], 'w'|FG.RED|BG.BLACK
+        add dword [animation.count + esi], 1
+        cmp dword [animation.count + esi], 8
+        jl continue
+        mov dword [animation.count + esi], 0
+        jmp continue
 
 ; enemy_red.take_damage(dword damage)
 ; Takes lives away from an enemy

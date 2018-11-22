@@ -131,22 +131,21 @@ enemy_blue.update:
         move.down:
         ;check position
 
+        cmp dword [row.offset + ecx] , 23
+        jge destroy 
+
         cmp dword [dir + ecx], 0
         jne set.left
-       
 
         set.right:
         mov dword [dir + ecx], 1
         add dword [row.offset + ecx] , 2
-        cmp dword [row.offset + ecx] , 23
-        jge destroy 
 
         jmp condition
         set.left:
         mov dword [dir + ecx], 0
         add dword [row.offset + ecx] , 2
-        cmp dword [row.offset + ecx] , 23
-        jge destroy 
+
 
         jmp condition
 
@@ -176,10 +175,7 @@ enemy_blue.paint:
     mov ecx, 0 
     
     ;painting ship number esi * 4
-    while.internal:       
-        cmp ecx, SHIP.COORDS * 4
-        jnl restore.form
-        
+    while.internal:           
         mov eax, [row.offset + esi]
         add eax, [rows + ecx]
         mov [LOCAL(0)], eax
@@ -190,7 +186,11 @@ enemy_blue.paint:
 
         CALL video.print, [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
         add ecx, 4
-        jmp while.internal
+        cmp ecx, SHIP.COORDS * 4
+        jl while.internal
+
+
+        mov dword [graphics + 8], 'O'|FG.BLUE|BG.BLACK  ;restoring form in case of animation
 
     ;updating esi
     while.external:
@@ -203,18 +203,17 @@ enemy_blue.paint:
         while.end:
     FUNC.END
 
-    restore.form:
-        mov dword [graphics + 8], 'O'|FG.BLUE|BG.BLACK
-        jmp while.external
-
     change.form:
-        cmp dword [animation.count + esi], 0
+        cmp dword [animation.count + esi], 3
         jg set.form2
-        mov dword [animation.count + esi], 1
+        add dword [animation.count + esi], 1
         jmp continue
 
     set.form2:
         mov dword [graphics + 8], 'o'|FG.BLUE|BG.BLACK
+        add dword [animation.count + esi], 1
+        cmp dword [animation.count + esi], 7
+        jl continue
         mov dword [animation.count + esi], 0
         jmp continue
 
