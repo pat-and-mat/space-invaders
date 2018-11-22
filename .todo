@@ -1,5 +1,0 @@
-# Change 'video.asm':
-    Add method 'refresh()' in order to be able to get rid of canvas.
-
-# Change every 'jle', 'jl', 'jnle', etc. because these are meant
-to work with signed numbers.
