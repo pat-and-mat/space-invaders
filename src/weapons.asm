@@ -38,7 +38,7 @@ weapons.update:
     FUNC.START
     RESERVE(1)  ; i
 
-    CALL delay, timer, 500
+    CALL delay, timer, 50
     cmp eax, 0
     je .update.move.end
 
@@ -109,12 +109,6 @@ weapons.paint:
         inc dword [LOCAL(0)]
         jmp .paint.while
     .paint.while.end:
-
-    xor eax, eax
-    mov ax ,[shots.count]
-    add eax, 48
-    or eax, FG.RED
-    CALL video.print, eax, 24, 79
     
     FUNC.END
 
