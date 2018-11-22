@@ -24,13 +24,59 @@ shots.rows resw ROWS * COLS
 shots.cols resw ROWS * COLS
 shots.dirs resw ROWS * COLS
 
+timer resd 1
+
 section .text
+
+extern video.print
+extern delay
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
 global weapons.update
 weapons.update:
     FUNC.START
+    RESERVE(1)  ; i
+
+    CALL delay, timer, 50
+    cmp eax, 0
+    je .update.move.end
+
+    mov dword [LOCAL(0)], 0
+    .update.move:
+        mov ecx, [LOCAL(0)]
+        
+        cmp cx, [shots.count]
+        jae .update.move.end
+
+        shl ecx, 1
+
+        xor eax, eax
+        mov ax, [shots.dirs + ecx]
+        
+        cmp eax, 0
+        je .move.down
+
+        cmp eax, 1
+        je .move.up
+
+        jmp .update.move.end
+
+        .move.up:
+            dec word [shots.rows + ecx]
+            jmp .update.move.cont
+
+        .move.down:
+            inc word [shots.rows + ecx]
+            jmp .update.move.cont
+
+        .update.move.cont:
+            CALL weapons.check_boundaries, [LOCAL(0)]
+
+            inc dword [LOCAL(0)]
+            jmp .update.move
+    .update.move.end:
+
     FUNC.END
 
 ; paint()
@@ -38,6 +84,66 @@ weapons.update:
 global weapons.paint
 weapons.paint:
     FUNC.START
+    RESERVE(3)  ; i, row, col
+
+    mov dword [LOCAL(0)], 0
+    .paint.while:
+        mov ecx, [LOCAL(0)]
+        
+        cmp cx, [shots.count]
+        je .paint.while.end
+
+        shl ecx, 1
+
+        xor eax, eax
+        mov ax, [shots.rows + ecx]
+        mov [LOCAL(1)], eax
+
+        xor eax, eax
+        mov ax, [shots.cols + ecx]
+        mov [LOCAL(2)], eax
+
+        CALL weapons.paint_shot, [LOCAL(1)], [LOCAL(2)]
+        
+        inc dword [LOCAL(0)]
+        jmp .paint.while
+    .paint.while.end:
+    
+    FUNC.END
+
+; weapons.paint_shot(dword row, dword col)
+; Paints one shot at row, col
+weapons.paint_shot:
+    FUNC.START
+    RESERVE(2)  ; coord, graphics
+
+    mov dword [LOCAL(0)], 0
+    .pshot.while:
+        mov ecx, [LOCAL(0)]
+
+        cmp ecx, SHOTS.COORDS
+        je .pshot.while.end
+
+        shl ecx, 1
+        
+        xor eax, eax
+        mov ax, [rows + ecx]
+        add [PARAM(0)], eax
+        
+        xor eax, eax
+        mov ax, [cols + ecx]
+        add [PARAM(1)], eax
+
+        xor eax, eax
+        mov ax, [graphics + ecx]
+        mov [LOCAL(1)], eax
+
+        CALL video.print, [LOCAL(1)], [PARAM(0)], [PARAM(1)]
+
+        inc dword [LOCAL(0)]
+        jmp .pshot.while
+    .pshot.while.end:
+
     FUNC.END
 
 ; collision(dword other_hash, dword row, dword col)
@@ -54,5 +160,109 @@ weapons.collision:
 global weapons.shoot
 weapons.shoot:
     FUNC.START
+
+    CALL weapons.find_shot, [PARAM(0)], [PARAM(1)]
+
+    mov ecx, eax
+
+    cmp cx, [shots.count]
+    jne .shoot.end
+
+    shl ecx, 1
+
+    mov eax, [PARAM(0)]
+    mov [shots.rows + ecx], ax
+    
+    mov eax, [PARAM(1)]
+    mov [shots.cols + ecx], ax
+
+    mov eax, [PARAM(2)]
+    mov [shots.dirs + ecx], ax
+
+    inc word [shots.count]
+
+    .shoot.end:
+        FUNC.END
+
+; find_shot(dword row, dword col)
+; returns index of a shot at row, col
+weapons.find_shot:
+    FUNC.START
+    RESERVE(1)  ; i
+
+    mov dword [LOCAL(0)], 0
+    .find.while:
+        mov ecx, [LOCAL(0)]
+        
+        cmp cx, [shots.count]
+        je .find.while.end
+
+        shl ecx, 1
+
+        mov eax, [PARAM(0)]
+        cmp [shots.rows + ecx], eax
+        jne .find.while.cont
+
+        mov eax, [PARAM(1)]
+        cmp [shots.cols + ecx], eax
+        jne .find.while.cont
+
+        jmp .find.while.end
+        
+        .find.while.cont:
+            inc dword [LOCAL(0)]
+            jmp .find.while
+    .find.while.end:
+
+    mov eax, [LOCAL(0)]
+
     FUNC.END
 
+; weapons.check_boundaries(dword pos)
+; Checks if the shot at the given pos is outside the boundaries of the map,
+; if so, removes it
+weapons.check_boundaries:
+    FUNC.START
+    
+    mov ecx, [PARAM(0)]
+    shl ecx, 1
+
+    cmp word [shots.rows + ecx], ROWS
+    jae .check.rm
+
+    jmp .check.end
+
+    .check.rm:
+        CALL weapons.remove, [PARAM(0)]
+
+    .check.end:
+        FUNC.END
+
+; weapons.remove(dword pos)
+; Removes shot stored at the given pos in the list
+weapons.remove:
+    FUNC.START
+    inc dword [PARAM(0)]
+
+    .remove.while:
+        mov ecx, [PARAM(0)]
+        
+        cmp cx, [shots.count]
+        je .remove.while.end
+
+        shl ecx, 1
+
+        mov ax, [shots.rows + ecx]
+        mov [shots.rows + ecx - 2], ax
+
+        mov ax, [shots.cols + ecx]
+        mov [shots.cols + ecx - 2], ax
+
+        mov ax, [shots.dirs + ecx]
+        mov [shots.dirs + ecx - 2], ax
+
+        inc dword [PARAM(0)]
+    .remove.while.end:
+
+    dec word [shots.count]
+    FUNC.END

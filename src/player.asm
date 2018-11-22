@@ -3,8 +3,7 @@
 %include "keyboard.inc"
 
 extern video.print
-extern video.clear
-extern scan
+extern weapons.shoot
 extern input
 
 %define SHIP.COORDS 6
@@ -40,6 +39,9 @@ row.bottom dd 3
 col.left dd 0
 col.right dd 3
 
+weapon.row dd 0
+weapon.col dd 1
+
 section .bss
 
 lives resw 1
@@ -73,6 +75,7 @@ player.init:
 global player.update
 player.update:
     FUNC.START
+    RESERVE(2)
 
     ;down button
     cmp byte [input], KEY.UP
@@ -90,6 +93,10 @@ player.update:
     cmp byte [input], KEY.RIGHT
     je right
 
+    ; space button
+    cmp byte [input], KEY.SPACE
+    je space
+
     jmp update.end
 
     up:
@@ -106,6 +113,20 @@ player.update:
 
     right:
         add dword [col.offset], 1
+        jmp update.end
+
+    space:
+        mov eax, [weapon.row]
+        add eax, [row.offset]
+        sub eax, 1
+        mov [LOCAL(0)], eax
+
+        mov eax, [weapon.col]
+        add eax, [col.offset]
+        mov [LOCAL(1)], eax
+
+        CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
+        
         jmp update.end
 
     update.end:
