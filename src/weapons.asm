@@ -47,7 +47,7 @@ weapons.update:
         mov ecx, [LOCAL(0)]
         
         cmp cx, [shots.count]
-        je .update.move.end
+        jae .update.move.end
 
         shl ecx, 1
 
@@ -71,6 +71,8 @@ weapons.update:
             jmp .update.move.cont
 
         .update.move.cont:
+            CALL weapons.check_boundaries, [LOCAL(0)]
+
             inc dword [LOCAL(0)]
             jmp .update.move
     .update.move.end:
@@ -106,7 +108,7 @@ weapons.paint:
         inc dword [LOCAL(0)]
         jmp .paint.while
     .paint.while.end:
-
+    
     FUNC.END
 
 ; weapons.paint_shot(dword row, dword col)
@@ -214,4 +216,53 @@ weapons.find_shot:
 
     mov eax, [LOCAL(0)]
 
+    FUNC.END
+
+; weapons.check_boundaries(dword pos)
+; Checks if the shot at the given pos is outside the boundaries of the map,
+; if so, removes it
+weapons.check_boundaries:
+    FUNC.START
+    
+    mov ecx, [PARAM(0)]
+    shl ecx, 1
+
+    cmp word [shots.rows + ecx], ROWS
+    jae .check.rm
+
+    jmp .check.end
+
+    .check.rm:
+        CALL weapons.remove, [PARAM(0)]
+
+    .check.end:
+        FUNC.END
+
+; weapons.remove(dword pos)
+; Removes shot stored at the given pos in the list
+weapons.remove:
+    FUNC.START
+    inc dword [PARAM(0)]
+
+    .remove.while:
+        mov ecx, [PARAM(0)]
+        
+        cmp cx, [shots.count]
+        je .remove.while.end
+
+        shl ecx, 1
+
+        mov ax, [shots.rows + ecx]
+        mov [shots.rows + ecx - 2], ax
+
+        mov ax, [shots.cols + ecx]
+        mov [shots.cols + ecx - 2], ax
+
+        mov ax, [shots.dirs + ecx]
+        mov [shots.dirs + ecx - 2], ax
+
+        inc dword [PARAM(0)]
+    .remove.while.end:
+
+    dec word [shots.count]
     FUNC.END
