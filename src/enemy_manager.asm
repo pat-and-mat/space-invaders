@@ -17,9 +17,10 @@ extern enemy_yellow.paint
 extern rand
 extern delay
 
-section .data
+section .bss
 
-timer dd 0
+timer1 resd 2
+timer2 resd 2
 
 
 section .text
@@ -72,11 +73,11 @@ enemy.update:
     FUNC.START
     RESERVE(3)
     
-    CALL delay, timer, 3000
+    CALL delay, timer1, 3000  ;timing condition to generate
     cmp eax, 0
     je end
 
-    ;timing condition to generate
+    
     CALL rand, 5   ;max number of enemy generate
     mov edx, dword 4
     mul edx  
@@ -93,12 +94,15 @@ enemy.update:
 
     end:  
 
-    ;timing condition to update
+    CALL delay, timer2, 1000  ;timing condition to update
+    cmp eax, 0
+    je finish
+    
     call enemy_blue.update
     call enemy_red.update
     call enemy_yellow.update
 
-    
+    finish:
     FUNC.END
 
 ; paint()

@@ -11,7 +11,7 @@ extern delay
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
-%define SHIP.COORDS 5
+%define SHIP.COORDS 4
 
 section .data
 
@@ -19,14 +19,14 @@ timer dd 0
 
 count dd 0
 
-graphics dd '['|FG.BLUE|BG.BLACK,\
-            ']'|FG.BLUE|BG.BLACK,\
-            '^'|FG.BLUE|BG.BLACK,\
-            'Y'|FG.BLUE|BG.BLACK,\
-            'Y'|FG.BLUE|BG.BLACK,
+graphics dd '\'|FG.BLUE|BG.BLACK,\
+            '/'|FG.BLUE|BG.BLACK,\
+            'O'|FG.BLUE|BG.BLACK,\
+            'V'|FG.BLUE|BG.BLACK,
             
-rows dd 0, 0, 1, 1, 1
-cols dd 0, 2, 1, 0, 2
+            
+rows dd 0, 0, 0, 1
+cols dd 0, 2, 1, 1
 
 row.top dd 0
 row.bottom dd 3
@@ -84,11 +84,11 @@ global enemy_blue.update
 enemy_blue.update:
     FUNC.START
 
-    xor ebx, ebx
-    xor edx, edx
-    CALL delay, timer, 1000
-    cmp eax, 0
-    je end
+    ; xor ebx, ebx
+    ; xor edx, edx
+    ; CALL delay, timer, 1000
+    ; cmp eax, 0
+    ; je end
 
     cmp dword [count], 0
     je working.on.map

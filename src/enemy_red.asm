@@ -11,7 +11,7 @@ extern delay
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
-%define SHIP.COORDS 5
+%define SHIP.COORDS 4
 
 section .data
 
@@ -19,14 +19,13 @@ timer dd 0
 
 count dd 0
 
-graphics dd '['|FG.RED|BG.BLACK,\
-            ']'|FG.RED|BG.BLACK,\
+graphics dd 'W'|FG.RED|BG.BLACK,\
+            'W'|FG.RED|BG.BLACK,\
             '^'|FG.RED|BG.BLACK,\
-            'Y'|FG.RED|BG.BLACK,\
-            'Y'|FG.RED|BG.BLACK,
+            'V'|FG.RED|BG.BLACK,
             
-rows dd 0, 0, 1, 1, 1
-cols dd 0, 2, 1, 0, 2
+rows dd 0, 0, 0, 1
+cols dd 0, 2, 1, 1
 
 row.top dd 0
 row.bottom dd 3
