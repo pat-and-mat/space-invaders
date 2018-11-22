@@ -19,9 +19,7 @@ extern delay
 
 section .bss
 
-timer1 resd 2
-timer2 resd 2
-
+timer resd 2
 
 section .text
 
@@ -73,12 +71,12 @@ enemy.update:
     FUNC.START
     RESERVE(3)
     
-    CALL delay, timer1, 3000  ;timing condition to generate
+    CALL delay, timer, 3000  ;timing condition to generate
     cmp eax, 0
     je end
 
     
-    CALL rand, 5   ;max number of enemy generate is 6
+    CALL rand, 5   ;max number of enemy generate 
     mov edx, dword 4
     mul edx  
     mov [LOCAL(0)], eax
@@ -92,17 +90,12 @@ enemy.update:
     mov [LOCAL(2)], eax
     CALL enemy.generate, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
 
-    end:  
-
-    CALL delay, timer2, 500  ;timing condition to update
-    cmp eax, 0
-    je finish
+    end:      
     
     call enemy_blue.update
     call enemy_red.update
     call enemy_yellow.update
-
-    finish:
+    
     FUNC.END
 
 ; paint()

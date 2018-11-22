@@ -50,6 +50,8 @@ dir resd ZIZE
 
 down.count resd ZIZE
 
+timer.red resd 2
+
 section .text
 
 ;init(dw row.offset, dw col.offset)
@@ -82,6 +84,10 @@ enemy_red.init:
 global enemy_red.update
 enemy_red.update:
     FUNC.START
+
+    CALL delay, timer.red, 500  ;timing condition to move
+    cmp eax, 0
+    je working.on.map
 
     cmp dword [count], 0
     je working.on.map

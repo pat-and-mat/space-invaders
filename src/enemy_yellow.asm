@@ -48,6 +48,8 @@ lives resd ZIZE
 ;2-Rigth 1-left
 dir resd ZIZE
 
+timer.yellow resd 2
+
 section .text
 
 ;init(dw row.offset, dw col.offset)
@@ -80,6 +82,10 @@ enemy_yellow.init:
 global enemy_yellow.update
 enemy_yellow.update:
     FUNC.START
+
+    CALL delay, timer.yellow, 4000  ;timing condition to move
+    cmp eax, 0
+    je working.on.map
 
     cmp dword [count], 0
     je working.on.map
