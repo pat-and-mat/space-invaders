@@ -135,8 +135,9 @@ enemy_blue.update:
         cmp dword [row.offset + ecx] , 23      ;if the ship arrive de lower edge of the screen,
         jge destroy                            ;then will be destroyed
 
-        cmp dword [dir + ecx], 0
-        add dword [row.offset + ecx] , 2      ;change direction
+
+        add dword [row.offset + ecx] , 2   
+        cmp dword [dir + ecx], 0   ;change direction
         jne set.left
 
         set.right:
