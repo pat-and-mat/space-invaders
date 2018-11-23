@@ -17,10 +17,9 @@ extern enemy_yellow.paint
 extern rand
 extern delay
 
-section .data
+section .bss
 
-timer dd 0
-
+timer resd 2
 
 section .text
 
@@ -34,9 +33,9 @@ enemy.generate:
     mov ecx, [PARAM(0)]
 
     while:
-        mov eax, [PARAM(1)]
+        mov eax, [PARAM(1)]  ;number of ships to generate
         add eax, ecx
-        cmp [PARAM(2)], dword 0
+        cmp [PARAM(2)], dword 0  ;type of ships to generate
         je blue
         cmp [PARAM(2)], dword 1
         je red
@@ -53,12 +52,13 @@ enemy.generate:
     end.while:
     FUNC.END
 
+    ;the enemies are generate in the upper section of the screen
     blue:
-    CALL enemy_blue.init, 0, eax
+    CALL enemy_blue.init, 1, eax
     jmp Continue
 
     red:
-    CALL enemy_red.init, 0, eax
+    CALL enemy_red.init, 1, eax
     jmp Continue
     
     yellow:
@@ -72,12 +72,12 @@ enemy.update:
     FUNC.START
     RESERVE(3)
     
-    CALL delay, timer, 3000
+    CALL delay, timer, 3000  ;timing condition to generate
     cmp eax, 0
     je end
 
-    ;timing condition to generate
-    CALL rand, 5   ;max number of enemy generate
+    
+    CALL rand, 5   ;max number of enemy generate 
     mov edx, dword 4
     mul edx  
     mov [LOCAL(0)], eax
@@ -91,13 +91,11 @@ enemy.update:
     mov [LOCAL(2)], eax
     CALL enemy.generate, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
 
-    end:  
-
-    ;timing condition to update
+    end:      
+    
     call enemy_blue.update
     call enemy_red.update
     call enemy_yellow.update
-
     
     FUNC.END
 
@@ -106,7 +104,7 @@ enemy.update:
 global enemy.paint
 enemy.paint:
     FUNC.START
-    call enemy_blue.paint
+    call enemy_blue.paint    ;each subprogram paint all the ships of the mentioned color
     call enemy_red.paint
     call enemy_yellow.paint
     FUNC.END

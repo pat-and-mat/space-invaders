@@ -11,7 +11,10 @@ extern delay
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
-%define SHIP.COORDS 5
+%define SHIP.COORDS 4
+
+;the blue enemies will move right or left until find a border of the screen,
+;then will go down and change their direction
 
 section .data
 
@@ -19,14 +22,14 @@ timer dd 0
 
 count dd 0
 
-graphics dd '['|FG.BLUE|BG.BLACK,\
-            ']'|FG.BLUE|BG.BLACK,\
-            '^'|FG.BLUE|BG.BLACK,\
-            'Y'|FG.BLUE|BG.BLACK,\
-            'Y'|FG.BLUE|BG.BLACK,
+graphics dd '\'|FG.BLUE|BG.BLACK,\
+            '/'|FG.BLUE|BG.BLACK,\
+            'O'|FG.BLUE|BG.BLACK,\
+            'V'|FG.BLUE|BG.BLACK,
             
-rows dd 0, 0, 1, 1, 1
-cols dd 0, 2, 1, 0, 2
+            
+rows dd 0, 0, 0, 1
+cols dd 0, 2, 1, 1
 
 row.top dd 0
 row.bottom dd 3
@@ -36,11 +39,6 @@ col.right dd 3
 
 hash dd 3
 
-;ship's IA
-cicle.x dd 2, 1, 0, 1
-cicle.y dd 1, 2, 1, 0
-
-
 section .bss
 
 row.offset resd ZIZE
@@ -48,8 +46,12 @@ col.offset resd ZIZE
 
 lives resd ZIZE
 
-cicle.x_pointer resd ZIZE
-cicle.y_pointer resd ZIZE
+;1-Rigth 0-left
+dir resd ZIZE
+
+animation.count resd ZIZE
+
+timer.blue resd 2
 
 section .text
 
@@ -71,8 +73,9 @@ enemy_blue.init:
     mov dword [lives + eax], 1
 
     ;pointer of the actual moviment
-    mov dword [cicle.x_pointer + eax], 0
-    mov dword [cicle.y_pointer + eax], 0
+    mov dword [dir + eax], 1
+
+    mov dword [animation.count + eax], 0
 
     add dword [count], 4   
 
@@ -84,85 +87,81 @@ global enemy_blue.update
 enemy_blue.update:
     FUNC.START
 
-    xor ebx, ebx
-    xor edx, edx
-    CALL delay, timer, 1000
+    CALL delay, timer.blue, 150  ;timing condition to move
     cmp eax, 0
-    je end
+    je working.on.map
 
     cmp dword [count], 0
     je working.on.map
    
-    mov ecx, 0
+    mov ecx, 0   ;actual ship * 4
 
-    update.x:
-        xor ebx, ebx        
-        ;updating x position of all ships
-        mov ebx, dword [cicle.x_pointer + ecx]
-        add dword [cicle.x_pointer + ecx], 4
-        cmp dword [cicle.x_pointer + ecx], 12  ;checking if is necesary reset the movements cicle
-        jg restart.cicle.x
+    start:                          ;while start
+        cmp dword [dir + ecx], 0
+        je left
+        jg right
 
-        continue.x:   ;for come back from the reset
+        left:
+        cmp dword [col.offset + ecx], 0     ;if the offset arrive the left border, then go down
+        je move.down
+        jmp move.left
 
-        cmp dword [cicle.x + ebx], 1
-        jl move.left
-        jg move.right
-        ;if there is not movement in x, continue to update.y
-
-    update.y:
-        ;updating y position of all ships
-        mov ebx, dword [cicle.y_pointer + ecx]
-        add dword [cicle.y_pointer + ecx], 4
-        cmp dword [cicle.y_pointer + ecx], 12  ;checking if is necesary reset the movements cicle
-        jg restart.cicle.y
-        
-        continue.y:   ;for come back from the reset
-
-        cmp dword [cicle.y + ebx], 1
-        jl move.up
-        jg move.down
-        ;if there is not movement in x, continue to condition
+        right:
+        cmp dword [col.offset + ecx], 77    ;if the offset arrive the right border, then go down
+        je move.down
+        jmp move.right
 
         condition:  ;the stop condition is reached when all the ships are moved
         add ecx, 4
         cmp ecx, dword [count]  ;compare ecx with the number of blue ships on map * 4
-        jl update.x
+        jl start
         jmp working.on.map  ;end cicle
 
         move.right:        
         add dword [col.offset + ecx] , 1
-        jmp update.y
+        jmp condition
 
         move.left:
         sub dword [col.offset + ecx] , 1
-        jmp update.y
+        jmp condition
 
         move.up:
         sub dword [row.offset + ecx] , 1
         jmp condition
 
         move.down:
-        add dword [row.offset + ecx] , 1
+        ;check position
+
+        cmp dword [row.offset + ecx] , 23      ;if the ship arrive de lower edge of the screen,
+        jge destroy                            ;then will be destroyed
+
+
+        add dword [row.offset + ecx] , 2   
+        cmp dword [dir + ecx], 0   ;change direction
+        jne set.left
+
+        set.right:
+        mov dword [dir + ecx], 1   
         jmp condition
 
-        restart.cicle.x:
-        mov dword [cicle.x_pointer + ecx], 0
-        jmp continue.x
+        set.left:
+        mov dword [dir + ecx], 0
+        jmp condition
 
-        restart.cicle.y:
-        mov dword [cicle.y_pointer + ecx], 0
-        jmp continue.y
+        destroy:
+        CALL destroy.ship, ecx
+        sub ecx, 4
+        jmp condition
 
         
-        working.on.map:
+    working.on.map:
 
         end:
 
     FUNC.END
 
 ;paint()
-;move all the blue enemies
+;paint all the blue enemies
 global enemy_blue.paint
 enemy_blue.paint:
     FUNC.START
@@ -175,10 +174,7 @@ enemy_blue.paint:
     mov ecx, 0 
     
     ;painting ship number esi * 4
-    while.internal:       
-        cmp ecx, SHIP.COORDS * 4
-        jnl while.external
-        
+    while.internal:           
         mov eax, [row.offset + esi]
         add eax, [rows + ecx]
         mov [LOCAL(0)], eax
@@ -187,20 +183,43 @@ enemy_blue.paint:
         add eax, [cols + ecx]
         mov [LOCAL(1)], eax
 
-        ;CALL video.print_at, [PARAM(0)], [graphics + ecx], ebx, edx
         CALL video.print, [graphics + ecx], [LOCAL(0)], [LOCAL(1)]
         add ecx, 4
-        jmp while.internal
+        cmp ecx, SHIP.COORDS * 4
+        jl while.internal   
+        ;while end
+
+        mov dword [graphics + 8], 'O'|FG.BLUE|BG.BLACK  ;restoring form in case of animation
+        
 
     ;updating esi
     while.external:
         mov ecx, 0  
         add esi, 4
+        jmp change.form      ;change caraters of the ships to create animations
+        continue:      ;place to retorn from de animation creation
         cmp esi, dword [count]
         jl while.internal
         while.end:
-
     FUNC.END
+
+    change.form:
+        cmp dword [animation.count + esi], 3
+        jg set.form2
+        add dword [animation.count + esi], 1
+        jmp continue
+
+    set.form2:
+        mov dword [graphics + 8], 'o'|FG.BLUE|BG.BLACK
+        add dword [animation.count + esi], 1
+        cmp dword [animation.count + esi], 7
+        jl continue
+        mov dword [animation.count + esi], 0
+        jmp continue
+
+
+
+    
 
 ; enemy_blue.take_damage(dword damage)
 ; Takes lives away from player
@@ -209,4 +228,32 @@ global enemy_blue.take_damage
 enemy_blue.take_damage:
     FUNC.START
     FUNC.END
+
+
+;destroy.ship(dword index)
+;destroyes the ship that is in the index position
+destroy.ship:
+    FUNC.START
+
+    mov eax, [PARAM(0)]
+    while:
+        cmp eax, dword [count]
+        je end.while
+        mov ebx, [lives + eax + 4]
+        mov dword [lives + eax], ebx
+        mov ebx, [row.offset + eax + 4]
+        mov dword [row.offset + eax], ebx
+        mov ebx, [col.offset + eax + 4]
+        mov dword [col.offset + eax], ebx
+        mov ebx, [dir + eax + 4]
+        mov dword [dir + eax], ebx
+        add eax, 4
+        jmp while
+
+    end.while:
+
+    sub dword [count], 4
+
+    FUNC.END
+
 
