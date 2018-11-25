@@ -1,16 +1,9 @@
 %include "video.inc"
 %include "stack.inc"
+%include "utils.inc"
 
 ; Frame buffer location
 %define FBUFFER 0xB8000
-
-; OFFSET(dword row, dword column)
-%macro OFFSET 2.nolist
-    mov eax, COLS
-    mul word %1
-    add eax, %2
-    shl eax, 1
-%endmacro
 
 section .data
 
