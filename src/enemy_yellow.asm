@@ -9,6 +9,7 @@ extern video.clear
 extern scan
 extern delay
 extern rand
+extern weapons.shoot
 
 ;each ship will have a minimum of 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
@@ -23,7 +24,7 @@ count dd 0
 graphics dd '\'|FG.YELLOW|BG.BLACK,\
             '/'|FG.YELLOW|BG.BLACK,\
             'O'|FG.YELLOW|BG.BLACK,\
-            'Y'|FG.YELLOW|BG.BLACK,
+            'U'|FG.YELLOW|BG.BLACK,
 
 rows dd 0, 0, 0, 1
 cols dd 0, 2, 1, 1
@@ -34,6 +35,9 @@ row.bottom dd 3
 col.left dd 0
 col.right dd 3
 
+weapon.row dd 1
+weapon.col dd 1
+
 hash dd 3
 
 ;ship's IA
@@ -42,6 +46,7 @@ section .bss
 
 row.offset resd ZIZE
 col.offset resd ZIZE
+
 
 lives resd ZIZE
 
@@ -78,6 +83,7 @@ enemy_yellow.init:
 global enemy_yellow.update
 enemy_yellow.update:
     FUNC.START
+    RESERVE(2)
 
     CALL delay, timer.yellow, 3000  ;timing condition to move
     cmp eax, 0
@@ -89,6 +95,10 @@ enemy_yellow.update:
     mov ecx, 0
 
     start:
+        CALL rand, 40
+        cmp eax, 0
+        je yellow.shoot
+        after.shoot:
         jmp move.down
         continue: 
         CALL rand, 15       
@@ -146,6 +156,22 @@ enemy_yellow.update:
         CALL destroy.ship, ecx
         sub ecx, 4
         jmp condition
+
+        yellow.shoot:
+        mov eax, [weapon.row]
+        add eax, [row.offset + ecx]
+        sub eax, 1
+        mov [LOCAL(0)], eax
+
+        mov eax, [weapon.col]
+        add eax, [col.offset + ecx]
+        mov [LOCAL(1)], eax
+
+        push ecx
+        CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 0
+        pop ecx
+        jmp after.shoot
+
         
         
     working.on.map:

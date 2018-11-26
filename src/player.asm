@@ -23,12 +23,12 @@ extern input
 ; Data section is meant to hold constant values, do not modify
 section .data
 
-graphics dd 'M'|FG.BRIGHT|BG.BLACK,\
-            '['|FG.BRIGHT|BG.BLACK,\
-            ']'|FG.BRIGHT|BG.BLACK,\
-            '^'|FG.BRIGHT|BG.BLACK,\
-            'W'|FG.BRIGHT|BG.BLACK,\
-            'W'|FG.BRIGHT|BG.BLACK,
+graphics dd 'M'|FG.GRAY|BG.BLACK,\
+            '['|FG.GRAY|BG.BLACK,\
+            ']'|FG.GRAY|BG.BLACK,\
+            '^'|FG.GRAY|BG.BLACK,\
+            'W'|FG.GRAY|BG.BLACK,\
+            'W'|FG.GRAY|BG.BLACK,
             
 rows dd 0, 1, 1, 2, 2, 2
 cols dd 1, 0, 2, 1, 0, 2

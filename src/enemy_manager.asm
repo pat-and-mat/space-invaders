@@ -115,3 +115,5 @@ global enemy.take_damage
 enemy.take_damage:
     FUNC.START
     FUNC.END
+
+
