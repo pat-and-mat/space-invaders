@@ -30,6 +30,7 @@ section .text
 
 extern video.print
 extern delay
+extern array.shiftl
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
@@ -245,28 +246,15 @@ weapons.check_boundaries:
 ; Removes shot stored at the given pos in the list
 weapons.remove:
     FUNC.START
-    inc dword [PARAM(0)]
+    RESERVE(1)
 
-    .remove.while:
-        mov ecx, [PARAM(0)]
-        
-        cmp cx, [shots.count]
-        je .remove.while.end
+    xor eax, eax
+    mov ax, [shots.count]
+    mov [LOCAL(0)], eax
 
-        shl ecx, 1
-
-        mov ax, [shots.rows + ecx]
-        mov [shots.rows + ecx - 2], ax
-
-        mov ax, [shots.cols + ecx]
-        mov [shots.cols + ecx - 2], ax
-
-        mov ax, [shots.dirs + ecx]
-        mov [shots.dirs + ecx - 2], ax
-
-        inc dword [PARAM(0)]
-        jmp .remove.while
-    .remove.while.end:
+    CALL array.shiftl, shots.rows, [LOCAL(0)], [PARAM(0)]
+    CALL array.shiftl, shots.cols, [LOCAL(0)], [PARAM(0)]
+    CALL array.shiftl, shots.dirs, [LOCAL(0)], [PARAM(0)]
 
     dec word [shots.count]
     FUNC.END
