@@ -20,6 +20,7 @@ extern player.init
 extern player.update
 extern weapons.update
 extern enemy.update
+extern sound.update
 
 extern player.paint
 extern weapons.paint
@@ -35,6 +36,7 @@ engine.update:
     CALL player.update, map
     CALL weapons.update, map
     CALL enemy.update, map
+    call sound.update
     FUNC.END
 
 ; paint()
