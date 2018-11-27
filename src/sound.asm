@@ -12,8 +12,8 @@ sound.timer resd 2
 
 section .text
 
-; El Registro 61H es del sistema y el bit0 hace que la onda del TIMER2 [0..2]
-; acceda al altavoz.  Por otro lado el bit1 activa el altavoz
+; play the seted sound
+; beep.on()
 global beep.on
 beep.on:
     FUNC.START
@@ -24,6 +24,8 @@ beep.on:
     pop  ax
     FUNC.END
 
+; stop the sound sound
+; beep.of()
 global beep.of
 beep.of:
     FUNC.START
@@ -34,9 +36,7 @@ beep.of:
     pop  ax    
     FUNC.END    
 
-; Funcion que configura el periodo del timer
-; en 55mseg -> Cargar el valor 0FFFFH
-; cambiando el valor cambia la frecuencia del altavoz
+;set a frequency to play
 ;beep.set(dword frequency)
 global beep.set
 beep.set:
