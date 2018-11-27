@@ -13,7 +13,7 @@ extern rand
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
-%define SHIP.COORDS 4
+%define SHIP.COORDS 3
 
 ;the blue enemies will move right or left until find a border of the screen,
 ;then will go down and change their direction
@@ -24,14 +24,13 @@ timer dd 0
 
 count dd 0
 
-graphics dd '\'|FG.BLUE|BG.BLACK,\
-            '/'|FG.BLUE|BG.BLACK,\
+graphics dd '/'|FG.BLUE|BG.BLACK,\
+            '\'|FG.BLUE|BG.BLACK,\
             'O'|FG.BLUE|BG.BLACK,\
-            'V'|FG.BLUE|BG.BLACK,
             
             
-rows dd 0, 0, 0, 1
-cols dd 0, 2, 1, 1
+rows dd 0, 0, 0
+cols dd 0, 2, 1
 
 row.top dd 0
 row.bottom dd 3
@@ -44,6 +43,8 @@ weapon.col dd 1
 
 hash dd 3
 
+graphics.style db 0
+
 section .bss
 
 row.offset resd ZIZE
@@ -54,9 +55,11 @@ lives resd ZIZE
 ;1-Rigth 0-left
 dir resd ZIZE
 
-animation.count resd ZIZE
+; animation.count resd ZIZE
 
 timer.blue resd 2
+
+animation.timer resd 2
 
 section .text
 
@@ -79,9 +82,7 @@ enemy_blue.init:
 
     ;pointer of the actual moviment
     mov dword [dir + eax], 1
-
-    mov dword [animation.count + eax], 0
-
+    
     add dword [count], 4   
 
     FUNC.END
@@ -197,6 +198,18 @@ enemy_blue.paint:
    
     mov esi, 0    
     mov ecx, 0 
+
+    ;change form
+    CALL delay, animation.timer, 500   ;the form of the ship change every half-second
+    cmp eax, 0
+    je while.internal
+
+    cmp byte [graphics.style], 1
+    jg set.form3
+    je set.form2
+    jl set.form1
+
+
     
     ;painting ship number esi * 4
     while.internal:           
@@ -214,33 +227,33 @@ enemy_blue.paint:
         jl while.internal   
         ;while end
 
-        mov dword [graphics + 8], 'O'|FG.BLUE|BG.BLACK  ;restoring form in case of animation
-        
-
     ;updating esi
     while.external:
         mov ecx, 0  
         add esi, 4
-        jmp change.form      ;change caraters of the ships to create animations
-        continue:      ;place to retorn from de animation creation
         cmp esi, dword [count]
         jl while.internal
         while.end:
     FUNC.END
 
-    change.form:
-        cmp dword [animation.count + esi], 3
-        jg set.form2
-        add dword [animation.count + esi], 1
-        jmp continue
+    set.form3:
+        mov byte [graphics.style], 0
+        mov dword [graphics], '\'|FG.BLUE|BG.BLACK
+        mov dword [graphics + 4], '/'|FG.BLUE|BG.BLACK
+        jmp while.internal
 
     set.form2:
-        mov dword [graphics + 8], 'o'|FG.BLUE|BG.BLACK
-        add dword [animation.count + esi], 1
-        cmp dword [animation.count + esi], 7
-        jl continue
-        mov dword [animation.count + esi], 0
-        jmp continue
+        mov byte [graphics.style], 2
+        mov dword [graphics], '-'|FG.BLUE|BG.BLACK
+        mov dword [graphics + 4], '-'|FG.BLUE|BG.BLACK
+        jmp while.internal
+
+    set.form1:
+        mov byte [graphics.style], 1
+        mov dword [graphics], '/'|FG.BLUE|BG.BLACK
+        mov dword [graphics + 4], '\'|FG.BLUE|BG.BLACK
+        jmp while.internal
+
 
 
 

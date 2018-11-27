@@ -11,9 +11,8 @@ extern delay
 extern rand
 extern weapons.shoot
 
-;each ship will have a minimum of 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
-%define SHIP.COORDS 4
+%define SHIP.COORDS 3
 
 section .data
 
@@ -21,16 +20,15 @@ timer dd 0
 
 count dd 0
 
-graphics dd '\'|FG.YELLOW|BG.BLACK,\
-            '/'|FG.YELLOW|BG.BLACK,\
+graphics dd '_'|FG.YELLOW|BG.BLACK,\
+            '-'|FG.YELLOW|BG.BLACK,\
             'O'|FG.YELLOW|BG.BLACK,\
-            'U'|FG.YELLOW|BG.BLACK,
 
-rows dd 0, 0, 0, 1
-cols dd 0, 2, 1, 1
+rows dd 0, 0, 0
+cols dd 0, 2, 1
 
 row.top dd 0
-row.bottom dd 3
+row.bottom dd 0
 
 col.left dd 0
 col.right dd 3
@@ -40,7 +38,7 @@ weapon.col dd 1
 
 hash dd 3
 
-;ship's IA
+graphics.style db 0
 
 section .bss
 
@@ -52,7 +50,7 @@ lives resd ZIZE
 
 timer.yellow resd 2
 
-animation.count resd ZIZE
+animation.timer resd 2
 
 section .text
 
@@ -194,6 +192,15 @@ enemy_yellow.paint:
    
     mov esi, 0    
     mov ecx, 0 
+
+    CALL delay, animation.timer, 300   ;the form of the ship change every 300ms
+    cmp eax, 0
+    je while.internal
+
+    cmp byte [graphics.style], 1
+    je set.form2
+    jmp set.form1
+
     
     ;painting ship number esi * 4
     while.internal:           
@@ -210,29 +217,26 @@ enemy_yellow.paint:
         cmp ecx, SHIP.COORDS * 4
         jl while.internal
 
-        mov dword [graphics + 8], 'O'|FG.YELLOW|BG.BLACK  ;restoring form in case of animation
-
     ;updating esi
     while.external:
         mov ecx, 0  
         add esi, 4
-        jmp change.form
-        changed:
         cmp esi, dword [count]
         jl while.internal
         while.end:
     FUNC.END
 
-    change.form:
-        cmp dword [animation.count + esi], 0
-        jg set.form2
-        mov dword [animation.count + esi], 1
-        jmp changed
-
     set.form2:
-        mov dword [graphics + 8], 'o'|FG.YELLOW|BG.BLACK
-        mov dword [animation.count + esi], 0
-        jmp changed
+        mov byte [graphics.style], 0
+        mov dword [graphics], '-'|FG.YELLOW|BG.BLACK
+        mov dword [graphics + 4], '_'|FG.YELLOW|BG.BLACK
+        jmp while.internal
+
+    set.form1:
+        mov byte [graphics.style], 1
+        mov dword [graphics], '_'|FG.YELLOW|BG.BLACK
+        mov dword [graphics + 4], '-'|FG.YELLOW|BG.BLACK
+        jmp while.internal
 
 
 ; enemy_yellow.take_damage(dword damage)

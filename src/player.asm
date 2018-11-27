@@ -5,8 +5,9 @@
 extern video.print
 extern weapons.shoot
 extern input
+extern delay
 
-%define SHIP.COORDS 6
+%define SHIP.COORDS 5
 
 %macro SHIP.ROW 1
     xor eax, eax
@@ -23,24 +24,26 @@ extern input
 ; Data section is meant to hold constant values, do not modify
 section .data
 
-graphics dd 'M'|FG.GRAY|BG.BLACK,\
-            '['|FG.GRAY|BG.BLACK,\
-            ']'|FG.GRAY|BG.BLACK,\
+graphics dd '/'|FG.GRAY|BG.BLACK,\
+            '-'|FG.GRAY|BG.BLACK,\
             '^'|FG.GRAY|BG.BLACK,\
-            'W'|FG.GRAY|BG.BLACK,\
-            'W'|FG.GRAY|BG.BLACK,
+            '-'|FG.GRAY|BG.BLACK,\
+            '\'|FG.GRAY|BG.BLACK,\
+ 
             
-rows dd 0, 1, 1, 2, 2, 2
-cols dd 1, 0, 2, 1, 0, 2
+rows dd 0, 0, 0, 0, 0
+cols dd 0, 1, 2, 3, 4
 
 row.top dd 0
-row.bottom dd 3
+row.bottom dd 0
 
 col.left dd 0
 col.right dd 3
 
 weapon.row dd 0
 weapon.col dd 1
+
+graphics.style resb 0
 
 section .bss
 
@@ -49,7 +52,7 @@ lives resw 1
 row.offset resd 1
 col.offset resd 1
 
-
+animation.timer resd 2
 
 section .text
 
@@ -146,6 +149,14 @@ player.paint:
     FUNC.START
     RESERVE(2)
 
+    CALL delay, animation.timer, 300   ;the form of the ship change every 300ms
+    cmp eax, 0
+    je while
+
+    cmp byte [graphics.style], 1
+    je set.form2
+    jmp set.form1
+
     mov ecx, 0    
     while:
         cmp ecx, SHIP.COORDS * 4
@@ -166,8 +177,19 @@ player.paint:
         add ecx, 4
         jmp while
         while.end:
+        FUNC.END
 
-    FUNC.END
+    set.form2:
+        mov byte [graphics.style], 2
+        mov dword [graphics + 4], '-'|FG.GRAY|BG.BLACK
+        mov dword [graphics + 12], '-'|FG.GRAY|BG.BLACK
+        jmp while
+
+    set.form1:
+        mov byte [graphics.style], 1
+        mov dword [graphics + 4], '_'|FG.GRAY|BG.BLACK
+        mov dword [graphics + 12], '_'|FG.GRAY|BG.BLACK
+        jmp while
 
 ; player.take_damage(dword damage)
 ; Takes lives away from player

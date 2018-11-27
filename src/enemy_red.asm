@@ -13,7 +13,7 @@ extern weapons.shoot
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
-%define SHIP.COORDS 4
+%define SHIP.COORDS 3
 
 section .data
 
@@ -21,16 +21,15 @@ timer dd 0
 
 count dd 0
 
-graphics dd 'W'|FG.RED|BG.BLACK,\
-            'W'|FG.RED|BG.BLACK,\
-            '_'|FG.RED|BG.BLACK,\
-            'V'|FG.RED|BG.BLACK,
+graphics dd 'o'|FG.RED|BG.BLACK,\
+            'o'|FG.RED|BG.BLACK,\
+            '='|FG.RED|BG.BLACK,\
             
-rows dd 0, 0, 0, 1
-cols dd 0, 2, 1, 1
+rows dd 0, 0, 0
+cols dd 0, 2, 1
 
 row.top dd 0
-row.bottom dd 3
+row.bottom dd 0
 
 col.left dd 0
 col.right dd 3
@@ -40,7 +39,7 @@ weapon.col dd 1
 
 hash dd 3
 
-;ship's IA
+graphics.style db 0
 
 section .bss
 
@@ -56,7 +55,7 @@ down.count resd ZIZE
 
 timer.red resd 2
 
-animation.count resd ZIZE
+animation.timer resd 2
 
 section .text
 
@@ -91,7 +90,7 @@ enemy_red.update:
     FUNC.START
     RESERVE(2)
 
-    CALL delay, timer.red, 500  ;timing condition to move
+    CALL delay, timer.red, 250  ;timing condition to move
     cmp eax, 0
     je working.on.map
 
@@ -153,10 +152,10 @@ enemy_red.update:
         move.down:
         ;check position
 
-        cmp dword [row.offset + ecx] , 23
+        cmp dword [row.offset + ecx] , 24
         jge destroy
         mov dword [down.count + ecx], 0
-        add dword [row.offset + ecx] , 2
+        add dword [row.offset + ecx] , 1
 
         jmp condition
 
@@ -199,6 +198,15 @@ enemy_red.paint:
    
     mov esi, 0    
     mov ecx, 0 
+
+    CALL delay, animation.timer, 100   ;the form of the ship change every 100ms
+    cmp eax, 0
+    je while.internal
+
+    cmp byte [graphics.style], 1
+    je set.form2
+    jmp set.form1
+
     
     ;painting ship number esi * 4
     while.internal:           
@@ -215,34 +223,24 @@ enemy_red.paint:
         cmp ecx, SHIP.COORDS * 4
         jl while.internal
 
-        mov dword [graphics], 'W'|FG.RED|BG.BLACK
-        mov dword [graphics + 4], 'W'|FG.RED|BG.BLACK  ;restoring form in case of animation
-
     ;updating esi
     while.external:
         mov ecx, 0  
         add esi, 4
-        jmp change.form
-        continue:
         cmp esi, dword [count]
         jl while.internal
         while.end:
     FUNC.END
 
-    change.form:
-        cmp dword [animation.count + esi], 4
-        jg set.form2
-        add dword [animation.count + esi], 1
-        jmp continue
-
     set.form2:
-        mov dword [graphics], 'w'|FG.RED|BG.BLACK
-        mov dword [graphics + 4 ], 'w'|FG.RED|BG.BLACK
-        add dword [animation.count + esi], 1
-        cmp dword [animation.count + esi], 8
-        jl continue
-        mov dword [animation.count + esi], 0
-        jmp continue
+        mov byte [graphics.style], 0
+        mov dword [graphics + 8], '-'|FG.RED|BG.BLACK
+        jmp while.internal
+
+    set.form1:
+        mov byte [graphics.style], 1
+        mov dword [graphics + 8], '='|FG.RED|BG.BLACK
+        jmp while.internal
 
 ; enemy_red.take_damage(dword damage)
 ; Takes lives away from an enemy
