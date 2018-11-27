@@ -49,12 +49,17 @@ col.right dd 3
 weapon.row dd 0
 weapon.col dd 1
 
+sound.play db 0
+
 section .bss
 
 lives resw 1
 
 row.offset resd 1
 col.offset resd 1
+
+local.sound.timer1 resd 2
+local.sound.timer2 resd 2
 
 
 
@@ -83,6 +88,28 @@ global player.update
 player.update:
     FUNC.START
     RESERVE(2)
+
+    cmp byte [sound.play], 0   ;check if shooting sound is activated
+    je continue
+
+    ;making sound
+    CALL beep.set, 010000      
+    call beep.on
+
+    CALL delay, local.sound.timer1, 25
+    cmp eax, 0
+    je continue
+    CALL beep.set, 004000
+
+    CALL delay, local.sound.timer2, 75
+    cmp eax, 0
+    je continue
+    CALL beep.set, 002500
+
+    mov byte [sound.play], 0
+
+
+    continue:
     
     ;down button
     cmp byte [input], KEY.UP
@@ -123,9 +150,8 @@ player.update:
         jmp update.end
 
     space:
-        ; CALL beep.set, 020000
-        CALL beep.set, SHOOT        
-        call beep.on
+        mov byte [sound.play], 1
+
         mov dword [sound.timer], 0
         mov eax, [weapon.row]
         add eax, [row.offset]
