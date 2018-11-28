@@ -41,7 +41,7 @@ col.left dd 0
 col.right dd 3
 
 weapon.row dd 0
-weapon.col dd 1
+weapon.col dd 2
 
 graphics.style resb 0
 
@@ -128,6 +128,9 @@ player.update:
         add eax, [col.offset]
         mov [LOCAL(1)], eax
 
+        mov dword [graphics + 8], 173|FG.GRAY|BG.BLACK
+        mov dword [animation.timer], 0
+
         CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
         
         jmp update.end
@@ -149,12 +152,12 @@ player.paint:
     FUNC.START
     RESERVE(2)
 
-    CALL delay, animation.timer, 300   ;the form of the ship change every 300ms
+    CALL delay, animation.timer, 250   ;the form of the ship change every 300ms
     cmp eax, 0
     je while
 
     cmp byte [graphics.style], 1
-    je set.form2
+    ; je set.form2
     jmp set.form1
 
     mov ecx, 0    
@@ -181,15 +184,15 @@ player.paint:
 
     set.form2:
         mov byte [graphics.style], 2
-        mov dword [graphics + 4], '-'|FG.GRAY|BG.BLACK
-        mov dword [graphics + 12], '-'|FG.GRAY|BG.BLACK
+        mov dword [graphics + 8], 24|FG.GRAY|BG.BLACK
         jmp while
 
     set.form1:
         mov byte [graphics.style], 1
-        mov dword [graphics + 4], '_'|FG.GRAY|BG.BLACK
-        mov dword [graphics + 12], '_'|FG.GRAY|BG.BLACK
+        mov dword [graphics + 8], '^'|FG.GRAY|BG.BLACK
         jmp while
+
+    
 
 ; player.take_damage(dword damage)
 ; Takes lives away from player

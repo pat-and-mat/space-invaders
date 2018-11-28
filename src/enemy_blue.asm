@@ -200,7 +200,7 @@ enemy_blue.paint:
     mov ecx, 0 
 
     ;change form
-    CALL delay, animation.timer, 500   ;the form of the ship change every half-second
+    CALL delay, animation.timer, 150   ;the form of the ship change every half-second
     cmp eax, 0
     je while.internal
 
