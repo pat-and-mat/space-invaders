@@ -2,6 +2,7 @@
 %include "video.inc"
 %include "keyboard.inc"
 %include "hash.inc"
+%include "sound.inc"
 
 extern video.print_at
 extern video.print
@@ -10,6 +11,9 @@ extern scan
 extern delay
 extern rand
 extern weapons.shoot
+extern sound.timer
+extern beep.set
+extern beep.on
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
@@ -254,6 +258,10 @@ enemy_red.take_damage:
 ;destroyes the ship that is in the index position
 destroy.ship:
     FUNC.START
+
+    CALL beep.set, SAD3       
+    call beep.on
+    mov dword [sound.timer], 0
 
     mov eax, [PARAM(0)]
     while:

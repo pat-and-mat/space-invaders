@@ -1,11 +1,17 @@
 %include "stack.inc"
 %include "video.inc"
 %include "keyboard.inc"
+%include "sound.inc"
 
 extern video.print
 extern weapons.shoot
 extern input
+extern beep.on
+extern beep.set
+extern beep.of
 extern delay
+
+extern sound.timer
 
 %define SHIP.COORDS 5
 
@@ -45,6 +51,8 @@ weapon.col dd 2
 
 graphics.style resb 0
 
+sound.play db 0
+
 section .bss
 
 global lives
@@ -54,6 +62,10 @@ row.offset resd 1
 col.offset resd 1
 
 animation.timer resd 2
+local.sound.timer1 resd 2
+local.sound.timer2 resd 2
+
+
 
 section .text
 
@@ -81,6 +93,28 @@ player.update:
     FUNC.START
     RESERVE(2)
 
+    cmp byte [sound.play], 0   ;check if shooting sound is activated
+    je continue
+
+    ;making sound
+    CALL beep.set, 010000      
+    call beep.on
+
+    CALL delay, local.sound.timer1, 25
+    cmp eax, 0
+    je continue
+    CALL beep.set, 004000
+
+    CALL delay, local.sound.timer2, 75
+    cmp eax, 0
+    je continue
+    CALL beep.set, 002500
+
+    mov byte [sound.play], 0
+
+
+    continue:
+    
     ;down button
     cmp byte [input], KEY.UP
     je up
@@ -115,11 +149,14 @@ player.update:
         sub dword [col.offset], 1
         jmp update.end
 
-    right:
+    right:        
         add dword [col.offset], 1
         jmp update.end
 
     space:
+        mov byte [sound.play], 1
+
+        mov dword [sound.timer], 0
         mov eax, [weapon.row]
         add eax, [row.offset]
         sub eax, 1
@@ -133,7 +170,7 @@ player.update:
         mov dword [animation.timer], 0
 
         CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
-        
+
         jmp update.end
 
     update.end:
@@ -212,6 +249,9 @@ player.take_damage:
         mov eax, 0
         mov word [lives], 0
         ; TODO: do something if player is destroyed
+        CALL beep.set, DIE
+        call beep.on
+        mov dword [sound.timer], 0
         jmp .end
 
     .alive:
