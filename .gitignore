@@ -2,4 +2,6 @@
 *.iso
 *.elf
 
+*.todo
+
 iso
