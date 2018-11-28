@@ -238,12 +238,12 @@ enemy_red.paint:
 
     set.form2:
         mov byte [graphics.style], 0
-        mov dword [graphics + 8], '|'|FG.RED|BG.BLACK
+        mov dword [graphics + 8], '-'|FG.RED|BG.BLACK
         jmp while.internal
 
     set.form1:
         mov byte [graphics.style], 1
-        mov dword [graphics + 8], '|'|FG.RED|BG.BLACK
+        mov dword [graphics + 8], '='|FG.RED|BG.BLACK
         jmp while.internal
 
 ; enemy_red.take_damage(dword damage)
