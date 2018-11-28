@@ -49,9 +49,9 @@ col.right dd 3
 weapon.row dd 0
 weapon.col dd 2
 
-graphics.style resb 0
+graphics.style db 0
 
-sound.play db 0
+sound db 0
 
 section .bss
 
@@ -93,7 +93,7 @@ player.update:
     FUNC.START
     RESERVE(2)
 
-    cmp byte [sound.play], 0   ;check if shooting sound is activated
+    cmp byte [sound], 0   ;check if shooting sound is activated
     je continue
 
     ;making sound
@@ -110,7 +110,7 @@ player.update:
     je continue
     CALL beep.set, 002500
 
-    mov byte [sound.play], 0
+    mov byte [sound], 0
 
 
     continue:
@@ -154,7 +154,7 @@ player.update:
         jmp update.end
 
     space:
-        mov byte [sound.play], 1
+        mov byte [sound], 1
         mov dword [sound.timer], 0
 
         mov dword [graphics + 8], 173|FG.GRAY|BG.BLACK
