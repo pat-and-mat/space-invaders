@@ -62,9 +62,9 @@ row.offset resd 1
 col.offset resd 1
 
 animation.timer resd 2
+
 local.sound.timer1 resd 2
 local.sound.timer2 resd 2
-
 
 
 section .text
@@ -155,8 +155,11 @@ player.update:
 
     space:
         mov byte [sound.play], 1
-
         mov dword [sound.timer], 0
+
+        mov dword [graphics + 8], 173|FG.GRAY|BG.BLACK
+        mov dword [animation.timer], 0
+
         mov eax, [weapon.row]
         add eax, [row.offset]
         sub eax, 1
@@ -165,9 +168,6 @@ player.update:
         mov eax, [weapon.col]
         add eax, [col.offset]
         mov [LOCAL(1)], eax
-
-        mov dword [graphics + 8], 173|FG.GRAY|BG.BLACK
-        mov dword [animation.timer], 0
 
         CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
 
@@ -192,11 +192,10 @@ player.paint:
 
     CALL delay, animation.timer, 250   ;the form of the ship change every 300ms
     cmp eax, 0
-    je while
-
-    cmp byte [graphics.style], 1
-    ; je set.form2
+    je cont
     jmp set.form1
+
+    cont:
 
     mov ecx, 0    
     while:
@@ -223,12 +222,12 @@ player.paint:
     set.form2:
         mov byte [graphics.style], 2
         mov dword [graphics + 8], 24|FG.GRAY|BG.BLACK
-        jmp while
+        jmp cont
 
     set.form1:
         mov byte [graphics.style], 1
         mov dword [graphics + 8], '^'|FG.GRAY|BG.BLACK
-        jmp while
+        jmp cont
 
     
 
