@@ -67,12 +67,6 @@ animation.timer resd 2
 local.sound.timer1 resd 2
 local.sound.timer2 resd 2
 
-
-
-local.sound.timer1 resd 2
-local.sound.timer2 resd 2
-
-
 section .text
 
 ; init(word lives, dword r.offset, dword c.offset)
