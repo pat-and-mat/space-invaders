@@ -44,6 +44,7 @@ weapon.col dd 1
 
 section .bss
 
+global lives
 lives resw 1
 
 row.offset resd 1

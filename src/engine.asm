@@ -21,6 +21,7 @@ extern player.update
 extern weapons.update
 extern enemy.update
 
+extern info.paint
 extern player.paint
 extern weapons.paint
 extern enemy.paint
@@ -45,7 +46,8 @@ engine.paint:
     call player.paint
     call weapons.paint
     call enemy.paint
-    call video.refresh
+    call info.paint
+    call video.refresh    
     FUNC.END
 
 ; collision()
