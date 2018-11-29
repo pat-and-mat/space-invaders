@@ -1,9 +1,12 @@
 %include "stack.inc"
 %include "video.inc"
 %include "keyboard.inc"
+%include "utils.inc"
+%include "hash.inc"
 
 extern video.print
 extern weapons.shoot
+extern engine.add_collision
 extern input
 
 %define SHIP.COORDS 6
@@ -49,8 +52,6 @@ lives resw 1
 row.offset resd 1
 col.offset resd 1
 
-
-
 section .text
 
 ; init(word lives, dword r.offset, dword c.offset)
@@ -75,7 +76,7 @@ player.init:
 global player.update
 player.update:
     FUNC.START
-    RESERVE(2)
+    RESERVE(3)
 
     ;down button
     cmp byte [input], KEY.UP
@@ -129,8 +130,48 @@ player.update:
         
         jmp update.end
 
+    CALL player.put_in_map, [PARAM(0)]    
+
     update.end:
         FUNC.END
+
+; player.put_in_map(dword *map)
+player.put_in_map:
+    FUNC.START
+    RESERVE(3)
+
+    mov dword [LOCAL(0)], 0 ; i, row, col
+    .map.while:
+        cmp dword [LOCAL(0)], ROWS*COLS
+        je .map.while.end
+
+        mov ecx, [LOCAL(0)]
+        shl ecx, 2
+
+        mov eax, [row.offset]
+        add eax, [rows + ecx]
+        mov [LOCAL(1)], eax
+
+        mov eax, [col.offset]
+        add eax, [cols + ecx]
+        mov [LOCAL(2)], eax
+
+        OFFSET [LOCAL(1)], [LOCAL(2)]
+        add eax, [PARAM(0)]
+        cmp word [eax], 0
+        je .while.cont
+
+        .map.collision:
+            xor edx, edx
+            mov dx, [eax]
+            CALL engine.add_collision, HASH.PLAYER, edx, [LOCAL(1)], [LOCAL(2)]
+
+        .map.while.cont:
+            mov word [eax], HASH.PLAYER
+            inc dword [LOCAL(0)]
+            jmp .map.while
+    .map.while.end:
+    FUNC.END
 
 ; collision(dword hash, dword row, dword col)
 ; It is here where collisions will be handled
