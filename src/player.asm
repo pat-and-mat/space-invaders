@@ -159,7 +159,7 @@ player.put_in_map:
         OFFSET [LOCAL(1)], [LOCAL(2)]
         add eax, [PARAM(0)]
         cmp word [eax], 0
-        je .while.cont
+        je .map.while.cont
 
         .map.collision:
             xor edx, edx

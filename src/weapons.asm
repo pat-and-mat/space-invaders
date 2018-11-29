@@ -186,6 +186,13 @@ weapons.shoot:
     .shoot.end:
         FUNC.END
 
+; weapons.instof(dword row, dword col)
+; returns a hash representing shot instance
+global weapons.instof
+weapons.instof:
+    FUNC.START
+    FUNC.END
+
 ; find_shot(dword row, dword col)
 ; returns index of a shot at row, col
 weapons.find_shot:
