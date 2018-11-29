@@ -79,6 +79,80 @@ weapons.update:
             jmp .update.move
     .update.move.end:
 
+    CALL weapons.put_all_in_map, [PARAM(0)]    
+
+    FUNC.END
+
+; weapons.put_all_in_map(dword *map)
+weapons.put_all_in_map:
+    FUNC.START
+    RESERVE(3)
+
+    mov dword [LOCAL(0)], 0 ; i, row, col
+    .map.all.while:
+        mov ecx, [LOCAL(0)]
+        
+        cmp cx, [shots.count]
+        je .map.all.while.end
+
+        shl ecx, 1
+
+        xor eax, eax
+        mov ax, [shots.rows + ecx]
+        mov [LOCAL(1)], eax
+
+        xor eax, eax
+        mov ax, [shots.cols + ecx]
+        mov [LOCAL(2)], eax
+
+        CALL weapons.put_one_in_map, [LOCAL(1)], [LOCAL(2)]
+        
+        inc dword [LOCAL(0)]
+        jmp .map.all.while
+    .map.all.while.end:
+    FUNC.END
+
+; weapons.put_one_in_map(dword *map, dword row, dword col)
+weapons.put_one_in_map:
+    FUNC.START
+    RESERVE(1)  ; coord
+
+    mov dword [LOCAL(0)], 0
+    .map.one.while:
+        mov ecx, [LOCAL(0)]
+
+        cmp ecx, SHOTS.COORDS
+        je .map.one.while.end
+
+        shl ecx, 1
+        
+        xor eax, eax
+        mov ax, [rows + ecx]
+        add [PARAM(0)], eax
+        
+        xor eax, eax
+        mov ax, [cols + ecx]
+        add [PARAM(1)], eax
+
+        OFFSET [PARAM(1)], [PARAM(2)]
+        add eax, [PARAM(0)]
+        cmp word [eax], 0
+        je .map.while.cont
+
+        .map.collision:
+            xor edx, edx
+            mov dx, [eax]
+            CALL engine.add_collision, HASH.SHOT, edx, [PARAM(1)], [PARAM(2)]
+
+        .map.while.cont:
+            mov word [eax], HASH.SHOT
+            inc dword [LOCAL(0)]
+            jmp .map.one.while
+
+        inc dword [LOCAL(0)]
+        jmp .map.one.while
+    .map.one.while.end:
+
     FUNC.END
 
 ; paint()
@@ -262,6 +336,7 @@ weapons.remove:
     CALL array.shiftl, shots.rows, [LOCAL(0)], [PARAM(0)]
     CALL array.shiftl, shots.cols, [LOCAL(0)], [PARAM(0)]
     CALL array.shiftl, shots.dirs, [LOCAL(0)], [PARAM(0)]
+    CALL array.shiftl, shots.insts, [LOCAL(0)], [PARAM(0)]
 
     dec word [shots.count]
     FUNC.END
