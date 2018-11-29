@@ -11,10 +11,8 @@ extern scan
 extern delay
 extern weapons.shoot
 extern rand
-extern sound.timer
-extern beep.set
-extern beep.on
 extern actual.score
+extern play_blue_enemy_die
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
@@ -279,10 +277,7 @@ destroy.ship:
     FUNC.START
 
     add dword [actual.score], 50
-
-    CALL beep.set, SAD1       
-    call beep.on
-    mov dword [sound.timer], 0
+    call play_blue_enemy_die
 
     mov eax, [PARAM(0)]
     while:

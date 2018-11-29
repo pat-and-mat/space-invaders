@@ -11,10 +11,8 @@ extern scan
 extern delay
 extern rand
 extern weapons.shoot
-extern sound.timer
-extern beep.set
-extern beep.on
 extern actual.score
+extern play_yellow_enemy_die
 
 %define ZIZE 500
 %define SHIP.COORDS 3
@@ -259,10 +257,8 @@ destroy.ship:
 
     add dword [actual.score], 50
 
-    CALL beep.set, SAD2       
-    call beep.on
-    mov dword [sound.timer], 0
-
+    call play_yellow_enemy_die
+    
     mov eax, [PARAM(0)]
     while:
         cmp eax, dword [count]

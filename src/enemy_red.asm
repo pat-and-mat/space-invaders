@@ -11,10 +11,9 @@ extern scan
 extern delay
 extern rand
 extern weapons.shoot
-extern sound.timer
-extern beep.set
-extern beep.on
 extern actual.score
+extern play_red_enemy_die
+
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
@@ -49,7 +48,7 @@ graphics.style db 0
 section .bss
 
 ;1-moving right 2-moving left
-dir dd ZIZE
+dir resd ZIZE
 
 row.offset resd ZIZE
 col.offset resd ZIZE
@@ -262,9 +261,7 @@ destroy.ship:
 
     add dword [actual.score], 100
 
-    CALL beep.set, SAD3       
-    call beep.on
-    mov dword [sound.timer], 0
+    call play_red_enemy_die
 
     mov eax, [PARAM(0)]
     while:
