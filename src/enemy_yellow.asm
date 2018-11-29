@@ -14,6 +14,7 @@ extern weapons.shoot
 extern sound.timer
 extern beep.set
 extern beep.on
+extern actual.score
 
 %define ZIZE 500
 %define SHIP.COORDS 3
@@ -255,6 +256,8 @@ enemy_yellow.take_damage:
 ;destroyes the ship that is in the index position
 destroy.ship:
     FUNC.START
+
+    add dword [actual.score], 50
 
     CALL beep.set, SAD2       
     call beep.on

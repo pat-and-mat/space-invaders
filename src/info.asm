@@ -12,6 +12,7 @@ extern lives
 
 section .data
 
+global actual.score
 actual.score dd 0
 
 section .text
