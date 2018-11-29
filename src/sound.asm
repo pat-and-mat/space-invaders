@@ -10,6 +10,12 @@ section .bss
 global sound.timer
 sound.timer resd 2
 
+local.timer1 resd 2
+local.timer2 resd 2
+local.timer3 resd 2
+local.timer4 resd 2
+local.timer5 resd 2
+
 section .text
 
 ; play the seted sound
@@ -63,4 +69,50 @@ sound.update:
     call beep.of
     continue:
 
+    FUNC.END
+
+; play the music
+;music.play()
+global music.play
+music.play:
+    FUNC.START
+
+
+    CALL delay, local.timer1, 900
+    cmp eax, 0
+    je end
+    CALL beep.set, 005000
+    mov dword [sound.timer], 0
+    call beep.on
+
+
+    CALL delay, local.timer2, 1050
+    cmp eax, 0
+    je end
+    CALL beep.set, 000040
+    mov dword [sound.timer], 0
+    call beep.on
+
+    CALL delay, local.timer3, 1200
+    cmp eax, 0
+    je end
+    CALL beep.set, 000000
+    mov dword [sound.timer], 0
+    call beep.on
+
+    CALL delay, local.timer4, 1350
+    cmp eax, 0
+    je end
+    CALL beep.set, 003200
+    mov dword [sound.timer], 0
+    call beep.on
+
+    CALL delay, local.timer5, 1500
+    cmp eax, 0
+    je end
+    CALL beep.set, 005500
+    mov dword [sound.timer], 0
+    call beep.on
+
+    end:
     FUNC.END
