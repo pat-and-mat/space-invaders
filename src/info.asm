@@ -4,10 +4,6 @@
 %include "hash.inc"
 
 extern video.print
-extern video.clear
-extern delay
-extern weapons.shoot
-extern rand
 extern lives
 
 section .data
@@ -30,7 +26,7 @@ info.paint:
     jne while
 
 
-    CALL video.print, 'L'|FG.BLACK|BG.GREEN, 0, 0
+    CALL video.print, 'L'|FG.BLACK|BG.GREEN, 0, 0 ;paint word lives
     CALL video.print, 'I'|FG.BLACK|BG.GREEN, 0, 1
     CALL video.print, 'V'|FG.BLACK|BG.GREEN, 0, 2
     CALL video.print, 'E'|FG.BLACK|BG.GREEN, 0, 3
@@ -40,7 +36,8 @@ info.paint:
     xor eax, eax
     mov ax, word [lives]
 
-    mov ecx, 8
+    mov ecx, 8  ;paint las character in col 8
+    ;paint the lives
     while1:
     xor edx, edx
     mov bx, 10
@@ -62,7 +59,7 @@ info.paint:
 
     end.while1:
 
-    CALL video.print, 'S'|FG.BLACK|BG.GREEN, 0, 65
+    CALL video.print, 'S'|FG.BLACK|BG.GREEN, 0, 65 ;paint word score
     CALL video.print, 'C'|FG.BLACK|BG.GREEN, 0, 66
     CALL video.print, 'O'|FG.BLACK|BG.GREEN, 0, 67
     CALL video.print, 'R'|FG.BLACK|BG.GREEN, 0, 68
@@ -71,7 +68,8 @@ info.paint:
 
     mov eax, dword [actual.score]
 
-    mov ecx, 79
+    mov ecx, 79  ;paint last character in col 79
+    ;paint the score
     while2:
     xor edx, edx
     mov bx, 10
