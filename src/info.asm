@@ -36,10 +36,30 @@ info.paint:
     CALL video.print, 'S'|FG.BLACK|BG.GREEN, 0, 4
     CALL video.print, ':'|FG.BLACK|BG.GREEN, 0, 5
 
-    mov eax, dword [lives]
+    xor eax, eax
+    mov ax, word [lives]
 
-    ; CALL video.print, al|FG.BLACK|BG.GREEN, 0, 7
-    ; CALL video.print, ah|FG.BLACK|BG.GREEN, 0, 8
+    mov ecx, 8
+    while1:
+    xor edx, edx
+    mov bx, 10
+    div bx
+
+    add dx, 48
+    or edx, FG.RED|BG.GREEN
+
+    push eax
+    push ecx
+    CALL video.print, edx, 0, ecx
+    pop ecx
+    pop eax
+
+    dec ecx        
+    cmp eax, 0
+    je end.while1
+    jmp while1   
+
+    end.while1:
 
     CALL video.print, 'S'|FG.BLACK|BG.GREEN, 0, 65
     CALL video.print, 'C'|FG.BLACK|BG.GREEN, 0, 66
@@ -49,5 +69,26 @@ info.paint:
     CALL video.print, ':'|FG.BLACK|BG.GREEN, 0, 70
 
     mov eax, dword [actual.score]
+
+    mov ecx, 79
+    while2:
+    xor edx, edx
+    mov bx, 10
+    div bx
+
+    add dx, 48
+    or edx, FG.RED|BG.GREEN
+
+    push eax
+    push ecx
+    CALL video.print, edx, 0, ecx
+    pop ecx
+    pop eax
+
+    dec ecx        
+    cmp eax, 0
+    je end.while2
+    jmp while2  
+    end.while2:
 
     FUNC.END
