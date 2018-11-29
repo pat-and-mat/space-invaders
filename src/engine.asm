@@ -63,7 +63,7 @@ engine.collision:
 global engine.start
 engine.start:
     FUNC.START
-    CALL player.init, 100, 20, 38
+    CALL player.init, 99, 20, 38
     FUNC.END
 
 ; engine.run()
