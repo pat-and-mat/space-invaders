@@ -1,5 +1,7 @@
 %include "video.inc"
 %include "stack.inc"
+%include "utils.inc"
+%include "hash.inc"
 
 %define SHOTS.COORDS 1
 
@@ -18,11 +20,14 @@ col.right dw 0
 
 shots.count dw 0
 
+shots.next_inst dw 1
+
 section .bss
 
 shots.rows resw ROWS * COLS
 shots.cols resw ROWS * COLS
 shots.dirs resw ROWS * COLS
+shots.insts resw ROWS * COLS
 
 timer resd 1
 
@@ -31,6 +36,7 @@ section .text
 extern video.print
 extern delay
 extern array.shiftl
+extern engine.add_collision
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
@@ -39,9 +45,12 @@ weapons.update:
     FUNC.START
     RESERVE(1)  ; i
 
-    CALL delay, timer, 50
+    mov byte [graphics], 'o'
+
+    CALL delay, timer, 250
     cmp eax, 0
     je .update.move.end
+
 
     mov dword [LOCAL(0)], 0
     .update.move:
@@ -86,9 +95,9 @@ weapons.update:
 ; weapons.put_all_in_map(dword *map)
 weapons.put_all_in_map:
     FUNC.START
-    RESERVE(3)
+    RESERVE(3) ; i, row, col
 
-    mov dword [LOCAL(0)], 0 ; i, row, col
+    mov dword [LOCAL(0)], 0
     .map.all.while:
         mov ecx, [LOCAL(0)]
         
@@ -105,14 +114,17 @@ weapons.put_all_in_map:
         mov ax, [shots.cols + ecx]
         mov [LOCAL(2)], eax
 
-        CALL weapons.put_one_in_map, [LOCAL(1)], [LOCAL(2)]
+        mov edx, HASH.SHOT << 8
+        mov dx, [shots.insts + ecx]
+
+        CALL weapons.put_one_in_map, [PARAM(0)], edx, [LOCAL(1)], [LOCAL(2)]
         
         inc dword [LOCAL(0)]
         jmp .map.all.while
     .map.all.while.end:
     FUNC.END
 
-; weapons.put_one_in_map(dword *map, dword row, dword col)
+; weapons.put_one_in_map(dword *map, dword hash, dword row, dword col)
 weapons.put_one_in_map:
     FUNC.START
     RESERVE(1)  ; coord
@@ -128,29 +140,28 @@ weapons.put_one_in_map:
         
         xor eax, eax
         mov ax, [rows + ecx]
-        add [PARAM(0)], eax
+        add [PARAM(2)], eax
         
         xor eax, eax
         mov ax, [cols + ecx]
-        add [PARAM(1)], eax
+        add [PARAM(3)], eax
 
-        OFFSET [PARAM(1)], [PARAM(2)]
+        OFFSET [PARAM(2)], [PARAM(3)]
+        shl eax, 2
         add eax, [PARAM(0)]
-        cmp word [eax], 0
-        je .map.while.cont
+        cmp dword [eax], 0
+        je .map.one.while.cont
 
-        .map.collision:
-            xor edx, edx
-            mov dx, [eax]
-            CALL engine.add_collision, HASH.SHOT, edx, [PARAM(1)], [PARAM(2)]
+        ; CALL engine.add_collision, [PARAM(1)], [eax]
+        mov edx, [eax]
+        add edx, 48
+        mov byte [graphics], dl
 
-        .map.while.cont:
-            mov word [eax], HASH.SHOT
+        .map.one.while.cont:
+            mov edx, [PARAM(1)]
+            mov dword [eax], edx
             inc dword [LOCAL(0)]
             jmp .map.one.while
-
-        inc dword [LOCAL(0)]
-        jmp .map.one.while
     .map.one.while.end:
 
     FUNC.END
@@ -222,7 +233,7 @@ weapons.paint_shot:
 
     FUNC.END
 
-; collision(dword other_hash, dword row, dword col)
+; collision(dword inst, dword hash_other, dword inst_other)
 ; It is here where collisions will be handled
 global weapons.collision
 weapons.collision:
@@ -255,17 +266,14 @@ weapons.shoot:
     mov eax, [PARAM(2)]
     mov [shots.dirs + ecx], ax
 
+    mov ax, [shots.next_inst]
+    mov [shots.insts + ecx], ax
+
     inc word [shots.count]
+    inc word [shots.next_inst]
 
     .shoot.end:
         FUNC.END
-
-; weapons.instof(dword row, dword col)
-; returns a hash representing shot instance
-global weapons.instof
-weapons.instof:
-    FUNC.START
-    FUNC.END
 
 ; find_shot(dword row, dword col)
 ; returns index of a shot at row, col

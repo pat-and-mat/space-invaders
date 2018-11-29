@@ -138,9 +138,9 @@ player.update:
 ; player.put_in_map(dword *map)
 player.put_in_map:
     FUNC.START
-    RESERVE(3)
+    RESERVE(4) ; i, row, col, pos
 
-    mov dword [LOCAL(0)], 0 ; i, row, col
+    mov dword [LOCAL(0)], 0
     .map.while:
         cmp dword [LOCAL(0)], ROWS*COLS
         je .map.while.end
@@ -157,23 +157,25 @@ player.put_in_map:
         mov [LOCAL(2)], eax
 
         OFFSET [LOCAL(1)], [LOCAL(2)]
+        shl eax, 2
         add eax, [PARAM(0)]
-        cmp word [eax], 0
+        mov [LOCAL(3)], eax
+        cmp dword [eax], 0
         je .map.while.cont
 
         .map.collision:
-            xor edx, edx
-            mov dx, [eax]
-            CALL engine.add_collision, HASH.PLAYER, edx, [LOCAL(1)], [LOCAL(2)]
+            mov edx, [eax]
+            CALL engine.add_collision, HASH.PLAYER << 8, edx
 
         .map.while.cont:
-            mov word [eax], HASH.PLAYER
+            mov [LOCAL(3)], eax
+            mov dword [eax], HASH.PLAYER << 8
             inc dword [LOCAL(0)]
             jmp .map.while
     .map.while.end:
     FUNC.END
 
-; collision(dword hash, dword row, dword col)
+; collision(dword hash_other, dword inst_other)
 ; It is here where collisions will be handled
 global player.collision
 player.collision:

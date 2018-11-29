@@ -2,23 +2,37 @@
 %include "stack.inc"
 %include "hash.inc"
 
-%macro CLEAR 2
-    mov ax, %2
+%macro CLEAR_MAP 1
+    mov eax, %1
     mov ecx, COLS * ROWS
-    mov edi, %1
+    mov edi, map
     cld
-    rep stosw
+    rep stosd
+%endmacro
+extern screen
+%macro PRINT_MAP 0
+    mov ecx, COLS * ROWS
+    mov esi, map
+    mov edx, 0
+    cld
+    .aaaa:
+        lodsd
+        shr eax, 8
+        or ax, BG.RED
+        mov [screen + edx], ax
+        add edx, 2  
+        loop .aaaa
+    call video.refresh
 %endmacro
 
 section .data
 
-collisions.hashes times ROWS*COLS dw 0
-collisions.insts times ROWS*COLS dw 0
+collisions.hashes times ROWS*COLS dd 0
 collisions.count dw 0
 
 section .bss
 
-map resw COLS * ROWS
+map resd COLS * ROWS
 
 section .text
 
@@ -33,22 +47,23 @@ extern enemy.update
 extern player.collision
 extern weapons.collision
 
-extern weapons.instof
-
 extern player.paint
 extern weapons.paint
 extern enemy.paint
 extern video.clear
 extern video.refresh
+extern video.print
 
 ; update()
 ; It is here where all the actions related to this object will be taking place
 engine.update:
     FUNC.START
-    CLEAR map, 0
+    CLEAR_MAP 0
+    mov word [collisions.count], 0
     CALL player.update, map
     CALL weapons.update, map
-    CALL enemy.update, map
+    ; PRINT_MAP
+    ; CALL enemy.update, map
     FUNC.END
 
 ; paint()
@@ -59,6 +74,13 @@ engine.paint:
     call player.paint
     call weapons.paint
     call enemy.paint
+
+    xor eax, eax
+    mov ax, [collisions.count]
+    add eax, 48
+    or eax, FG.RED
+    CALL video.print, eax, 24, 79
+
     call video.refresh
     FUNC.END
 
@@ -78,6 +100,11 @@ engine.collision:
         cmp cx, [collisions.count]
         je .obj1.while.end
 
+        shl ecx, 2
+
+        cmp dword [collisions.hashes], -1
+        je .obj1.while.cont
+
         mov eax, [LOCAL(0)]
         inc eax
         mov [LOCAL(1)], eax
@@ -86,7 +113,7 @@ engine.collision:
             cmp cx, [collisions.count]
             je .obj2.while.end
 
-            shl ecx, 1
+            shl ecx, 2
 
             mov eax, [collisions.hashes + ecx]
             cmp ax, -1
@@ -98,8 +125,9 @@ engine.collision:
             jmp .obj2.while
         .obj2.while.end:
 
-        inc dword [LOCAL(0)]
-        jmp .obj1.while    
+        .obj1.while.cont:
+            inc dword [LOCAL(0)]
+            jmp .obj1.while    
     .obj1.while.end:
 
     FUNC.END
@@ -110,24 +138,34 @@ engine.handle_collisions:
     RESERVE(4)  ; hash1, inst1, hash2, inst2
 
     mov ecx, [PARAM(0)]
-    shl ecx, 1
+    shl ecx, 2
 
-    xor eax, eax
+    xor edx, edx
 
-    mov ax, [collisions.hashes + ecx]
-    mov [LOCAL(0)], eax
+    mov eax, [collisions.hashes + ecx]
+    
+    mov dx, ax
+    mov [LOCAL(1)], edx
 
-    mov ax, [collisions.insts + ecx]
-    mov [LOCAL(1)], eax
+    shr eax, 8
+
+    mov dx, ax
+    mov [LOCAL(0)], edx
 
     mov ecx, [PARAM(1)]
-    shl ecx, 1
+    shl ecx, 2
 
-    mov ax, [collisions.hashes + ecx]
-    mov [LOCAL(2)], eax
+    xor edx, edx
 
-    mov ax, [collisions.insts + ecx]
-    mov [LOCAL(3)], eax
+    mov eax, [collisions.hashes + ecx]
+    
+    mov dx, ax
+    mov [LOCAL(2)], edx
+
+    shr eax, 8
+
+    mov dx, ax
+    mov [LOCAL(3)], edx
 
     .hash1:
         cmp dword [LOCAL(0)], HASH.PLAYER
@@ -176,120 +214,71 @@ engine.handle_collisions:
     .handle.end:
         FUNC.END
 
-; enine.add_collision(dword hash1, dword hash2, dword row, dword col)
+; enine.add_collision(dword hash1, dword hash2)
 ; Adds a collision where hash2 is already in the map and hash1 is colliding with it
 global engine.add_collision
 engine.add_collision:
     FUNC.START
-    RESERVE(3)  ; inst1, inst2, i
+    RESERVE(1)  ; i
 
-    CALL engine.get_inst, [PARAM(0)], [PARAM(2)], [PARAM(3)]
-    mov [LOCAL(0)], eax
-    CALL engine.get_inst, [PARAM(1)], [PARAM(2)], [PARAM(3)]
-    mov [LOCAL(1)], eax
-
-    mov dword [LOCAL(2)], 0
+    mov dword [LOCAL(0)], 0
     .collisions.while:
-        mov ecx, [LOCAL(2)]
+        mov ecx, [LOCAL(0)]
         cmp cx, [collisions.count]
         je .collisions.while.end
 
-        shl ecx, 1
+        shl ecx, 2
 
-        xor eax, eax
-        mov ax, [collisions.hashes + ecx]
-
-        cmp ax, -1
-        je .collisions.while.cont
-
+        mov eax, [collisions.hashes + ecx]
         cmp eax, [PARAM(1)]
-        jne .collisions.while.cont
+        je .collisions.while.end
 
-        mov ax, [collisions.insts + ecx]
-        cmp eax, [LOCAL(1)]
-        jne .collisions.while.cont
-
-        jmp .collisions.while.end
-
-        .collisions.while.cont:
-            inc dword [LOCAL(2)]
-            jmp .collisions.while
+        inc dword [LOCAL(0)]
+        jmp .collisions.while
     .collisions.while.end:
 
-    mov eax, [LOCAL(2)]
+    mov eax, [LOCAL(0)]
     cmp ax, [collisions.count]
     jne .found
 
     xor ecx, ecx
     mov cx, [collisions.count]
-    shl ecx, 1
-    mov word [collisions.hashes + ecx], -1
-    mov word [collisions.insts + ecx], -1
+    shl ecx, 2
+    mov dword [collisions.hashes + ecx], -1
     inc word [collisions.count]
 
     xor ecx, ecx
     mov cx, [collisions.count]
-    shl ecx, 1
-    mov eax, [PARAM(1)]
-    mov word [collisions.hashes + ecx], ax
+    shl ecx, 2
     mov eax, [PARAM(0)]
-    mov word [collisions.insts + ecx], ax
+    mov [collisions.hashes + ecx], eax
     inc word [collisions.count]
 
     xor ecx, ecx
     mov cx, [collisions.count]
-    shl ecx, 1
-    mov eax, [LOCAL(1)]
-    mov word [collisions.hashes + ecx], ax
-    mov eax, [LOCAL(0)]
-    mov word [collisions.insts + ecx], ax
+    shl ecx, 2
+    mov eax, [PARAM(1)]
+    mov [collisions.hashes + ecx], eax
     inc word [collisions.count]
 
     jmp .add_collision.end
 
     .found:
-        inc dword [LOCAL(2)]
+        inc dword [LOCAL(0)]
 
         xor eax, eax
         mov ax, [collisions.count]
-        CALL array.shiftr, collisions.hashes, eax, [LOCAL(2)]
+        CALL array.shiftr, collisions.hashes, eax, [LOCAL(0)]
 
-        xor eax, eax
-        mov ax, [collisions.count]
-        CALL array.shiftr, collisions.insts, eax, [LOCAL(2)]
+        mov ecx, [LOCAL(0)]
+        shl ecx, 2
+        mov eax, [PARAM(0)]
+        mov [collisions.hashes + ecx], eax
 
         inc word [collisions.count]
         jmp .add_collision.end
 
     .add_collision.end:
-        FUNC.END
-
-; engine.get_inst(dword hash, dword row, dword col)
-engine.get_inst:
-    FUNC.START
-
-    cmp dword [PARAM(0)], HASH.PLAYER
-    je .hash.player
-
-    cmp dword [PARAM(0)], HASH.ENEMY
-    je .hash.enemy
-
-    cmp dword [PARAM(0)], HASH.SHOT
-    je .hash.shot
-
-    .hash.player:
-    mov eax, 0
-    jmp .get_inst.end
-
-    .hash.enemy:
-    ; CALL enemy.instof, [PARAM(1)], [PARAM(2)]
-    jmp .get_inst.end
-
-    .hash.shot:
-    CALL weapons.instof, [PARAM(1)], [PARAM(2)]
-    jmp .get_inst.end
-
-    .get_inst.end:
         FUNC.END
 
 ; engine.start()
