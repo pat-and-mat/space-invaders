@@ -11,6 +11,7 @@ extern scan
 extern delay
 extern rand
 extern weapons.shoot
+extern play_red_enemy_die
 
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
@@ -256,6 +257,7 @@ enemy_red.take_damage:
 ;destroyes the ship that is in the index position
 destroy.ship:
     FUNC.START
+    call play_red_enemy_die
 
     mov eax, [PARAM(0)]
     while:

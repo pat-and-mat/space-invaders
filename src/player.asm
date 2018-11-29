@@ -11,7 +11,7 @@ extern beep.set
 extern beep.of
 extern delay
 extern play_shoot
-extern play_player.die
+extern play_player_die
 
 extern sound.timer
 
@@ -220,10 +220,12 @@ player.take_damage:
     jmp .alive
 
     .destroyed:
+
         mov eax, 0
         mov word [lives], 0
         ; TODO: do something if player is destroyed
-
+        call play_player_die
+        
         jmp .end
 
     .alive:

@@ -11,6 +11,7 @@ extern scan
 extern delay
 extern rand
 extern weapons.shoot
+extern play_yellow_enemy_die
 
 %define ZIZE 500
 %define SHIP.COORDS 3
@@ -252,7 +253,8 @@ enemy_yellow.take_damage:
 ;destroyes the ship that is in the index position
 destroy.ship:
     FUNC.START
-
+    call play_yellow_enemy_die
+    
     mov eax, [PARAM(0)]
     while:
         cmp eax, dword [count]
