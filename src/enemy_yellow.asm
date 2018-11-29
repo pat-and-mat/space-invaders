@@ -11,9 +11,6 @@ extern scan
 extern delay
 extern rand
 extern weapons.shoot
-extern sound.timer
-extern beep.set
-extern beep.on
 
 %define ZIZE 500
 %define SHIP.COORDS 3
@@ -255,10 +252,6 @@ enemy_yellow.take_damage:
 ;destroyes the ship that is in the index position
 destroy.ship:
     FUNC.START
-
-    CALL beep.set, SAD2       
-    call beep.on
-    mov dword [sound.timer], 0
 
     mov eax, [PARAM(0)]
     while:

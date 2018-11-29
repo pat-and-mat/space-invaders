@@ -10,6 +10,8 @@ extern beep.on
 extern beep.set
 extern beep.of
 extern delay
+extern play_shoot
+extern play_player.die
 
 extern sound.timer
 
@@ -51,10 +53,6 @@ weapon.col dd 2
 
 graphics.style db 0
 
-sound db 0
-
-sound.play db 0
-
 section .bss
 
 global lives
@@ -64,8 +62,6 @@ row.offset resd 1
 col.offset resd 1
 
 animation.timer resd 2
-local.sound.timer1 resd 2
-local.sound.timer2 resd 2
 
 section .text
 
@@ -92,26 +88,6 @@ global player.update
 player.update:
     FUNC.START
     RESERVE(2)
-
-    cmp byte [sound], 0   ;check if shooting sound is activated
-    je continue
-
-    ;making sound
-    CALL beep.set, 010000      
-    call beep.on
-
-    CALL delay, local.sound.timer1, 25
-    cmp eax, 0
-    je continue
-    CALL beep.set, 004000
-
-    CALL delay, local.sound.timer2, 75
-    cmp eax, 0
-    je continue
-    CALL beep.set, 002500
-
-    mov byte [sound], 0
-
 
     continue:
     
@@ -154,8 +130,7 @@ player.update:
         jmp update.end
 
     space:
-        mov byte [sound], 1
-        mov dword [sound.timer], 0
+        call play_shoot
 
         mov dword [graphics + 8], 173|FG.GRAY|BG.BLACK
         mov dword [animation.timer], 0
@@ -248,9 +223,7 @@ player.take_damage:
         mov eax, 0
         mov word [lives], 0
         ; TODO: do something if player is destroyed
-        CALL beep.set, DIE
-        call beep.on
-        mov dword [sound.timer], 0
+
         jmp .end
 
     .alive:
