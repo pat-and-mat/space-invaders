@@ -70,3 +70,55 @@ array.shiftr:
     .shiftr.while.end:
 
     FUNC.END
+
+; array.index_of(dword *array, dword count, dword elem, dword size)
+global array.index_of
+array.index_of:
+    FUNC.START
+    RESERVE(1)  ; i
+
+    mov dword [LOCAL(0)], 0
+    .index_of.while:
+        mov ecx, [LOCAL(0)]
+        cmp cx, [PARAM(1)]
+        je .index_of.while.end
+
+        mov eax, ecx
+        mul dword [PARAM(3)]
+        mov ecx, eax
+
+        mov eax, [PARAM(0)]
+        add eax, ecx
+
+        mov edx, [PARAM(2)]
+
+        cmp dword [PARAM(3)], 1
+        je .size_b
+
+        cmp dword [PARAM(3)], 2
+        je .size_w
+
+        cmp dword [PARAM(3)], 4
+        je .size_d
+
+        .size_b:
+            cmp [eax], dl
+            jmp .index_of.while.cont
+
+        .size_w:
+            cmp [eax], dx
+            jmp .index_of.while.cont
+
+        .size_d:
+            cmp [eax], edx
+            jmp .index_of.while.cont
+
+        .index_of.while.cont:
+            je .index_of.while.end
+
+        inc dword [LOCAL(0)]
+        jmp .index_of.while
+    .index_of.while.end:
+
+    mov eax, [LOCAL(0)]
+    FUNC.END
