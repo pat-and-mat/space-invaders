@@ -25,6 +25,7 @@ map resd COLS * ROWS
 section .text
 
 extern array.shiftr
+extern array.index_of
 
 extern player.init
 
@@ -75,46 +76,68 @@ engine.paint:
 ; It is here where collisions will be handled
 engine.collision:
     FUNC.START
+    mov ax, [collisions.count]
+    add ax, 48
+    or ax, FG.RED
+    mov [debug_info + 79*2], ax
     mov word [collisions.count], 0
     FUNC.END
 
-; enine.add_collision(dword hash1, dword hash2)
-; Adds a collision where hash2 is already in the map and hash1 is colliding with it
+; enine.add_collision(dword hash_new, dword hash_old)
+; Adds a collision where hash_old is already in the map and hash_new is colliding with it
 global engine.add_collision
 engine.add_collision:
     FUNC.START
-
-    mov eax, [PARAM(0)]
-    
-    mov [debug_info], ax
-    add word [debug_info], 48
-    or word [debug_info], FG.RED
-
-    shr eax, 16
-    mov [debug_info + 2], ax
-    add word [debug_info + 2], 48
-    or word [debug_info + 2], FG.RED
-
-    mov eax, [PARAM(1)]
-    
-    mov [debug_info + 6], ax
-    add word [debug_info + 6], 48
-    or word [debug_info + 6], FG.RED
-
-    shr eax, 16
-    mov [debug_info + 8], ax
-    add word [debug_info + 8], 48
-    or word [debug_info + 8], FG.RED
-
-    inc word [collisions.count]
+    RESERVE(1)  ; i
 
     xor eax, eax
     mov ax, [collisions.count]
-    or ax, FG.RED
-    add eax, 48
-    mov [debug_info + 79*2], ax 
+    CALL array.index_of, collisions.hashes, eax, [PARAM(1)], 4
+    mov [LOCAL(0)], eax
 
-    FUNC.END
+    cmp ax, [collisions.count]
+    jne .found
+
+    ; not found
+    xor ecx, ecx
+    mov cx, [collisions.count]
+    shl ecx, 2
+    mov eax, [PARAM(0)]
+    mov [collisions.hashes + ecx], eax
+    inc word [collisions.count]
+
+    xor ecx, ecx
+    mov cx, [collisions.count]
+    shl ecx, 2
+    mov eax, [PARAM(1)]
+    mov [collisions.hashes + ecx], eax
+    inc word [collisions.count]
+
+    xor ecx, ecx
+    mov cx, [collisions.count]
+    shl ecx, 2
+    mov dword [collisions.hashes + ecx], -1
+    inc word [collisions.count]
+
+    jmp .add_collision.end
+
+    .found:
+        inc dword [LOCAL(0)]
+
+        xor eax, eax
+        mov ax, [collisions.count]
+        CALL array.shiftr, collisions.hashes, eax, [LOCAL(0)]
+
+        mov ecx, [LOCAL(0)]
+        shl ecx, 2
+        mov eax, [PARAM(0)]
+        mov [collisions.hashes + ecx], eax
+
+        inc word [collisions.count]
+        jmp .add_collision.end
+
+    .add_collision.end:
+        FUNC.END
 
 ; *******************************************************************************************
 
