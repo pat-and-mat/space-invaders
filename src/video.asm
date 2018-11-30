@@ -7,7 +7,6 @@
 
 section .data
 
-global screen
 screen times ROWS*COLS dw BG.BLACK
 
 section .text

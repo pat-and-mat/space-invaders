@@ -142,7 +142,7 @@ player.put_in_map:
 
     mov dword [LOCAL(0)], 0
     .map.while:
-        cmp dword [LOCAL(0)], ROWS*COLS
+        cmp dword [LOCAL(0)], ROWS * COLS
         je .map.while.end
 
         mov ecx, [LOCAL(0)]
