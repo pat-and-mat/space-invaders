@@ -52,7 +52,7 @@ engine.update:
     CLEAR_MAP 0
     mov dword [map + (12*80 + 39)*4], 6 << 16 | 4
     CALL player.update, map
-    ; CALL weapons.update, map
+    CALL weapons.update, map
     ; CALL enemy.update, map
     FUNC.END
 
@@ -62,7 +62,7 @@ engine.paint:
     FUNC.START
     CALL video.clear, BG.BLACK
     call player.paint
-    ; call weapons.paint
+    call weapons.paint
     ; call enemy.paint
     call video.refresh
     FUNC.END
