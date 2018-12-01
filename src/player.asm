@@ -194,11 +194,6 @@ player.paint:
         while.end:
         FUNC.END
 
-    set.form2:
-        mov byte [graphics.style], 2
-        mov dword [graphics + 8], 24|FG.GRAY|BG.BLACK
-        jmp cont
-
     set.form1:
         mov byte [graphics.style], 1
         mov dword [graphics + 8], '^'|FG.GRAY|BG.BLACK

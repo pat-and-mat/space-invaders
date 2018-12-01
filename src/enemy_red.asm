@@ -118,21 +118,13 @@ enemy_red.update:
         
 
         left:
-        cmp dword [col.offset + ecx], 0
-        je move.right
-        cmp dword [col.offset + ecx], 1
-        je move.right
         cmp dword [col.offset + ecx], 2
-        je move.right
+        jle move.right
         jmp move.left
 
         right:
         cmp dword [col.offset + ecx], 77
-        je move.left
-        cmp dword [col.offset + ecx], 76
-        je move.left
-        cmp dword [col.offset + ecx], 75
-        je move.left
+        jge move.left
         jmp move.right
 
         condition:  ;the stop condition is reached when all the ships are moved
@@ -265,6 +257,7 @@ destroy.ship:
 
     mov eax, [PARAM(0)]
     while:
+        ;mov forward the elements of all the arrays
         cmp eax, dword [count]
         je end.while
         mov ebx, [lives + eax + 4]

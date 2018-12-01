@@ -281,6 +281,7 @@ destroy.ship:
 
     mov eax, [PARAM(0)]
     while:
+        ;move forward the elements of all the arrays
         cmp eax, dword [count]
         je end.while
         mov ebx, [lives + eax + 4]
