@@ -13,6 +13,9 @@ extern enemy_red.paint
 extern enemy_yellow.update
 extern enemy_yellow.init
 extern enemy_yellow.paint
+extern enemy_blue.reset
+extern enemy_red.reset
+extern enemy_yellow.reset
 
 extern rand
 extern delay
@@ -114,6 +117,16 @@ enemy.paint:
 global enemy.take_damage
 enemy.take_damage:
     FUNC.START
+    FUNC.END
+
+; enemy_manager.reset()
+; reset all the enemies
+global enemy_manager.reset
+enemy_manager.reset:
+    FUNC.START
+    call enemy_blue.reset
+    call enemy_red.reset
+    call enemy_yellow.reset
     FUNC.END
 
 

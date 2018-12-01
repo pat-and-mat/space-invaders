@@ -103,3 +103,59 @@ video.refresh:
     cld
     rep movsw
     FUNC.END
+
+; video.print_word(dword FG|BG, array dword string, dword count, dword r, dword c)
+global video.print_word
+video.print_word:
+    FUNC.START
+    RESERVE(2)
+
+    mov dword [LOCAL(0)], 0
+    mov dword [LOCAL(1)], 0
+    while:
+        mov ecx, dword [LOCAL(0)]
+        mov edx, dword [PARAM(1)]
+        mov eax, dword [edx + ecx]
+        or eax, dword [PARAM(0)]
+        mov ecx, dword [LOCAL(1)]
+        add dword [PARAM(4)], ecx
+
+        CALL video.print, eax, [PARAM(3)], [PARAM(4)]
+
+        add dword [LOCAL(0)], 4
+        add dword [LOCAL(1)], 1
+
+        mov ecx, dword [LOCAL(1)]
+        cmp ecx, dword [PARAM(2)]
+        jle while
+  
+    FUNC.END
+
+; video.print_number(dword number, dword last_digit_row, dword last_digit_col)
+global video.print_number
+video.print_number:
+    FUNC.START
+    mov eax, dword [PARAM(0)]
+
+    mov ecx, dword [PARAM(1)]  
+    while2:
+    xor edx, edx
+    mov bx, 10
+    div bx
+
+    add dx, 48
+    or edx, FG.RED|BG.BLACK
+
+    push eax
+    push ecx
+    CALL video.print, edx, [PARAM(2)], ecx
+    pop ecx
+    pop eax
+
+    dec ecx        
+    cmp eax, 0
+    je end.while2
+    jmp while2  
+    end.while2:
+
+    FUNC.END

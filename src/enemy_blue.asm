@@ -262,7 +262,7 @@ enemy_blue.paint:
 
     
 
-; enemy_blue.take_damage(dword damage)
+; enemy_blue.take_damage(dword damage, dword instance)
 ; Takes lives away from player
 ; returns 0 if player remains alive after damage, 1 otherwise
 global enemy_blue.take_damage
@@ -297,7 +297,15 @@ destroy.ship:
     end.while:
 
     sub dword [count], 4
+    FUNC.END
 
+
+; enemy_blue.reset()
+; reset the blue enemies
+global enemy_blue.reset
+enemy_blue.reset:
+    FUNC.START
+    mov dword[count], 0
     FUNC.END
 
 

@@ -29,6 +29,9 @@ extern enemy.paint
 extern video.clear
 extern video.refresh
 
+extern enemy_manager.reset
+extern weapons.reset
+
 ; update()
 ; It is here where all the actions related to this object will be taking place
 engine.update:
@@ -73,4 +76,14 @@ engine.run:
     FUNC.START
     call engine.update
     call engine.paint
+    FUNC.END
+
+;engine.reset()
+;reset the game
+global engine.reset
+engine.reset:
+    FUNC.START
+    CALL player.init, 99, 20, 38
+    call enemy_manager.reset
+    call weapons.reset
     FUNC.END
