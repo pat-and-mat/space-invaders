@@ -76,12 +76,127 @@ engine.paint:
 ; It is here where collisions will be handled
 engine.collision:
     FUNC.START
-    mov ax, [collisions.count]
-    add ax, 48
-    or ax, FG.RED
-    mov [debug_info + 79*2], ax
+    RESERVE(2)  ; i, j
+
+    mov dword [LOCAL(0)], 0
+    .obj1.while:
+        mov ecx, [LOCAL(0)]
+        cmp cx, [collisions.count]
+        je .obj1.while.end
+
+        shl ecx, 2
+
+        cmp dword [collisions.hashes + ecx], -1
+        je .obj1.while.cont
+
+        mov eax, [LOCAL(0)]
+        inc eax
+        mov [LOCAL(1)], eax
+        .obj2.while:
+            mov ecx, [LOCAL(1)]
+            cmp cx, [collisions.count]
+            je .obj2.while.end
+
+            shl ecx, 2
+
+            cmp dword [collisions.hashes + ecx], -1
+            je .obj2.while.end
+
+            CALL engine.handle_collision, [LOCAL(0)], [LOCAL(1)]
+
+            inc dword [LOCAL(1)]
+            jmp .obj2.while
+        .obj2.while.end:
+
+        .obj1.while.cont:
+            inc dword [LOCAL(0)]
+            jmp .obj1.while    
+    .obj1.while.end:
+
     mov word [collisions.count], 0
     FUNC.END
+
+; engine.handle_collision(dword i, dword j)
+engine.handle_collision:
+    FUNC.START
+    RESERVE(4)  ; hash1, inst1, hash2, inst2
+
+    mov ecx, [PARAM(0)]
+    shl ecx, 2
+
+    xor edx, edx
+
+    mov eax, [collisions.hashes + ecx]
+    
+    mov dx, ax
+    mov [LOCAL(1)], edx
+
+    shr eax, 16
+
+    mov dx, ax
+    mov [LOCAL(0)], edx
+
+    mov ecx, [PARAM(1)]
+    shl ecx, 2
+
+    xor edx, edx
+
+    mov eax, [collisions.hashes + ecx]
+    
+    mov dx, ax
+    mov [LOCAL(2)], edx
+
+    shr eax, 16
+
+    mov dx, ax
+    mov [LOCAL(3)], edx
+
+    .hash1:
+        cmp dword [LOCAL(0)], HASH.PLAYER
+        je .hash1.player
+
+        cmp dword [LOCAL(0)], HASH.ENEMY
+        je .hash1.enemy
+
+        cmp dword [LOCAL(0)], HASH.SHOT
+        je .hash1.shot
+
+        .hash1.player:
+        CALL player.collision, [LOCAL(2)], [LOCAL(3)]
+        jmp .hash2
+
+        .hash1.enemy:
+        ; CALL enemy.collision, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
+        jmp .hash2
+
+        .hash1.shot:
+        CALL weapons.collision, [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
+        jmp .hash2
+
+    .hash2:
+        cmp dword [LOCAL(1)], HASH.PLAYER
+        je .hash2.player
+
+        cmp dword [LOCAL(1)], HASH.ENEMY
+        je .hash2.enemy
+
+        cmp dword [LOCAL(1)], HASH.SHOT
+        je .hash2.shot
+
+        .hash2.player:
+        CALL player.collision, [LOCAL(0)], [LOCAL(1)]
+        jmp .handle.end
+
+        .hash2.enemy:
+        ; CALL enemy.collision, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
+        jmp .handle.end
+
+        .hash2.shot:
+        CALL weapons.collision, [LOCAL(3)], [LOCAL(0)], [LOCAL(1)]
+        jmp .handle.end
+
+    .handle.end:
+        FUNC.END
 
 ; enine.add_collision(dword hash_new, dword hash_old)
 ; Adds a collision where hash_old is already in the map and hash_new is colliding with it
