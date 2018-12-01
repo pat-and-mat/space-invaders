@@ -130,3 +130,32 @@ video.print_word:
         jle while
   
     FUNC.END
+
+; video.print_number(dword number, dword last_digit_row, dword last_digit_col)
+global video.print_number
+video.print_number:
+    FUNC.START
+    mov eax, dword [PARAM(0)]
+
+    mov ecx, dword [PARAM(1)]  
+    while2:
+    xor edx, edx
+    mov bx, 10
+    div bx
+
+    add dx, 48
+    or edx, FG.RED|BG.BLACK
+
+    push eax
+    push ecx
+    CALL video.print, edx, [PARAM(2)], ecx
+    pop ecx
+    pop eax
+
+    dec ecx        
+    cmp eax, 0
+    je end.while2
+    jmp while2  
+    end.while2:
+
+    FUNC.END

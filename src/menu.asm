@@ -9,7 +9,9 @@ extern scan
 extern video.print_word
 extern delay
 extern video.print
+extern video.print_number
 extern engine.reset
+extern actual.score
 
 section .data
 
@@ -72,11 +74,12 @@ string_score5 dw   "s"|FG.RED|BG.BLACK, "c"|FG.RED|BG.BLACK,\
 string_score6 dw   "s"|FG.RED|BG.BLACK, "c"|FG.RED|BG.BLACK,\
                    "o"|FG.RED|BG.BLACK, "r"|FG.RED|BG.BLACK,\
                    "e"|FG.RED|BG.BLACK, " "|FG.RED|BG.BLACK,\
-                   "6"|FG.RED|BG.BLACK, 0                                                                                                                                                        
+                   "6"|FG.RED|BG.BLACK, 0   
+
+global best_scores
+best_scores dd 0, 0, 0, 0, 0, 0                                                                                                                                                          
 
 section .bss
-best_scores resd 5
-
 timer resd 2
 
 
@@ -110,6 +113,15 @@ menu.pause:
     CALL video.set_rect, string_score5, 15, 9, 1, 7
     CALL video.set_rect, string_score6, 17, 9, 1, 7    
 
+    ;painting the best scores of the actual game
+    CALL video.print_number, [best_scores], 25, 7
+    CALL video.print_number, [best_scores + 4], 25, 9
+    CALL video.print_number, [best_scores + 8], 25, 11
+    CALL video.print_number, [best_scores + 12], 25, 13
+    CALL video.print_number, [best_scores + 16], 25, 15
+    CALL video.print_number, [best_scores + 20], 25, 17
+
+
     call video.refresh
     CALL pause_menu.wait_for_key, KEY.ENTER
     cmp byte [pointer_position], 4
@@ -120,10 +132,17 @@ menu.pause:
     FUNC.END
 
     reset:
+    CALL menu.add_score, [actual.score]
     call engine.reset
     jmp pause.end
 
     main:
+    mov dword [best_scores], 0
+    mov dword [best_scores + 4], 0
+    mov dword [best_scores + 8], 0
+    mov dword [best_scores + 12], 0
+    mov dword [best_scores + 16], 0
+    mov dword [best_scores + 20], 0
     call engine.reset
     call menu.main
     jmp pause.end
@@ -180,4 +199,86 @@ main_menu.wait_for_key:
         call scan
         cmp al, [PARAM(0)]
         jne .input
+    FUNC.END
+
+; menu.add_score(dword score)
+; add a score to the table if is better than any present
+global menu.add_score
+menu.add_score:
+    FUNC.START
+    mov eax, [PARAM(0)]
+
+    cmp eax, [best_scores]
+    jng no_score1
+
+    mov edx, [best_scores + 16]
+    mov dword [best_scores + 20], edx
+    mov edx, [best_scores + 12]
+    mov dword [best_scores + 16], edx
+    mov edx, [best_scores + 8]
+    mov dword [best_scores + 12], edx
+    mov edx, [best_scores + 4]
+    mov dword [best_scores + 8], edx
+    mov edx, [best_scores]
+    mov dword [best_scores + 4], edx
+    mov dword [best_scores], eax
+    jmp add_score_end
+    no_score1:
+
+    cmp eax, [best_scores + 4]
+    jng no_score2
+
+    mov edx, [best_scores + 16]
+    mov dword [best_scores + 20], edx
+    mov edx, [best_scores + 12]
+    mov dword [best_scores + 16], edx
+    mov edx, [best_scores + 8]
+    mov dword [best_scores + 12], edx
+    mov edx, [best_scores + 4]
+    mov dword [best_scores + 8], edx
+    mov dword [best_scores + 4], eax
+    jmp add_score_end
+    no_score2:
+
+    cmp eax, [best_scores + 8]
+    jng no_score3
+
+    mov edx, [best_scores + 16]
+    mov dword [best_scores + 20], edx
+    mov edx, [best_scores + 12]
+    mov dword [best_scores + 16], edx
+    mov edx, [best_scores + 8]
+    mov dword [best_scores + 12], edx
+    mov dword [best_scores + 8], eax
+    jmp add_score_end
+    no_score3:
+
+    cmp eax, [best_scores + 12]
+    jng no_score4
+
+    mov edx, [best_scores + 16]
+    mov dword [best_scores + 20], edx
+    mov edx, [best_scores + 12]
+    mov dword [best_scores + 16], edx
+    mov dword [best_scores + 12], eax
+    jmp add_score_end
+    no_score4:
+
+    cmp eax, [best_scores + 16]
+    jng no_score5
+
+    mov edx, [best_scores + 16]
+    mov dword [best_scores + 20], edx
+    mov dword [best_scores + 16], eax
+    jmp add_score_end
+    no_score5:
+
+    cmp eax, [best_scores + 20]
+    jng no_score6
+
+    mov dword [best_scores + 20], eax
+    jmp add_score_end
+    no_score6:
+
+    add_score_end:
     FUNC.END

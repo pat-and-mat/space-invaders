@@ -66,28 +66,28 @@ info.paint:
     CALL video.print, 'E'|FG.BLACK|BG.GREEN, 0, 69
     CALL video.print, ':'|FG.BLACK|BG.GREEN, 0, 70
 
-    mov eax, dword [actual.score]
+        mov eax, dword [actual.score]
 
-    mov ecx, 79  ;paint last character in col 79
-    ;paint the score
-    while2:
-    xor edx, edx
-    mov bx, 10
-    div bx
+        mov ecx, 79  ;paint last character in col 79
+        ;paint the score
+        while2:
+        xor edx, edx
+        mov bx, 10
+        div bx
 
-    add dx, 48
-    or edx, FG.RED|BG.GREEN
+        add dx, 48
+        or edx, FG.RED|BG.GREEN
 
-    push eax
-    push ecx
-    CALL video.print, edx, 0, ecx
-    pop ecx
-    pop eax
+        push eax
+        push ecx
+        CALL video.print, edx, 0, ecx
+        pop ecx
+        pop eax
 
-    dec ecx        
-    cmp eax, 0
-    je end.while2
-    jmp while2  
-    end.while2:
+        dec ecx        
+        cmp eax, 0
+        je end.while2
+        jmp while2  
+        end.while2:
 
     FUNC.END
