@@ -40,9 +40,9 @@ string_reset dw    "R"|FG.RED|BG.BLACK, "e"|FG.RED|BG.BLACK,\
                    "s"|FG.RED|BG.BLACK, "e"|FG.RED|BG.BLACK,\
                    "t"|FG.RED|BG.BLACK, 0
 
-string_main_menu dw  "m"|FG.RED|BG.BLACK, "a"|FG.RED|BG.BLACK,\
+string_main_menu dw  "M"|FG.RED|BG.BLACK, "a"|FG.RED|BG.BLACK,\
                      "i"|FG.RED|BG.BLACK, "n"|FG.RED|BG.BLACK,\
-                     " "|FG.RED|BG.BLACK, "m"|FG.RED|BG.BLACK,\
+                     " "|FG.RED|BG.BLACK, "M"|FG.RED|BG.BLACK,\
                      "e"|FG.RED|BG.BLACK, "n"|FG.RED|BG.BLACK,\
                      "u"|FG.RED|BG.BLACK, 0
 
@@ -133,6 +133,7 @@ menu.pause:
 
     reset:
     CALL menu.add_score, [actual.score]
+    mov dword [actual.score], 0
     call engine.reset
     jmp pause.end
 

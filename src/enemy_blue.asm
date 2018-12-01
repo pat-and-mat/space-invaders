@@ -262,7 +262,7 @@ enemy_blue.paint:
 
     
 
-; enemy_blue.take_damage(dword damage)
+; enemy_blue.take_damage(dword damage, dword instance)
 ; Takes lives away from player
 ; returns 0 if player remains alive after damage, 1 otherwise
 global enemy_blue.take_damage
