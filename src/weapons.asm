@@ -270,3 +270,11 @@ weapons.remove:
 
     dec word [shots.count]
     FUNC.END
+
+; weapons.reset())
+; reset the weapons
+global weapons.reset
+weapons.reset:
+    FUNC.START
+    mov word [shots.count], 0
+    FUNC.END

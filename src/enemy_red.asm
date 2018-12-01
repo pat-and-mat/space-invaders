@@ -281,5 +281,12 @@ destroy.ship:
     end.while:
 
     sub dword [count], 4
+    FUNC.END
 
+; enemy_red.reset()
+; reset the red enemies
+global enemy_red.reset
+enemy_red.reset:
+    FUNC.START
+    mov dword[count], 0
     FUNC.END
