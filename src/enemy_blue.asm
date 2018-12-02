@@ -185,6 +185,13 @@ enemy_blue.update:
 
     FUNC.END
 
+; collision(dword inst, dword hash_other, dword inst_other)
+; It is here where collisions will be handled
+global enemy_blue.collision
+enemy_blue.collision:
+    FUNC.START
+    FUNC.END 
+
 ;paint()
 ;paint all the blue enemies
 global enemy_blue.paint

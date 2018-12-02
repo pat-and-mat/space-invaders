@@ -187,6 +187,13 @@ enemy_red.update:
 
     FUNC.END
 
+; collision(dword inst, dword hash_other, dword inst_other)
+; It is here where collisions will be handled
+global enemy_red.collision
+enemy_red.collision:
+    FUNC.START
+    FUNC.END 
+
 ;paint()
 ;move all the red enemies
 global enemy_red.paint

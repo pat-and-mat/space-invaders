@@ -35,6 +35,9 @@ extern enemy.update
 
 extern player.collision
 extern weapons.collision
+extern enemy_yellow.collision
+extern enemy_red.collision
+extern enemy_blue.collision
 
 extern player.paint
 extern weapons.paint
@@ -153,11 +156,17 @@ engine.invoke_handler:
     cmp dword [PARAM(0)], HASH.PLAYER
     je .handler.player
 
-    cmp dword [PARAM(0)], HASH.ENEMY
-    je .handler.enemy
-
     cmp dword [PARAM(0)], HASH.SHOT
     je .handler.shot
+
+    cmp dword [PARAM(0)], HASH.ENEMY_YELLOW
+    je .handler.enemy_yellow
+
+    cmp dword [PARAM(0)], HASH.ENEMY_RED
+    je .handler.enemy_red
+
+    cmp dword [PARAM(0)], HASH.ENEMY_BLUE
+    je .handler.enemy_blue
 
     jmp .handler.end
 
@@ -165,12 +174,20 @@ engine.invoke_handler:
     CALL player.collision, [PARAM(2)], [PARAM(3)]
     jmp .handler.end
 
-    .handler.enemy:
-    ; CALL enemy.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
-    jmp .handler.end
-
     .handler.shot:
     CALL weapons.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.enemy_yellow:
+    CALL enemy_yellow.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.enemy_red:
+    CALL enemy_red.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.enemy_blue:
+    CALL enemy_blue.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
     jmp .handler.end
 
     .handler.end:

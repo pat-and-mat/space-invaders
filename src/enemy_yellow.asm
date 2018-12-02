@@ -180,7 +180,12 @@ enemy_yellow.update:
 
     FUNC.END
 
-    
+; collision(dword inst, dword hash_other, dword inst_other)
+; It is here where collisions will be handled
+global enemy_yellow.collision
+enemy_yellow.collision:
+    FUNC.START
+    FUNC.END 
 
 ;paint()
 ;move all the yellow enemies
