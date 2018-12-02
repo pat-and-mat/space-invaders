@@ -45,9 +45,7 @@ weapons.update:
     FUNC.START
     RESERVE(1)  ; i
 
-    mov byte [graphics], 'o'
-
-    CALL delay, timer, 750
+    CALL delay, timer, 50
     cmp eax, 0
     je .update.move.end
 

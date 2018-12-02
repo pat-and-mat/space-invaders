@@ -15,8 +15,8 @@ section .data
 collisions.hashes times ROWS*COLS dd 0
 collisions.count dw 0
 
+global debug_info
 debug_info times 80 dw 0
-debug_info.count dw 0
 
 section .bss
 
@@ -51,10 +51,9 @@ extern video.set_rect
 engine.update:
     FUNC.START
     CLEAR_MAP 0
-    mov dword [map + (12*80 + 39)*4], 6 << 16 | 4
     CALL player.update, map
     CALL weapons.update, map
-    ; CALL enemy.update, map
+    CALL enemy.update, map
     FUNC.END
 
 ; paint()
@@ -64,7 +63,7 @@ engine.paint:
     CALL video.clear, BG.BLACK
     call player.paint
     call weapons.paint
-    ; call enemy.paint
+    call enemy.paint
     call video.refresh
     FUNC.END
 
@@ -148,6 +147,7 @@ engine.handle_collision:
     FUNC.END
 
 ; engine.invoke_handler(dword hash, dword inst, dword hash_other, dword inst_other)
+; Invokes the corresponding handler to handle the given collision
 engine.invoke_handler:
     FUNC.START
     cmp dword [PARAM(0)], HASH.PLAYER
@@ -256,7 +256,6 @@ engine.run:
 engine.debug:
     FUNC.START
     CALL video.set_rect, debug_info, 24, 0, 1, 80
-    CALL video.print, BG.RED, 12, 39
     call video.refresh
 
     mov edi, debug_info
