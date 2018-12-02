@@ -47,7 +47,7 @@ weapons.update:
 
     mov byte [graphics], 'o'
 
-    CALL delay, timer, 250
+    CALL delay, timer, 750
     cmp eax, 0
     je .update.move.end
 
@@ -114,7 +114,7 @@ weapons.put_all_in_map:
         mov ax, [shots.cols + ecx]
         mov [LOCAL(2)], eax
 
-        mov edx, HASH.SHOT << 8
+        mov edx, HASH.SHOT << 16
         mov dx, [shots.insts + ecx]
 
         CALL weapons.put_one_in_map, [PARAM(0)], edx, [LOCAL(1)], [LOCAL(2)]
@@ -127,7 +127,7 @@ weapons.put_all_in_map:
 ; weapons.put_one_in_map(dword *map, dword hash, dword row, dword col)
 weapons.put_one_in_map:
     FUNC.START
-    RESERVE(1)  ; coord
+    RESERVE(2)  ; coord, offset
 
     mov dword [LOCAL(0)], 0
     .map.one.while:
@@ -147,19 +147,23 @@ weapons.put_one_in_map:
         add [PARAM(3)], eax
 
         OFFSET [PARAM(2)], [PARAM(3)]
+
+        mov [LOCAL(1)], eax
         shl eax, 2
         add eax, [PARAM(0)]
+
         cmp dword [eax], 0
         je .map.one.while.cont
 
-        ; CALL engine.add_collision, [PARAM(1)], [eax]
-        mov edx, [eax]
-        add edx, 48
-        mov byte [graphics], dl
+        CALL engine.add_collision, [PARAM(1)], [eax]
 
         .map.one.while.cont:
+            mov eax, [LOCAL(1)]
+            shl eax, 2
+            add eax, [PARAM(0)]
+
             mov edx, [PARAM(1)]
-            mov dword [eax], edx
+            mov [eax], edx
             inc dword [LOCAL(0)]
             jmp .map.one.while
     .map.one.while.end:
@@ -238,6 +242,7 @@ weapons.paint_shot:
 global weapons.collision
 weapons.collision:
     FUNC.START
+    inc byte [graphics]
     FUNC.END
 
 ; weapons.shoot(dword row, dword col, dword dir)

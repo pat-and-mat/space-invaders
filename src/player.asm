@@ -128,21 +128,21 @@ player.update:
 
         CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
         
-        jmp update.end
-
-    CALL player.put_in_map, [PARAM(0)]    
+        jmp update.end 
 
     update.end:
-        FUNC.END
+        CALL player.put_in_map, [PARAM(0)]   
+    
+    FUNC.END
 
 ; player.put_in_map(dword *map)
 player.put_in_map:
     FUNC.START
-    RESERVE(4) ; i, row, col, pos
+    RESERVE(4) ; i, row, col, offset
 
     mov dword [LOCAL(0)], 0
     .map.while:
-        cmp dword [LOCAL(0)], ROWS*COLS
+        cmp dword [LOCAL(0)], SHIP.COORDS
         je .map.while.end
 
         mov ecx, [LOCAL(0)]
@@ -157,19 +157,23 @@ player.put_in_map:
         mov [LOCAL(2)], eax
 
         OFFSET [LOCAL(1)], [LOCAL(2)]
+
+        mov [LOCAL(3)], eax
         shl eax, 2
         add eax, [PARAM(0)]
-        mov [LOCAL(3)], eax
+        
         cmp dword [eax], 0
         je .map.while.cont
 
-        .map.collision:
-            mov edx, [eax]
-            CALL engine.add_collision, HASH.PLAYER << 8, edx
+        ; Collision
+        CALL engine.add_collision, HASH.PLAYER << 16, [eax]
 
         .map.while.cont:
-            mov [LOCAL(3)], eax
-            mov dword [eax], HASH.PLAYER << 8
+            mov eax, [LOCAL(3)]
+            shl eax, 2
+            add eax, [PARAM(0)]
+
+            mov dword [eax], HASH.PLAYER << 16
             inc dword [LOCAL(0)]
             jmp .map.while
     .map.while.end:
@@ -180,6 +184,7 @@ player.put_in_map:
 global player.collision
 player.collision:
     FUNC.START
+    inc byte [graphics]
     FUNC.END
 
 ; paint()
