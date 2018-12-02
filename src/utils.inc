@@ -6,7 +6,6 @@
     mov eax, COLS
     mul word %1
     add eax, %2
-    shl eax, 1
 %endmacro
 
 %endif ; UTILS_MAC

@@ -1,5 +1,7 @@
 %include "video.inc"
 %include "stack.inc"
+%include "utils.inc"
+%include "hash.inc"
 
 %define SHOTS.COORDS 1
 
@@ -18,11 +20,14 @@ col.right dw 0
 
 shots.count dw 0
 
+shots.next_inst dw 1
+
 section .bss
 
 shots.rows resw ROWS * COLS
 shots.cols resw ROWS * COLS
 shots.dirs resw ROWS * COLS
+shots.insts resw ROWS * COLS
 
 timer resd 1
 
@@ -30,6 +35,8 @@ section .text
 
 extern video.print
 extern delay
+extern array.shiftl
+extern engine.add_collision
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
@@ -41,6 +48,7 @@ weapons.update:
     CALL delay, timer, 50
     cmp eax, 0
     je .update.move.end
+
 
     mov dword [LOCAL(0)], 0
     .update.move:
@@ -77,6 +85,86 @@ weapons.update:
             inc dword [LOCAL(0)]
             jmp .update.move
     .update.move.end:
+
+    CALL weapons.put_all_in_map, [PARAM(0)]    
+
+    FUNC.END
+
+; weapons.put_all_in_map(dword *map)
+weapons.put_all_in_map:
+    FUNC.START
+    RESERVE(3) ; i, row, col
+
+    mov dword [LOCAL(0)], 0
+    .map.all.while:
+        mov ecx, [LOCAL(0)]
+        
+        cmp cx, [shots.count]
+        je .map.all.while.end
+
+        shl ecx, 1
+
+        xor eax, eax
+        mov ax, [shots.rows + ecx]
+        mov [LOCAL(1)], eax
+
+        xor eax, eax
+        mov ax, [shots.cols + ecx]
+        mov [LOCAL(2)], eax
+
+        mov edx, HASH.SHOT << 16
+        mov dx, [shots.insts + ecx]
+
+        CALL weapons.put_one_in_map, [PARAM(0)], edx, [LOCAL(1)], [LOCAL(2)]
+        
+        inc dword [LOCAL(0)]
+        jmp .map.all.while
+    .map.all.while.end:
+    FUNC.END
+
+; weapons.put_one_in_map(dword *map, dword hash, dword row, dword col)
+weapons.put_one_in_map:
+    FUNC.START
+    RESERVE(2)  ; coord, offset
+
+    mov dword [LOCAL(0)], 0
+    .map.one.while:
+        mov ecx, [LOCAL(0)]
+
+        cmp ecx, SHOTS.COORDS
+        je .map.one.while.end
+
+        shl ecx, 1
+        
+        xor eax, eax
+        mov ax, [rows + ecx]
+        add [PARAM(2)], eax
+        
+        xor eax, eax
+        mov ax, [cols + ecx]
+        add [PARAM(3)], eax
+
+        OFFSET [PARAM(2)], [PARAM(3)]
+
+        mov [LOCAL(1)], eax
+        shl eax, 2
+        add eax, [PARAM(0)]
+
+        cmp dword [eax], 0
+        je .map.one.while.cont
+
+        CALL engine.add_collision, [PARAM(1)], [eax]
+
+        .map.one.while.cont:
+            mov eax, [LOCAL(1)]
+            shl eax, 2
+            add eax, [PARAM(0)]
+
+            mov edx, [PARAM(1)]
+            mov [eax], edx
+            inc dword [LOCAL(0)]
+            jmp .map.one.while
+    .map.one.while.end:
 
     FUNC.END
 
@@ -147,7 +235,7 @@ weapons.paint_shot:
 
     FUNC.END
 
-; collision(dword other_hash, dword row, dword col)
+; collision(dword inst, dword hash_other, dword inst_other)
 ; It is here where collisions will be handled
 global weapons.collision
 weapons.collision:
@@ -180,7 +268,11 @@ weapons.shoot:
     mov eax, [PARAM(2)]
     mov [shots.dirs + ecx], ax
 
+    mov ax, [shots.next_inst]
+    mov [shots.insts + ecx], ax
+
     inc word [shots.count]
+    inc word [shots.next_inst]
 
     .shoot.end:
         FUNC.END
@@ -245,28 +337,16 @@ weapons.check_boundaries:
 ; Removes shot stored at the given pos in the list
 weapons.remove:
     FUNC.START
-    inc dword [PARAM(0)]
+    RESERVE(1)
 
-    .remove.while:
-        mov ecx, [PARAM(0)]
-        
-        cmp cx, [shots.count]
-        je .remove.while.end
+    xor eax, eax
+    mov ax, [shots.count]
+    mov [LOCAL(0)], eax
 
-        shl ecx, 1
-
-        mov ax, [shots.rows + ecx]
-        mov [shots.rows + ecx - 2], ax
-
-        mov ax, [shots.cols + ecx]
-        mov [shots.cols + ecx - 2], ax
-
-        mov ax, [shots.dirs + ecx]
-        mov [shots.dirs + ecx - 2], ax
-
-        inc dword [PARAM(0)]
-        jmp .remove.while
-    .remove.while.end:
+    CALL array.shiftl, shots.rows, [LOCAL(0)], [PARAM(0)]
+    CALL array.shiftl, shots.cols, [LOCAL(0)], [PARAM(0)]
+    CALL array.shiftl, shots.dirs, [LOCAL(0)], [PARAM(0)]
+    CALL array.shiftl, shots.insts, [LOCAL(0)], [PARAM(0)]
 
     dec word [shots.count]
     FUNC.END

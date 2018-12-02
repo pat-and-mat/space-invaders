@@ -2,9 +2,12 @@
 %include "video.inc"
 %include "keyboard.inc"
 %include "sound.inc"
+%include "utils.inc"
+%include "hash.inc"
 
 extern video.print
 extern weapons.shoot
+extern engine.add_collision
 extern input
 extern beep.on
 extern beep.set
@@ -91,7 +94,7 @@ player.init:
 global player.update
 player.update:
     FUNC.START
-    RESERVE(2)
+    RESERVE(3)
 
     cmp byte [sound], 0   ;check if shooting sound is activated
     je continue
@@ -170,13 +173,59 @@ player.update:
         mov [LOCAL(1)], eax
 
         CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
-
-        jmp update.end
+        
+        jmp update.end 
 
     update.end:
-        FUNC.END
+        CALL player.put_in_map, [PARAM(0)]   
+    
+    FUNC.END
 
-; collision(dword hash, dword row, dword col)
+; player.put_in_map(dword *map)
+player.put_in_map:
+    FUNC.START
+    RESERVE(4) ; i, row, col, offset
+
+    mov dword [LOCAL(0)], 0
+    .map.while:
+        cmp dword [LOCAL(0)], SHIP.COORDS
+        je .map.while.end
+
+        mov ecx, [LOCAL(0)]
+        shl ecx, 2
+
+        mov eax, [row.offset]
+        add eax, [rows + ecx]
+        mov [LOCAL(1)], eax
+
+        mov eax, [col.offset]
+        add eax, [cols + ecx]
+        mov [LOCAL(2)], eax
+
+        OFFSET [LOCAL(1)], [LOCAL(2)]
+
+        mov [LOCAL(3)], eax
+        shl eax, 2
+        add eax, [PARAM(0)]
+        
+        cmp dword [eax], 0
+        je .map.while.cont
+
+        ; Collision
+        CALL engine.add_collision, HASH.PLAYER << 16, [eax]
+
+        .map.while.cont:
+            mov eax, [LOCAL(3)]
+            shl eax, 2
+            add eax, [PARAM(0)]
+
+            mov dword [eax], HASH.PLAYER << 16
+            inc dword [LOCAL(0)]
+            jmp .map.while
+    .map.while.end:
+    FUNC.END
+
+; collision(dword hash_other, dword inst_other)
 ; It is here where collisions will be handled
 global player.collision
 player.collision:

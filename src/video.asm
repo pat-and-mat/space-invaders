@@ -30,6 +30,7 @@ video.clear_rect:
     FUNC.START
     mov edi, screen
     OFFSET [PARAM(1)], [PARAM(2)]
+    shl eax, 1
     add edi, eax
 
     mov eax, [PARAM(0)]    
@@ -68,6 +69,7 @@ video.set_rect:
     mov edi, screen
 
     OFFSET [PARAM(1)], [PARAM(2)]
+    shl eax, 1
     add edi, eax
     
     mov ecx, [PARAM(3)] ; rows
@@ -90,6 +92,7 @@ video.print:
     FUNC.START
     mov ebx, [PARAM(0)]
     OFFSET [PARAM(1)], [PARAM(2)]
+    shl eax, 1
     mov [screen + eax], bx
     FUNC.END
 

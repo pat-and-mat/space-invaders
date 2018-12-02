@@ -2,7 +2,9 @@
 %define HASH_MAC
 
 %define HASH.PLAYER 1
-%define HASH.ENEMY 2
-%define HASH.SHOT 3
+%define HASH.SHOT 2
+%define HASH.ENEMY_BLUE 3
+%define HASH.ENEMY_RED 4
+%define HASH.ENEMY_YELLOW 5
 
 %endif ; HASH_MAC
