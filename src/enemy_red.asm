@@ -123,7 +123,7 @@ enemy_red.update:
         jmp move.left
 
         right:
-        cmp dword [col.offset + ecx], 77
+        cmp dword [col.offset + ecx], 76
         jge move.left
         jmp move.right
 
