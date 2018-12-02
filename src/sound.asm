@@ -33,6 +33,7 @@ section .text
 
 ; play the seted sound
 ; beep.on()
+global beep.on
 beep.on:
     FUNC.START
     push ax
@@ -44,6 +45,7 @@ beep.on:
 
 ; stop the sound sound
 ; beep.of()
+global beep.of
 beep.of:
     FUNC.START
     push ax
@@ -176,9 +178,10 @@ sound_shoot.update:
     shoot.end:
     FUNC.END
 
+global sound_player_die.update
 sound_player_die.update:
     FUNC.START
-    CALL delay, player_die.timer, 150
+    CALL delay, player_die.timer, 1500
     cmp eax, 0
     jne player_die.silence
     CALL beep.set, 020000

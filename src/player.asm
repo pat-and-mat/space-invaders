@@ -12,8 +12,10 @@ extern beep.of
 extern delay
 extern play_shoot
 extern play_player_die
-
+extern menu.lose
+extern sound_player_die.update
 extern sound.timer
+extern beep.of
 
 %define SHIP.COORDS 5
 
@@ -62,6 +64,7 @@ row.offset resd 1
 col.offset resd 1
 
 animation.timer resd 2
+lose.timer resd 2
 
 section .text
 
@@ -114,18 +117,26 @@ player.update:
     jmp update.end
 
     up:
+        cmp dword [row.offset], 1
+        je update.end
         sub dword [row.offset], 1
         jmp update.end
 
     down:
+        cmp dword [row.offset], 24
+        je update.end
         add dword [row.offset], 1
         jmp update.end
 
     left:
+        cmp dword [col.offset], 0
+        je update.end
         sub dword [col.offset], 1
         jmp update.end
 
-    right:        
+    right:    
+    cmp dword [col.offset], 75
+        je update.end    
         add dword [col.offset], 1
         jmp update.end
 
@@ -212,19 +223,26 @@ player.take_damage:
     cmp [lives], ax
     jng .destroyed
     sub [lives], ax
-    jmp .alive
+    jmp alive
 
     .destroyed:
 
         mov eax, 0
         mov word [lives], 0
-        ; TODO: do something if player is destroyed
-        call play_player_die
         
-        jmp .end
+        wait_for:
+        call sound_player_die.update   ;freeze the screen 1500ms and make lose sound
+        CALL delay, lose.timer, 1500
+        cmp eax, 0
+        je wait_for
+        call beep.of
+        
+        call menu.lose
+        
+        jmp end
 
-    .alive:
+    alive:
         mov eax, 1
 
-    .end:
+    end:
         FUNC.END

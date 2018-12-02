@@ -262,12 +262,22 @@ enemy_blue.paint:
 
     
 
-; enemy_blue.take_damage(dword damage, dword instance)
-; Takes lives away from player
-; returns 0 if player remains alive after damage, 1 otherwise
+; enemy_blue.take_damage(dword damage, dword index)
+; Takes lives away from an enemy
 global enemy_blue.take_damage
 enemy_blue.take_damage:
     FUNC.START
+    mov ecx, 4    
+    mov eax, [PARAM(1)]
+    mul ecx
+    mov ecx, [PARAM(0)]
+
+    sub [lives + eax], ecx
+    cmp dword [lives + eax], 0
+    jg take_end
+    CALL destroy.ship, eax
+
+    take_end:
     FUNC.END
 
 

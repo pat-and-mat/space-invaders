@@ -238,12 +238,22 @@ enemy_red.paint:
         mov dword [graphics + 8], '='|FG.RED|BG.BLACK
         jmp while.internal
 
-; enemy_red.take_damage(dword damage)
+; enemy_red.take_damage(dword damage, dword instance)
 ; Takes lives away from an enemy
-; returns 0 if player remains alive after damage, 1 otherwise
 global enemy_red.take_damage
 enemy_red.take_damage:
     FUNC.START
+    mov ecx, 4    
+    mov eax, [PARAM(1)]
+    mul ecx
+    mov ecx, [PARAM(0)]
+
+    sub [lives + eax], ecx
+    cmp dword [lives + eax], 0
+    jg take_end
+    CALL destroy.ship, eax
+
+    take_end:
     FUNC.END
 
 ;destroy.ship(dword index)
