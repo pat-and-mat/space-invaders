@@ -121,81 +121,59 @@ engine.handle_collision:
     FUNC.START
     RESERVE(4)  ; hash1, inst1, hash2, inst2
 
+    xor eax, eax
+
     mov ecx, [PARAM(0)]
     shl ecx, 2
 
-    xor edx, edx
+    mov ax, [collisions.hashes + ecx]
+    mov [LOCAL(1)], eax
 
-    mov eax, [collisions.hashes + ecx]
-    
-    mov dx, ax
-    mov [LOCAL(1)], edx
+    add ecx, 2
 
-    shr eax, 16
-
-    mov dx, ax
-    mov [LOCAL(0)], edx
+    mov ax, [collisions.hashes + ecx]
+    mov [LOCAL(0)], eax
 
     mov ecx, [PARAM(1)]
     shl ecx, 2
 
-    xor edx, edx
+    mov ax, [collisions.hashes + ecx]
+    mov [LOCAL(3)], eax
 
-    mov eax, [collisions.hashes + ecx]
-    
-    mov dx, ax
-    mov [LOCAL(2)], edx
+    add ecx, 2
 
-    shr eax, 16
+    CALL engine.invoke_handler, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
+    CALL engine.invoke_handler, [LOCAL(2)], [LOCAL(3)], [LOCAL(0)], [LOCAL(1)]
 
-    mov dx, ax
-    mov [LOCAL(3)], edx
+    FUNC.END
 
-    .hash1:
-        cmp dword [LOCAL(0)], HASH.PLAYER
-        je .hash1.player
+; engine.invoke_handler(dword hash, dword inst, dword hash_other, dword inst_other)
+engine.invoke_handler:
+    FUNC.START
+    cmp dword [PARAM(0)], HASH.PLAYER
+    je .handler.player
 
-        cmp dword [LOCAL(0)], HASH.ENEMY
-        je .hash1.enemy
+    cmp dword [PARAM(0)], HASH.ENEMY
+    je .handler.enemy
 
-        cmp dword [LOCAL(0)], HASH.SHOT
-        je .hash1.shot
+    cmp dword [PARAM(0)], HASH.SHOT
+    je .handler.shot
 
-        .hash1.player:
-        CALL player.collision, [LOCAL(2)], [LOCAL(3)]
-        jmp .hash2
+    jmp .handler.end
 
-        .hash1.enemy:
-        ; CALL enemy.collision, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
-        jmp .hash2
+    .handler.player:
+    CALL player.collision, [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
 
-        .hash1.shot:
-        CALL weapons.collision, [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
-        jmp .hash2
+    .handler.enemy:
+    ; CALL enemy.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
 
-    .hash2:
-        cmp dword [LOCAL(1)], HASH.PLAYER
-        je .hash2.player
+    .handler.shot:
+    CALL weapons.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
 
-        cmp dword [LOCAL(1)], HASH.ENEMY
-        je .hash2.enemy
-
-        cmp dword [LOCAL(1)], HASH.SHOT
-        je .hash2.shot
-
-        .hash2.player:
-        CALL player.collision, [LOCAL(0)], [LOCAL(1)]
-        jmp .handle.end
-
-        .hash2.enemy:
-        ; CALL enemy.collision, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
-        jmp .handle.end
-
-        .hash2.shot:
-        CALL weapons.collision, [LOCAL(3)], [LOCAL(0)], [LOCAL(1)]
-        jmp .handle.end
-
-    .handle.end:
+    .handler.end:
         FUNC.END
 
 ; enine.add_collision(dword hash_new, dword hash_old)
