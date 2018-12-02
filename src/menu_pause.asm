@@ -12,22 +12,17 @@ extern video.print
 extern video.print_number
 extern engine.reset
 extern actual.score
+extern menu.main
 
 section .data
 
-main.gr times ROWS*COLS dw '.'|FG.RED|BG.BLACK
-pause.gr times 17 * 25 dw '.'|FG.BLACK|BG.BRIGHT
-scores.gr times 17 * 25 dw '.'|FG.BLACK|BG.BRIGHT
+pause.gr times 17 * 25 dw '.'|FG.BLACK|BG.YELLOW
+scores.gr times 17 * 25 dw '.'|FG.BLACK|BG.YELLOW
 
 pointer_position db 0
-pointer dd 6, 11, 16
-string_pointer  dw " "|FG.GREEN|BG.BRIGHT, "/"|FG.GREEN|BG.BRIGHT, " "|FG.GREEN|BG.BRIGHT,\
-                   "("|FG.GREEN|BG.BRIGHT, "="|FG.GREEN|BG.BRIGHT, "="|FG.GREEN|BG.BRIGHT,\
-                   " "|FG.GREEN|BG.BRIGHT, "\"|FG.GREEN|BG.BRIGHT, " "|FG.GREEN|BG.BRIGHT, 0
-
-string_clean  dw   '.'|FG.BLACK|BG.BRIGHT, "."|FG.BLACK|BG.BRIGHT, "."|FG.BLACK|BG.BRIGHT,\
-                   "."|FG.BLACK|BG.BRIGHT, "."|FG.BLACK|BG.BRIGHT, "."|FG.BLACK|BG.BRIGHT,\
-                   "."|FG.BLACK|BG.BRIGHT, "."|FG.BLACK|BG.BRIGHT, "."|FG.BLACK|BG.BRIGHT, 0                
+pointer dd 7, 12, 17
+string_pointer  dw "<"|FG.GREEN|BG.BLACK, "="|FG.GREEN|BG.BLACK, "="|FG.GREEN|BG.BLACK, 0 
+string_clean  dw   '.'|FG.BLACK|BG.BRIGHT, "."|FG.BLACK|BG.BRIGHT, "."|FG.BLACK|BG.BRIGHT, 0                
 
 
 ;words used in the pause menu
@@ -84,16 +79,6 @@ timer resd 2
 
 
 section .text
-
-; main()
-; Displays main menu in the screen
-global menu.main
-menu.main:
-    FUNC.START
-    CALL video.set, main.gr
-    call video.refresh
-    CALL main_menu.wait_for_key, KEY.ENTER
-    FUNC.END
 
 ; pause()
 ; Shows a pause menu in the screen
@@ -159,7 +144,7 @@ pause_menu.wait_for_key:
         xor ecx, ecx
         mov cl, byte [pointer_position]
         mov eax, [pointer + ecx]
-        CALL video.set_rect, string_pointer, eax, 62, 3, 3
+        CALL video.set_rect, string_pointer, eax, 62, 1, 3
         call video.refresh
 
         call scan
@@ -187,20 +172,10 @@ pause_menu.wait_for_key:
     jmp pause_continue
 
     clean:
-    CALL video.set_rect, string_clean, 6, 62, 3, 3
-    CALL video.set_rect, string_clean, 11, 62, 3, 3
-    CALL video.set_rect, string_clean, 16, 62, 3, 3
+    CALL video.set_rect, string_clean, 7, 62, 1, 3
+    CALL video.set_rect, string_clean, 12, 62, 1, 3
+    CALL video.set_rect, string_clean, 17, 62, 1, 3
     jmp clean_continue
-
-; main_menu.wait_for_key(dword key)
-; Waits for the user to enter the specified key
-main_menu.wait_for_key:
-    FUNC.START
-    .input:
-        call scan
-        cmp al, [PARAM(0)]
-        jne .input
-    FUNC.END
 
 ; menu.add_score(dword score)
 ; add a score to the table if is better than any present

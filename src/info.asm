@@ -35,26 +35,20 @@ info.paint:
 
     xor eax, eax
     mov ax, word [lives]
-
-    mov ecx, 8  ;paint las character in col 8
+    add eax, 6
+    mov ecx, 6  ;paint las character in col 8
     ;paint the lives
     while1:
-    xor edx, edx
-    mov bx, 10
-    div bx
 
-    add dx, 48
-    or edx, FG.RED|BG.GREEN
-
-    push eax
     push ecx
-    CALL video.print, edx, 0, ecx
-    pop ecx
+    push eax
+    CALL video.print, '#'|FG.RED|BG.GREEN, 0, ecx 
     pop eax
+    pop ecx
 
-    dec ecx        
-    cmp eax, 0
-    je end.while1
+    inc ecx
+    cmp ecx, eax
+    jg end.while1
     jmp while1   
 
     end.while1:

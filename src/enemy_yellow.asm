@@ -108,21 +108,13 @@ enemy_yellow.update:
         jge right
 
         left:
-        cmp dword [col.offset + ecx], 0
-        je move.right
-        cmp dword [col.offset + ecx], 1
-        je move.right
-        cmp dword [col.offset + ecx], 2
-        je move.right
+        cmp dword [col.offset + ecx], 3
+        jle move.right
         jmp move.left
 
         right:
         cmp dword [col.offset + ecx], 77
-        je move.left
-        cmp dword [col.offset + ecx], 76
-        je move.left
-        cmp dword [col.offset + ecx], 75
-        je move.left
+        jge move.left
         jmp move.right
 
         condition:  ;the stop condition is reached when all the ships are moved
@@ -146,7 +138,7 @@ enemy_yellow.update:
         move.down:
         ;check position
 
-        cmp dword [row.offset + ecx] , 23
+        cmp dword [row.offset + ecx] , 24
         jge destroy
 
         add dword [row.offset + ecx] , 1
@@ -242,11 +234,22 @@ enemy_yellow.paint:
         jmp while.internal
 
 
-; enemy_yellow.take_damage(dword damage)
+; enemy_yellow.take_damage(dword damage, dword instance)
 ; Takes lives away from an enemy
 global enemy_yellow.take_damage
 enemy_yellow.take_damage:
     FUNC.START
+    mov ecx, 4    
+    mov eax, [PARAM(1)]
+    mul ecx
+    mov ecx, [PARAM(0)]
+
+    sub [lives + eax], ecx
+    cmp dword [lives + eax], 0
+    jg take_end
+    CALL destroy.ship, eax
+
+    take_end:
     FUNC.END
 
 
