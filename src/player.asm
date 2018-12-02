@@ -184,7 +184,6 @@ player.put_in_map:
 global player.collision
 player.collision:
     FUNC.START
-    inc byte [graphics]
     FUNC.END
 
 ; paint()

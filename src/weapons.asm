@@ -240,7 +240,6 @@ weapons.paint_shot:
 global weapons.collision
 weapons.collision:
     FUNC.START
-    inc byte [graphics]
     FUNC.END
 
 ; weapons.shoot(dword row, dword col, dword dir)
