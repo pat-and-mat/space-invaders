@@ -52,6 +52,9 @@ extern video.print
 ; debug
 extern video.set_rect
 
+extern enemy_manager.reset
+extern weapons.reset
+
 ; update()
 ; It is here where all the actions related to this object will be taking place
 engine.update:
@@ -261,7 +264,7 @@ engine.add_collision:
 global engine.start
 engine.start:
     FUNC.START
-    CALL player.init, 100, 20, 38
+    CALL player.init, 50, 20, 38
     FUNC.END
 
 ; engine.run()
@@ -286,4 +289,14 @@ engine.debug:
     cld
     rep stosw
 
+    FUNC.END
+
+;engine.reset()
+;reset the game
+global engine.reset
+engine.reset:
+    FUNC.START
+    CALL player.init, 50, 20, 38
+    call enemy_manager.reset
+    call weapons.reset
     FUNC.END

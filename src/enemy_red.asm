@@ -11,9 +11,9 @@ extern scan
 extern delay
 extern rand
 extern weapons.shoot
-extern sound.timer
-extern beep.set
-extern beep.on
+extern actual.score
+extern play_red_enemy_die
+
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
@@ -48,7 +48,7 @@ graphics.style db 0
 section .bss
 
 ;1-moving right 2-moving left
-dir dd ZIZE
+dir resd ZIZE
 
 row.offset resd ZIZE
 col.offset resd ZIZE
@@ -118,21 +118,13 @@ enemy_red.update:
         
 
         left:
-        cmp dword [col.offset + ecx], 0
-        je move.right
-        cmp dword [col.offset + ecx], 1
-        je move.right
         cmp dword [col.offset + ecx], 2
-        je move.right
+        jle move.right
         jmp move.left
 
         right:
-        cmp dword [col.offset + ecx], 77
-        je move.left
         cmp dword [col.offset + ecx], 76
-        je move.left
-        cmp dword [col.offset + ecx], 75
-        je move.left
+        jge move.left
         jmp move.right
 
         condition:  ;the stop condition is reached when all the ships are moved
@@ -253,12 +245,22 @@ enemy_red.paint:
         mov dword [graphics + 8], '='|FG.RED|BG.BLACK
         jmp while.internal
 
-; enemy_red.take_damage(dword damage)
+; enemy_red.take_damage(dword damage, dword instance)
 ; Takes lives away from an enemy
-; returns 0 if player remains alive after damage, 1 otherwise
 global enemy_red.take_damage
 enemy_red.take_damage:
     FUNC.START
+    mov ecx, 4    
+    mov eax, [PARAM(1)]
+    mul ecx
+    mov ecx, [PARAM(0)]
+
+    sub [lives + eax], ecx
+    cmp dword [lives + eax], 0
+    jg take_end
+    CALL destroy.ship, eax
+
+    take_end:
     FUNC.END
 
 ;destroy.ship(dword index)
@@ -266,12 +268,13 @@ enemy_red.take_damage:
 destroy.ship:
     FUNC.START
 
-    CALL beep.set, SAD3       
-    call beep.on
-    mov dword [sound.timer], 0
+    add dword [actual.score], 100
+
+    call play_red_enemy_die
 
     mov eax, [PARAM(0)]
     while:
+        ;mov forward the elements of all the arrays
         cmp eax, dword [count]
         je end.while
         mov ebx, [lives + eax + 4]
@@ -288,5 +291,12 @@ destroy.ship:
     end.while:
 
     sub dword [count], 4
+    FUNC.END
 
+; enemy_red.reset()
+; reset the red enemies
+global enemy_red.reset
+enemy_red.reset:
+    FUNC.START
+    mov dword[count], 0
     FUNC.END

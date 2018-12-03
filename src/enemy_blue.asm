@@ -11,9 +11,8 @@ extern scan
 extern delay
 extern weapons.shoot
 extern rand
-extern sound.timer
-extern beep.set
-extern beep.on
+extern actual.score
+extern play_blue_enemy_die
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
 %define ZIZE 500
@@ -270,12 +269,22 @@ enemy_blue.paint:
 
     
 
-; enemy_blue.take_damage(dword damage)
-; Takes lives away from player
-; returns 0 if player remains alive after damage, 1 otherwise
+; enemy_blue.take_damage(dword damage, dword index)
+; Takes lives away from an enemy
 global enemy_blue.take_damage
 enemy_blue.take_damage:
     FUNC.START
+    mov ecx, 4    
+    mov eax, [PARAM(1)]
+    mul ecx
+    mov ecx, [PARAM(0)]
+
+    sub [lives + eax], ecx
+    cmp dword [lives + eax], 0
+    jg take_end
+    CALL destroy.ship, eax
+
+    take_end:
     FUNC.END
 
 
@@ -284,12 +293,12 @@ enemy_blue.take_damage:
 destroy.ship:
     FUNC.START
 
-    CALL beep.set, SAD1       
-    call beep.on
-    mov dword [sound.timer], 0
+    add dword [actual.score], 50
+    call play_blue_enemy_die
 
     mov eax, [PARAM(0)]
     while:
+        ;move forward the elements of all the arrays
         cmp eax, dword [count]
         je end.while
         mov ebx, [lives + eax + 4]
@@ -306,7 +315,15 @@ destroy.ship:
     end.while:
 
     sub dword [count], 4
+    FUNC.END
 
+
+; enemy_blue.reset()
+; reset the blue enemies
+global enemy_blue.reset
+enemy_blue.reset:
+    FUNC.START
+    mov dword[count], 0
     FUNC.END
 
 
