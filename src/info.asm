@@ -42,7 +42,7 @@ info.paint:
 
     push ecx
     push eax
-    CALL video.print, '#'|FG.RED|BG.GREEN, 0, ecx 
+    CALL video.print, 3|FG.RED|BG.GREEN, 0, ecx 
     pop eax
     pop ecx
 

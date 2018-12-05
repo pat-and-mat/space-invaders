@@ -264,7 +264,7 @@ engine.add_collision:
 global engine.start
 engine.start:
     FUNC.START
-    CALL player.init, 50, 20, 38
+    CALL player.init, 10, 20, 38
     FUNC.END
 
 ; engine.run()
@@ -296,7 +296,7 @@ engine.debug:
 global engine.reset
 engine.reset:
     FUNC.START
-    CALL player.init, 50, 20, 38
+    CALL player.init, 10, 20, 38
     call enemy_manager.reset
     call weapons.reset
     FUNC.END
