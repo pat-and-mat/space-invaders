@@ -55,14 +55,14 @@ array.shiftr:
         mov ecx, [PARAM(1)]
         
         cmp ecx, [PARAM(2)]
-        je .shiftr.while.end
+        jbe .shiftr.while.end
 
-        shl ecx, 1
+        shl ecx, 2
 
         mov edx, [PARAM(0)]
         add edx, ecx
 
-        mov ax, [edx - 2]
+        mov ax, [edx - 4]
         mov [edx], ax
 
         dec dword [PARAM(1)]
