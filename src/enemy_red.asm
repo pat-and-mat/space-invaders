@@ -16,6 +16,9 @@ extern actual.score
 extern play_red_enemy_die
 extern engine.add_collision
 extern player.take_damage
+extern engine.can_move
+extern old_map
+extern array.index_of
 
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
@@ -73,6 +76,12 @@ section .text
 global enemy_red.init
 enemy_red.init:
     FUNC.START
+    mov edx, HASH.ENEMY_RED << 16
+    mov [LOCAL(0)], edx
+
+    CALL engine.can_move, old_map, [PARAM(0)], [PARAM(1)], rows, cols, SHIP.COORDS, 0, 0, 0, 0, [LOCAL(0)]       
+    cmp eax, 0
+    je .end
 
     ;filling local vars
     mov eax, dword [count]     
@@ -94,14 +103,15 @@ enemy_red.init:
 
     add dword [count], 4   
 
+    .end:
     FUNC.END
 
-;update()
+;update(dword *map)
 ;move all the blue enemies
 global enemy_red.update
 enemy_red.update:
     FUNC.START
-    RESERVE(2)
+    RESERVE(3)
 
     CALL delay, timer.red, 250  ;timing condition to move
     cmp eax, 0
@@ -117,6 +127,11 @@ enemy_red.update:
         cmp eax, 0
         je red.shoot
         after.shoot:
+
+        mov edx, HASH.ENEMY_RED << 16
+        mov dx, [inst + ecx]
+        mov[LOCAL(2)], edx
+
         cmp dword [down.count + ecx], 7
         je move.down
         add dword [down.count + ecx], 1
@@ -142,11 +157,23 @@ enemy_red.update:
         jl start
         jmp working.on.map  ;end cicle
 
-        move.right:        
+        move.right: 
+        push ecx
+        CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 2, 0, [LOCAL(2)]       
+        pop ecx
+        cmp eax, 0
+        je condition
+
         add dword [col.offset + ecx] , 2
         jmp condition
 
         move.left:
+        push ecx
+        CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 0, 2, [LOCAL(2)]
+        pop ecx
+        cmp eax, 0
+        je condition
+
         sub dword [col.offset + ecx] , 2
         jmp condition
 
@@ -156,12 +183,17 @@ enemy_red.update:
 
         move.down:
         ;check position
-
         cmp dword [row.offset + ecx] , 24
         jge destroy
+
+        push ecx
+        CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 1, 0, 0, 0, [LOCAL(2)]
+        pop ecx
+        cmp eax, 0
+        je condition
+        
         mov dword [down.count + ecx], 0
         add dword [row.offset + ecx] , 1
-
         jmp condition
 
         destroy:
@@ -246,6 +278,8 @@ red.put_one_in_map:
         add [LOCAL(3)], eax
 
         OFFSET [LOCAL(2)], [LOCAL(3)]
+        ; CALL video.print, 'X'|FG.GREEN|BG.YELLOW, [LOCAL(2)], [LOCAL(3)]
+        ; call video.refresh
 
         mov [LOCAL(1)], eax
         shl eax, 2
@@ -254,10 +288,11 @@ red.put_one_in_map:
         cmp dword [eax], 0
         je .map.one.while.cont
 
-        ;CALL engine.add_collision, [PARAM(1)], [eax]
+        CALL engine.add_collision, [PARAM(1)], [eax]
 
         .map.one.while.cont:
             mov eax, [LOCAL(1)]
+
             shl eax, 2
             add eax, [PARAM(0)]
 
@@ -273,24 +308,25 @@ red.put_one_in_map:
 ; It is here where collisions will be handled
 global enemy_red.collision
 enemy_red.collision:
-    ; FUNC.START
-    ; cmp dword [PARAM(1)], HASH.PLAYER
-    ; je crash_player
+    FUNC.START    
 
-    ; cmp dword [PARAM(1)], HASH.SHOT
-    ; je crash_shoot
+    cmp dword [PARAM(1)], HASH.PLAYER
+    je crash_player
 
-    ; crashed:
-    ; FUNC.END
+    cmp dword [PARAM(1)], HASH.SHOT
+    je crash_shoot
 
-    ; crash_player:
-    ; CALL player.take_damage, 5
-    ; jmp crashed
+    crashed:
+    FUNC.END
 
-    ; crash_shoot:
-    ; jmp crashed
-     FUNC.START
-     inc byte[graphics]
+    crash_player:
+    CALL player.take_damage, 5
+    jmp crashed
+
+    crash_shoot:
+    jmp crashed
+    ;  FUNC.START
+    ;  inc byte[graphics]
      FUNC.END
 
 ;paint()
@@ -354,9 +390,10 @@ enemy_red.paint:
 global enemy_red.take_damage
 enemy_red.take_damage:
     FUNC.START
-    mov ecx, 4    
-    mov eax, [PARAM(1)]
-    mul ecx
+    mov ecx, [count]
+    shr ecx, 2    
+    CALL array.index_of, inst, ecx, [PARAM(1)], 4
+    shl eax, 2
     mov ecx, [PARAM(0)]
 
     sub [lives + eax], ecx
@@ -389,6 +426,8 @@ destroy.ship:
         mov dword [col.offset + eax], ebx
         mov ebx, [down.count + eax + 4]
         mov dword [down.count + eax], ebx
+        mov ebx, [inst + eax + 4]
+        mov dword [inst + eax], ebx
         add eax, 4
         jmp while
 

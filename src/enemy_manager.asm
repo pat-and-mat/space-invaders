@@ -57,15 +57,15 @@ enemy.generate:
 
     ;the enemies are generate in the upper section of the screen
     blue:
-    ; CALL enemy_blue.init, 2, eax
+    CALL enemy_blue.init, 1, eax
     jmp Continue
 
     red:
-    CALL enemy_red.init, 2, eax
+    CALL enemy_red.init, 1, eax
     jmp Continue
     
     yellow:
-    ; CALL enemy_yellow.init, 1, eax
+    CALL enemy_yellow.init, 1, eax
     jmp Continue
 
 ; update(dword map)

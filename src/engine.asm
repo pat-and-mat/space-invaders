@@ -1,11 +1,20 @@
 %include "video.inc"
 %include "stack.inc"
 %include "hash.inc"
+%include "utils.inc"
 
 %macro CLEAR_MAP 1
     mov eax, %1
     mov ecx, COLS * ROWS
     mov edi, map
+    cld
+    rep stosd
+%endmacro
+
+%macro CLEAR_OLD_MAP 1
+    mov eax, %1
+    mov ecx, COLS * ROWS
+    mov edi, old_map
     cld
     rep stosd
 %endmacro
@@ -21,6 +30,8 @@ debug_info times 80 dw 0
 section .bss
 
 map resd COLS * ROWS
+global old_map
+old_map resd COLS * ROWS
 
 section .text
 
@@ -48,6 +59,7 @@ extern enemy.paint
 extern video.clear
 extern video.refresh
 extern video.print
+extern delay
 
 ; debug
 extern video.set_rect
@@ -59,6 +71,14 @@ extern weapons.reset
 ; It is here where all the actions related to this object will be taking place
 engine.update:
     FUNC.START
+    
+    CLEAR_OLD_MAP 0
+    mov esi, map
+    mov edi, old_map
+    mov ecx, ROWS * COLS
+    cld
+    rep movsd
+
     CLEAR_MAP 0
     CALL player.update, map
     CALL weapons.update, map
@@ -151,6 +171,9 @@ engine.handle_collision:
     mov [LOCAL(3)], eax
 
     add ecx, 2
+
+    mov ax, [collisions.hashes + ecx]
+    mov [LOCAL(2)], eax
 
     CALL engine.invoke_handler, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
     CALL engine.invoke_handler, [LOCAL(2)], [LOCAL(3)], [LOCAL(0)], [LOCAL(1)]
@@ -264,7 +287,7 @@ engine.add_collision:
 global engine.start
 engine.start:
     FUNC.START
-    CALL player.init, 10, 20, 38
+    CALL player.init, 25, 20, 38
     FUNC.END
 
 ; engine.run()
@@ -280,14 +303,14 @@ engine.run:
 
 engine.debug:
     FUNC.START
-    CALL video.set_rect, debug_info, 24, 0, 1, 80
-    call video.refresh
+    ; CALL video.set_rect, debug_info, 24, 0, 1, 80
+    ; call video.refresh
 
-    mov edi, debug_info
-    mov eax, 0
-    mov ecx, 80
-    cld
-    rep stosw
+    ; mov edi, debug_info
+    ; mov eax, 0
+    ; mov ecx, 80
+    ; cld
+    ; rep stosw
 
     FUNC.END
 
@@ -296,7 +319,76 @@ engine.debug:
 global engine.reset
 engine.reset:
     FUNC.START
-    CALL player.init, 10, 20, 38
+    CALL player.init, 25, 20, 38
     call enemy_manager.reset
     call weapons.reset
+    FUNC.END
+
+
+;  return 1 if true, 0 if false
+;  in the directions param are the amount to mov in every direction
+;  in the count param is the number of graphics to check
+;  engine.can_move(dword *map, dword row.offset, col.offset, dword rows, dword cols, dword count, dword down, dword up, dword right, dword left, dword hash)
+global engine.can_move
+engine.can_move:
+    FUNC.START
+    RESERVE(3)    
+
+    mov dword [LOCAL(0)], 0
+    while:
+    mov ecx, [LOCAL(0)]
+    cmp ecx, [PARAM(5)]
+    je true
+
+    shl ecx, 2
+
+    mov eax, [PARAM(1)]
+    mov dword [LOCAL(1)], eax
+    mov eax, [PARAM(3)]
+    add eax, ecx
+    mov ebx, [eax]
+    add dword [LOCAL(1)], ebx
+    mov eax, [PARAM(6)]
+    add dword [LOCAL(1)], eax
+    mov eax, [PARAM(7)]
+    sub dword [LOCAL(1)], eax
+
+    mov eax, [PARAM(2)]
+    mov dword [LOCAL(2)], eax
+    mov eax, [PARAM(4)]
+    add eax, ecx
+    mov ebx, [eax]
+    add dword [LOCAL(2)], ebx
+    mov eax, [PARAM(8)]
+    add dword [LOCAL(2)], eax
+    mov eax, [PARAM(9)]
+    sub dword [LOCAL(2)], eax
+    
+    OFFSET [LOCAL(1)], [LOCAL(2)]
+
+    shl eax, 2
+    add eax, dword [PARAM(0)]
+
+    mov edx, [PARAM(10)]
+
+    cmp dword [eax], edx
+    jne can_be_false
+    no_false:
+    mov dword [eax], 1
+    add dword [LOCAL(0)], 1
+    jmp while
+
+    can_be_false:
+    cmp dword [eax], 0
+    jne false
+    jmp no_false
+    
+    true:
+    mov eax, 1
+    jmp return
+
+    false:
+    mov eax, 0
+
+    return:
     FUNC.END
