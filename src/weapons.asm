@@ -269,15 +269,15 @@ weapons.collision:
         jmp .collision.end
 
     .kill.enemy_blue:
-        CALL enemy_blue.take_damage, 1
+        CALL enemy_blue.take_damage, 1, [PARAM(2)]
         jmp .collision.end
 
     .kill.enemy_red:
-        CALL enemy_red.take_damage, 1
+        CALL enemy_red.take_damage, 1, [PARAM(2)]
         jmp .collision.end
 
     .kill.enemy_yellow:
-        CALL enemy_yellow.take_damage, 1
+        CALL enemy_yellow.take_damage, 1, [PARAM(2)]
         jmp .collision.end
 
     .collision.end:

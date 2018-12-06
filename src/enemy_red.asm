@@ -204,7 +204,7 @@ enemy_red.update:
         red.shoot:
         mov eax, [weapon.row]
         add eax, [row.offset + ecx]
-        sub eax, 1
+        add eax, 1
         mov [LOCAL(0)], eax
 
         mov eax, [weapon.col]
