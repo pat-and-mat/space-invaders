@@ -16,7 +16,7 @@ collisions.hashes times ROWS*COLS dd 0
 collisions.count dw 0
 
 global debug_info
-debug_info times 80 dw '0'|FG.RED
+debug_info times 80 dw 0
 
 section .bss
 
@@ -60,8 +60,6 @@ extern weapons.reset
 engine.update:
     FUNC.START
     CLEAR_MAP 0
-    mov dword [map + (12*COLS + 39)*4], 9<<16|8
-    mov dword [map + (12*COLS + 40)*4], 9<<16|8
     CALL player.update, map
     CALL weapons.update, map
     CALL enemy.update, map
@@ -228,7 +226,6 @@ engine.add_collision:
     mov eax, [PARAM(0)]
     mov [collisions.hashes + ecx], eax
     inc word [collisions.count]
-    inc word[debug_info] ; debug
 
     xor ecx, ecx
     mov cx, [collisions.count]
@@ -236,14 +233,12 @@ engine.add_collision:
     mov eax, [PARAM(1)]
     mov [collisions.hashes + ecx], eax
     inc word [collisions.count]
-    inc word[debug_info] ; debug
 
     xor ecx, ecx
     mov cx, [collisions.count]
     shl ecx, 2
     mov dword [collisions.hashes + ecx], -1
     inc word [collisions.count]
-    inc word[debug_info] ; debug
 
     jmp .add_collision.end
 
@@ -260,7 +255,6 @@ engine.add_collision:
         mov [collisions.hashes + ecx], eax
 
         inc word [collisions.count]
-        inc word[debug_info] ; debug
         jmp .add_collision.end
 
     .add_collision.end:
@@ -289,13 +283,11 @@ engine.run:
 
 engine.debug:
     FUNC.START
-    CALL video.print, BG.RED, 12,39
-    CALL video.print, BG.RED, 12,40
     CALL video.set_rect, debug_info, 24, 0, 1, 80
     call video.refresh
 
     mov edi, debug_info
-    mov eax, 48|FG.RED
+    mov eax, 0
     mov ecx, 80
     cld
     rep stosw
