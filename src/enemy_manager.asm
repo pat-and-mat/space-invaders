@@ -57,18 +57,18 @@ enemy.generate:
 
     ;the enemies are generate in the upper section of the screen
     blue:
-    CALL enemy_blue.init, 2, eax
+    CALL enemy_blue.init, 1, eax
     jmp Continue
 
     red:
-    CALL enemy_red.init, 2, eax
+    CALL enemy_red.init, 1, eax
     jmp Continue
     
     yellow:
     CALL enemy_yellow.init, 1, eax
     jmp Continue
 
-; update()
+; update(dword map)
 ; It is here where all the actions related to this object will be taking place
 global enemy.update
 enemy.update:
@@ -96,9 +96,9 @@ enemy.update:
 
     end:      
     
-    call enemy_blue.update
-    call enemy_red.update
-    call enemy_yellow.update
+    CALL enemy_blue.update, [PARAM(0)]
+    CALL enemy_red.update, [PARAM(0)]
+    CALL enemy_yellow.update, [PARAM(0)]
     
     FUNC.END
 

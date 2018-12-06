@@ -19,6 +19,10 @@ extern menu.lose
 extern sound_player_die.update
 extern sound.timer
 extern beep.of
+extern enemy_blue.take_damage
+extern enemy_red.take_damage
+extern enemy_yellow.take_damage
+extern debug_info
 
 %define SHIP.COORDS 5
 
@@ -137,15 +141,14 @@ player.update:
         sub dword [col.offset], 1
         jmp update.end
 
-    right:    
-    cmp dword [col.offset], 75
+    right:
+        cmp dword [col.offset], 75
         je update.end    
         add dword [col.offset], 1
         jmp update.end
 
     space:
-        call play_shoot
-
+        
         mov dword [graphics + 8], 173|FG.GRAY|BG.BLACK
         mov dword [animation.timer], 0
 
@@ -216,7 +219,44 @@ player.put_in_map:
 global player.collision
 player.collision:
     FUNC.START
+    ; mov eax, [PARAM(1)]
+    ; mov [debug_info], ax
+    ; add word [debug_info], 48
+    ; or word [debug_info], FG.RED
+
+    cmp dword [PARAM(0)], HASH.ENEMY_BLUE
+    je crash_blue
+    cmp dword [PARAM(0)], HASH.ENEMY_RED
+    je crash_red
+    cmp dword [PARAM(0)], HASH.ENEMY_YELLOW
+    je crash_yellow
+    cmp dword [PARAM(0)], HASH.SHOT
+    je crash_shoot
+
+    crashed:
     FUNC.END
+
+    crash_blue:
+    ; mov eax, [PARAM(1)]
+    ; mov [debug_info], ax
+    ; add word [debug_info], 48
+    ; or word [debug_info], FG.RED
+    CALL enemy_blue.take_damage, 1, [PARAM(1)]
+    
+    jmp crashed
+
+    crash_red:
+    CALL enemy_red.take_damage, 1, [PARAM(1)]
+    jmp crashed
+
+    crash_yellow:
+    CALL enemy_yellow.take_damage, 1, [PARAM(1)]
+    jmp crashed
+
+    crash_shoot:
+    jmp crashed
+    
+     
 
 ; paint()
 ; Puts the object's graphics in the screen

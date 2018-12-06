@@ -3,16 +3,22 @@
 %include "keyboard.inc"
 %include "hash.inc"
 %include "sound.inc"
+%include "utils.inc"
 
 extern video.print_at
 extern video.print
 extern video.clear
 extern scan
 extern delay
-extern rand
 extern weapons.shoot
+extern rand
 extern actual.score
 extern play_yellow_enemy_die
+extern engine.add_collision
+extern player.take_damage
+extern engine.can_move
+extern old_map
+extern array.index_of
 
 %define ZIZE 500
 %define SHIP.COORDS 3
@@ -38,8 +44,7 @@ col.right dd 3
 
 weapon.row dd 1
 weapon.col dd 1
-
-hash dd 3
+next_inst dd 1
 
 graphics.style db 0
 
@@ -47,6 +52,7 @@ section .bss
 
 row.offset resd ZIZE
 col.offset resd ZIZE
+inst resd ZIZE
 
 
 lives resd ZIZE
@@ -63,6 +69,13 @@ global enemy_yellow.init
 enemy_yellow.init:
     FUNC.START
 
+    mov edx, HASH.ENEMY_YELLOW << 16
+    mov [LOCAL(0)], edx
+
+    CALL engine.can_move, old_map, [PARAM(0)], [PARAM(1)], rows, cols, SHIP.COORDS, 0, 0, 0, 0, [LOCAL(0)]       
+    cmp eax, 0
+    je .end
+
     ;filling local vars
     mov eax, dword [count]     
 
@@ -73,10 +86,14 @@ enemy_yellow.init:
     mov [col.offset + eax], edx
 
     mov dword [lives + eax], 1
-   
+
+    mov edx, [next_inst]
+    mov [inst + eax], edx
+    add dword [next_inst], 1   
 
     add dword [count], 4   
 
+    .end:
     FUNC.END
 
 ;update()
@@ -84,14 +101,14 @@ enemy_yellow.init:
 global enemy_yellow.update
 enemy_yellow.update:
     FUNC.START
-    RESERVE(2)
+    RESERVE(3)
 
     CALL delay, timer.yellow, 3000  ;timing condition to move
     cmp eax, 0
     je working.on.map
 
     cmp dword [count], 0
-    je working.on.map
+    je end
    
     mov ecx, 0
 
@@ -100,10 +117,13 @@ enemy_yellow.update:
         cmp eax, 0
         je yellow.shoot
         after.shoot:
-        jmp move.down
+
+        mov edx, HASH.ENEMY_YELLOW << 16
+        mov dx, [inst + ecx]
+        mov[LOCAL(2)], edx
+
         continue: 
-        CALL rand, 15       
-        
+        CALL rand, 15         
         cmp eax, 3        
         jge right
 
@@ -123,12 +143,32 @@ enemy_yellow.update:
         jl start
         jmp working.on.map  ;end cicle
 
-        move.right:        
-        add dword [col.offset + ecx] , 3
+        move.right:     
+        cmp dword [row.offset + ecx] , 24
+        jge destroy   
+
+        push ecx
+        CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 1, 0, 2, 0, [LOCAL(2)]       
+        pop ecx
+        cmp eax, 0
+        je condition
+
+        add dword [row.offset + ecx] , 1
+        add dword [col.offset + ecx] , 2
         jmp condition
 
         move.left:
-        sub dword [col.offset + ecx] , 3
+        cmp dword [row.offset + ecx] , 24
+        jge destroy
+
+        push ecx
+        CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 1, 0, 0, 2, [LOCAL(2)]       
+        pop ecx
+        cmp eax, 0
+        je condition
+
+        add dword [row.offset + ecx] , 1
+        sub dword [col.offset + ecx] , 2
         jmp condition
 
         move.up:
@@ -136,13 +176,17 @@ enemy_yellow.update:
         jmp condition
 
         move.down:
-        ;check position
+        ; cmp dword [row.offset + ecx] , 24
+        ; jge destroy
 
-        cmp dword [row.offset + ecx] , 24
-        jge destroy
+        ; push ecx
+        ; CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 1, 0, 0, 0, [LOCAL(2)]       
+        ; pop ecx
+        ; cmp eax, 0
+        ; je condition
 
-        add dword [row.offset + ecx] , 1
-        jmp continue
+        ; add dword [row.offset + ecx] , 1
+        ; jmp continue
 
 
         destroy:
@@ -163,22 +207,116 @@ enemy_yellow.update:
         push ecx
         CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 0
         pop ecx
-        jmp after.shoot
-
+        jmp after.shoot        
         
-        
-    working.on.map:
+        working.on.map:
+        CALL yellow.put_all_in_map, [PARAM(0)]
+        end:
+    FUNC.END
 
-    end:
+; yellow.put_all_in_map(dword *map)
+yellow.put_all_in_map:
+    FUNC.START
+    RESERVE(3) ; i, row, col
+    cmp dword [count], 0
+    je .map.all.while.end
+
+    mov dword [LOCAL(0)], 0
+    .map.all.while:
+        mov ecx, [LOCAL(0)]
+        
+        shl ecx, 2
+
+        cmp ecx, [count]
+        je .map.all.while.end
+
+        mov eax, [row.offset + ecx]
+        mov [LOCAL(1)], eax
+
+        mov eax, [col.offset + ecx]
+        mov [LOCAL(2)], eax
+
+        mov edx, HASH.ENEMY_YELLOW << 16
+        mov dx, [inst + ecx]
+
+        CALL yellow.put_one_in_map, [PARAM(0)], edx, [LOCAL(1)], [LOCAL(2)]
+        
+        inc dword [LOCAL(0)]
+        jmp .map.all.while
+    .map.all.while.end:
+    FUNC.END
+
+; yellow.put_one_in_map(dword *map, dword hash, dword row, dword col)
+yellow.put_one_in_map:
+    FUNC.START
+    RESERVE(4)  ; coord, offset
+
+    mov dword [LOCAL(0)], 0
+    .map.one.while:
+        mov ecx, [LOCAL(0)]
+
+        cmp ecx, SHIP.COORDS
+        je .map.one.while.end
+
+        shl ecx, 2
+        
+        mov eax, [rows + ecx]
+        mov edx, [PARAM(2)]
+        mov [LOCAL(2)], edx
+        add [LOCAL(2)], eax
+        
+        mov eax, [cols + ecx]
+        mov edx, [PARAM(3)]
+        mov [LOCAL(3)], edx
+        add [LOCAL(3)], eax
+
+        OFFSET [LOCAL(2)], [LOCAL(3)]
+
+        mov [LOCAL(1)], eax
+        shl eax, 2
+        add eax, [PARAM(0)]
+
+        cmp dword [eax], 0
+        je .map.one.while.cont
+
+        CALL engine.add_collision, [PARAM(1)], [eax]
+
+        .map.one.while.cont:
+            mov eax, [LOCAL(1)]
+            shl eax, 2
+            add eax, [PARAM(0)]
+
+            mov edx, [PARAM(1)]
+            mov [eax], edx
+            inc dword [LOCAL(0)]
+            jmp .map.one.while
+    .map.one.while.end:
 
     FUNC.END
+
 
 ; collision(dword inst, dword hash_other, dword inst_other)
 ; It is here where collisions will be handled
 global enemy_yellow.collision
 enemy_yellow.collision:
     FUNC.START
-    FUNC.END 
+    cmp dword [PARAM(1)], HASH.PLAYER
+    je crash_player
+
+    cmp dword [PARAM(1)], HASH.SHOT
+    je crash_shoot
+
+    crashed:
+    FUNC.END
+
+    crash_player:
+    CALL player.take_damage, 5
+    jmp crashed
+
+    crash_shoot:
+    jmp crashed
+     
+     FUNC.END
 
 ;paint()
 ;move all the yellow enemies
@@ -244,9 +382,10 @@ enemy_yellow.paint:
 global enemy_yellow.take_damage
 enemy_yellow.take_damage:
     FUNC.START
-    mov ecx, 4    
-    mov eax, [PARAM(1)]
-    mul ecx
+    mov ecx, [count]
+    shr ecx, 2    
+    CALL array.index_of, inst, ecx, [PARAM(1)], 4
+    shl eax, 2
     mov ecx, [PARAM(0)]
 
     sub [lives + eax], ecx
