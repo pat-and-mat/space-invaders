@@ -13,6 +13,7 @@ extern video.clear
 extern scan
 extern calibrate
 extern menu.main
+extern menu.loading
 extern menu.pause
 extern engine.run
 extern engine.start
@@ -21,9 +22,12 @@ global game
 game:
   ; Initialize game
 
+  CALL video.clear, BG.BLACK
   call menu.main
 
   ; Calibrate the timing
+  CALL video.clear, BG.BLACK
+  call menu.loading
   call calibrate
   call engine.start
 

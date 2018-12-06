@@ -36,7 +36,12 @@ section .text
 extern video.print
 extern delay
 extern array.shiftl
+extern array.index_of
 extern engine.add_collision
+extern player.take_damage
+extern enemy_blue.take_damage
+extern enemy_red.take_damage
+extern enemy_yellow.take_damage
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
@@ -240,7 +245,42 @@ weapons.paint_shot:
 global weapons.collision
 weapons.collision:
     FUNC.START
-     inc byte[graphics]
+    xor eax, eax
+    mov ax, [shots.count]
+    CALL array.index_of, shots.insts, eax, [PARAM(0)], 2
+    CALL weapons.remove, eax
+
+    cmp dword [PARAM(1)], HASH.PLAYER
+    je .kill.player
+
+    cmp dword [PARAM(1)], HASH.ENEMY_BLUE
+    je .kill.enemy_blue
+
+    cmp dword [PARAM(1)], HASH.ENEMY_RED
+    je .kill.enemy_red
+
+    cmp dword [PARAM(1)], HASH.ENEMY_YELLOW
+    je .kill.enemy_yellow
+
+    jmp .collision.end
+
+    .kill.player:
+        CALL player.take_damage, 10
+        jmp .collision.end
+
+    .kill.enemy_blue:
+        CALL enemy_blue.take_damage, 1
+        jmp .collision.end
+
+    .kill.enemy_red:
+        CALL enemy_red.take_damage, 1
+        jmp .collision.end
+
+    .kill.enemy_yellow:
+        CALL enemy_yellow.take_damage, 1
+        jmp .collision.end
+
+    .collision.end:
     FUNC.END
 
 ; weapons.shoot(dword row, dword col, dword dir)
