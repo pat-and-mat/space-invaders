@@ -152,6 +152,9 @@ engine.handle_collision:
 
     add ecx, 2
 
+    mov ax, [collisions.hashes + ecx]
+    mov [LOCAL(2)], eax
+
     CALL engine.invoke_handler, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
     CALL engine.invoke_handler, [LOCAL(2)], [LOCAL(3)], [LOCAL(0)], [LOCAL(1)]
 
