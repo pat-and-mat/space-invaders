@@ -22,10 +22,11 @@ global game
 game:
   ; Initialize game
 
-  call menu.main
   CALL video.clear, BG.BLACK
+  call menu.main
 
   ; Calibrate the timing
+  CALL video.clear, BG.BLACK
   call menu.loading
   call calibrate
   call engine.start
