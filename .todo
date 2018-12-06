@@ -1,2 +1,5 @@
 TODO:
     Put graphics and animations into an independent script
+
+FIX:
+    engine.reset is fuckin breaking everything
