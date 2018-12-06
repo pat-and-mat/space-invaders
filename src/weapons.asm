@@ -245,13 +245,10 @@ weapons.paint_shot:
 global weapons.collision
 weapons.collision:
     FUNC.START
-    ; CALL player.take_damage, 10
-    ; inc byte [graphics]
-    
-    ; mov eax, [PARAM(1)]
-    ; add ax, 48
-    ; or ax, FG.RED|BG.GREEN
-    ; mov [debug_info], ax
+    xor eax, eax
+    mov ax, [shots.count]
+    CALL array.index_of, shots.insts, eax, [PARAM(0)], 2
+    CALL weapons.remove, eax
 
     cmp dword [PARAM(1)], HASH.PLAYER
     je .kill.player
@@ -268,26 +265,20 @@ weapons.collision:
     jmp .collision.end
 
     .kill.player:
-        CALL player.take_damage, 5
-        jmp .collision.dest
+        CALL player.take_damage, 10
+        jmp .collision.end
 
     .kill.enemy_blue:
         CALL enemy_blue.take_damage, 1
-        jmp .collision.dest
+        jmp .collision.end
 
     .kill.enemy_red:
         CALL enemy_red.take_damage, 1
-        jmp .collision.dest
+        jmp .collision.end
 
     .kill.enemy_yellow:
         CALL enemy_yellow.take_damage, 1
-        jmp .collision.dest
-
-    .collision.dest:
-        xor eax, eax
-        mov ax, [shots.count]
-        CALL array.index_of, shots.insts, eax, [PARAM(0)], 2
-        CALL weapons.remove, eax
+        jmp .collision.end
 
     .collision.end:
     FUNC.END
