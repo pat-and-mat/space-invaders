@@ -21,7 +21,7 @@ extern engine.start
 extern sound_player_die.update
 extern delay
 extern player.lives
-extern beep.of
+extern beep.off
 extern menu.lose
 
 global game
@@ -64,7 +64,7 @@ game:
         CALL delay, lose.timer, 1500
         cmp eax, 0
         je .play_dead_sound
-        call beep.of
+        call beep.off
         
     call menu.lose
     cmp eax, 1 ; back to main menu
