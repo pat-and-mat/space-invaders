@@ -53,6 +53,7 @@ extern weapons.collision
 extern enemy_yellow.collision
 extern enemy_red.collision
 extern enemy_blue.collision
+extern enemy_boss.collision
 
 extern player.paint
 extern weapons.paint
@@ -175,6 +176,9 @@ engine.invoke_handler:
     cmp dword [PARAM(0)], HASH.ENEMY_BLUE
     je .handler.enemy_blue
 
+    cmp dword [PARAM(0)], HASH.ENEMY_BOSS
+    je .handler.enemy_boss
+
     jmp .handler.end
 
     .handler.player:
@@ -195,6 +199,10 @@ engine.invoke_handler:
 
     .handler.enemy_blue:
     CALL enemy_blue.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.enemy_boss:
+    CALL enemy_boss.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
     jmp .handler.end
 
     .handler.end:

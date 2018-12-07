@@ -11,6 +11,7 @@ section .data
 ;if one off then is 1, the sound is on
 music db 0
 shoot db 0
+boss_enemy_die db 0
 blue_enemy_die db 0
 yellow_enemy_die db 0
 red_enemy_die db 0
@@ -25,6 +26,7 @@ section .bss
 music.timer resd 2
 shoot.timer resd 2
 player_die.timer resd 2
+boss_enemy_die.timer resd 2
 blue_enemy_die.timer resd 2
 red_enemy_die.timer resd 2
 yellow_enemy_die.timer resd 2
@@ -109,6 +111,11 @@ sound.update:
     call sound_player_die.update
     player_die.continue:
 
+    cmp byte [boss_enemy_die], 0  
+    je boss_enemy_die.continue
+    call sound_boss_enemy_die.update
+    boss_enemy_die.continue:
+
     FUNC.END
 
 
@@ -150,7 +157,12 @@ play_yellow_enemy_die:
     mov byte [yellow_enemy_die], 1
     FUNC.END
 
-
+global play_boss_enemy_die
+play_boss_enemy_die:
+    FUNC.START
+    mov dword [boss_enemy_die.timer], 0
+    mov byte [boss_enemy_die], 1
+    FUNC.END
 
 
 ;those are the methods used to emit the sound in case off a sound byte is on
@@ -241,6 +253,22 @@ sound_yellow_enemy_die.update:
     mov byte[yellow_enemy_die], 0
 
     yellow_enemy_die.end:
+    FUNC.END
+
+sound_boss_enemy_die.update:
+    FUNC.START
+    CALL delay, boss_enemy_die.timer, 1000
+    cmp eax, 0
+    jne boss_enemy_die.silence
+    CALL beep.set, 122000
+    call beep.on
+    jmp boss_enemy_die.end
+
+    boss_enemy_die.silence:
+    call beep.off
+    mov byte[boss_enemy_die], 0
+
+    boss_enemy_die.end:
     FUNC.END
 
 

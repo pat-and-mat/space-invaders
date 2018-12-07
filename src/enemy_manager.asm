@@ -16,6 +16,10 @@ extern enemy_yellow.paint
 extern enemy_blue.reset
 extern enemy_red.reset
 extern enemy_yellow.reset
+extern enemy_boss.update
+extern enemy_boss.init
+extern enemy_boss.paint
+extern enemy_boss.reset
 
 extern colors
 extern colors_count
@@ -32,6 +36,7 @@ section .data
 section .bss
 
 timer resd 2
+boss.timer resd 2
 
 section .text
 
@@ -83,6 +88,10 @@ global enemy.update
 enemy.update:
     FUNC.START
     RESERVE(3)
+
+    CALL delay, boss.timer, [boss_time]  ;timing condition to generate
+    cmp eax, 0
+    jne boss
     
     CALL delay, timer, [generate_time]  ;timing condition to generate
     cmp eax, 0
@@ -92,14 +101,11 @@ enemy.update:
     CALL rand, [generate_amount]   ;max number of enemy generate 
     mov [LOCAL(0)], eax  ;LOCAL(0) = number of enemies to generate
     
-    mov ebx, 20 
+    mov ebx, 20      
     sub ebx, eax
     CALL rand, ebx
     shl eax, 2 
-    mov ebx, [LOCAL(0)]
-    shl ebx, 2
-    add eax, ebx
-    mov [LOCAL(1)], eax  ;LOCAL(1) = col to generate the enemies
+    mov [LOCAL(1)], eax   ;LOCAL(1) = col to generate the enemies
 
     CALL rand, [colors_count]
     shl eax, 2
@@ -112,8 +118,13 @@ enemy.update:
     CALL enemy_blue.update, [PARAM(0)]
     CALL enemy_red.update, [PARAM(0)]
     CALL enemy_yellow.update, [PARAM(0)]
+    CALL enemy_boss.update, [PARAM(0)]
     
     FUNC.END
+
+    boss:
+    CALL enemy_boss.init, 1, 37
+    jmp end
 
 ; paint()
 ; Put the object's graphics in the canvas
@@ -123,6 +134,7 @@ enemy.paint:
     call enemy_blue.paint    ;each subprogram paint all the ships of the mentioned color
     call enemy_red.paint
     call enemy_yellow.paint
+    call enemy_boss.paint
     FUNC.END
 
 ; enemy.take_damage(dword damage)
@@ -140,6 +152,7 @@ enemy_manager.reset:
     call enemy_blue.reset
     call enemy_red.reset
     call enemy_yellow.reset
+    call enemy_boss.reset
     FUNC.END
 
 
