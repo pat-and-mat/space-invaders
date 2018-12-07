@@ -232,7 +232,7 @@ sound_yellow_enemy_die.update:
     CALL delay, yellow_enemy_die.timer, 150
     cmp eax, 0
     jne yellow_enemy_die.silence
-    CALL beep.set, 050000
+    CALL beep.set, 140000
     call beep.on
     jmp yellow_enemy_die.end
 

@@ -289,6 +289,8 @@ global engine.start
 engine.start:
     FUNC.START
     CALL player.init, 25, 20, 38
+    call enemy_manager.reset
+    call weapons.reset
     FUNC.END
 
 ; engine.run()
@@ -315,15 +317,7 @@ engine.debug:
 
     FUNC.END
 
-;engine.reset()
-;reset the game
-global engine.reset
-engine.reset:
-    FUNC.START
-    CALL player.init, 25, 20, 38
-    call enemy_manager.reset
-    call weapons.reset
-    FUNC.END
+
 
 
 

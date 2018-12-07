@@ -10,7 +10,7 @@ extern video.print_word
 extern delay
 extern video.print
 extern video.print_number
-extern engine.reset
+extern engine.start
 extern actual.score
 extern best_scores
 extern engine.reset
@@ -77,7 +77,7 @@ menu.lose:
     reset:
     CALL menu.add_score, [actual.score]
     mov dword [actual.score], 0
-    call engine.reset
+    call engine.start
     jmp lose.end
 
     main:
@@ -87,7 +87,7 @@ menu.lose:
     mov dword [best_scores + 12], 0
     mov dword [best_scores + 16], 0
     mov dword [best_scores + 20], 0
-    call engine.reset
+    call engine.start
     call menu.main
     jmp lose.end
 

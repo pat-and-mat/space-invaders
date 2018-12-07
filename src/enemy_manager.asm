@@ -20,6 +20,11 @@ extern enemy_yellow.reset
 extern rand
 extern delay
 
+section .data
+
+generate_array dd 0, 0, 1, 1, 2, 2
+generate_array.count dd 6
+
 section .bss
 
 timer resd 2
@@ -81,17 +86,19 @@ enemy.update:
 
     
     CALL rand, 5   ;max number of enemy generate 
-    mov edx, dword 4
-    mul edx  
-    mov [LOCAL(0)], eax
-    mov ebx, 20      
+    shl eax, 2  
+    mov [LOCAL(0)], eax  ;LOCAL(0) = number of enemies to generate * 4
+
+    mov ebx, 5 * 4      
     sub ebx, eax
     CALL rand, ebx
-    mov edx, dword 4
-    mul edx 
-    mov [LOCAL(1)], eax
-    CALL rand, COLORS
-    mov [LOCAL(2)], eax
+    shl eax, 2 
+    mov [LOCAL(1)], eax  ;LOCAL(1) = col to generate the enemy in the right
+
+    CALL rand, [generate_array.count]
+    shl eax, 2
+    mov ebx, [generate_array + eax]
+    mov [LOCAL(2)], ebx  ;LOCAL(2) = color of enemy to generate
     CALL enemy.generate, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
 
     end:      
@@ -103,7 +110,7 @@ enemy.update:
     FUNC.END
 
 ; paint()
-; Puts the object's graphics in the canvas
+; Put the object's graphics in the canvas
 global enemy.paint
 enemy.paint:
     FUNC.START
