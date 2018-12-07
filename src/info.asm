@@ -4,7 +4,7 @@
 %include "hash.inc"
 
 extern video.print
-extern lives
+extern player.lives
 
 section .data
 
@@ -26,7 +26,7 @@ info.paint:
     jne while
 
 
-    CALL video.print, 'L'|FG.BLACK|BG.GREEN, 0, 0 ;paint word lives
+    CALL video.print, 'L'|FG.BLACK|BG.GREEN, 0, 0 ;paint word player.lives
     CALL video.print, 'I'|FG.BLACK|BG.GREEN, 0, 1
     CALL video.print, 'V'|FG.BLACK|BG.GREEN, 0, 2
     CALL video.print, 'E'|FG.BLACK|BG.GREEN, 0, 3
@@ -34,10 +34,10 @@ info.paint:
     CALL video.print, ':'|FG.BLACK|BG.GREEN, 0, 5
 
     xor eax, eax
-    mov ax, word [lives]
+    mov ax, word [player.lives]
     add eax, 6
     mov ecx, 6  ;paint las character in col 8
-    ;paint the lives
+    ;paint the player.lives
     while1:
 
     push ecx

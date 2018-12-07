@@ -64,8 +64,8 @@ graphics.style db 0
 
 section .bss
 
-global lives
-lives resw 1
+global player.lives
+player.lives resw 1
 
 row.offset resd 1
 col.offset resd 1
@@ -75,14 +75,14 @@ lose.timer resd 2
 
 section .text
 
-; init(word lives, dword r.offset, dword c.offset)
+; init(word player.lives, dword r.offset, dword c.offset)
 ; Initialize player
 global player.init
 player.init:
     FUNC.START
     ;filling local vars of player
     mov bx, [PARAM(0)]
-    mov [lives], bx
+    mov [player.lives], bx
     
     mov ebx, [PARAM(1)]
     mov [row.offset], ebx
@@ -286,36 +286,22 @@ player.paint:
         jmp cont
 
 ; player.take_damage(dword damage)
-; Takes lives away from player
+; Takes player.lives away from player
 ; returns 1 if player remains alive after damage, 0 otherwise
 global player.take_damage
 player.take_damage:
     FUNC.START
     
     mov eax, [PARAM(0)]
-    cmp [lives], ax
+    cmp [player.lives], ax
     jng .destroyed
-    sub [lives], ax
-    jmp alive
+    sub [player.lives], ax
+    jmp end
 
     .destroyed:
-
         mov eax, 0
-        mov word [lives], 0
-        
-        wait_for:
-        call sound_player_die.update   ;freeze the screen 1500ms and make lose sound
-        CALL delay, lose.timer, 1500
-        cmp eax, 0
-        je wait_for
-        call beep.of
-        
-        call menu.lose
-        
+        mov word [player.lives], 0
         jmp end
-
-    alive:
-        mov eax, 1
 
     end:
         FUNC.END
