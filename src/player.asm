@@ -219,10 +219,6 @@ player.put_in_map:
 global player.collision
 player.collision:
     FUNC.START
-    ; mov eax, [PARAM(1)]
-    ; mov [debug_info], ax
-    ; add word [debug_info], 48
-    ; or word [debug_info], FG.RED
 
     cmp dword [PARAM(0)], HASH.ENEMY_BLUE
     je crash_blue
@@ -230,19 +226,11 @@ player.collision:
     je crash_red
     cmp dword [PARAM(0)], HASH.ENEMY_YELLOW
     je crash_yellow
-    cmp dword [PARAM(0)], HASH.SHOT
-    je crash_shoot
 
-    crashed:
-    FUNC.END
+    jmp crashed
 
     crash_blue:
-    ; mov eax, [PARAM(1)]
-    ; mov [debug_info], ax
-    ; add word [debug_info], 48
-    ; or word [debug_info], FG.RED
     CALL enemy_blue.take_damage, 1, [PARAM(1)]
-    
     jmp crashed
 
     crash_red:
@@ -253,10 +241,8 @@ player.collision:
     CALL enemy_yellow.take_damage, 1, [PARAM(1)]
     jmp crashed
 
-    crash_shoot:
-    jmp crashed
-    
-     
+    crashed:
+    FUNC.END
 
 ; paint()
 ; Puts the object's graphics in the screen
@@ -298,8 +284,6 @@ player.paint:
         mov byte [graphics.style], 1
         mov dword [graphics + 8], '^'|FG.GRAY|BG.BLACK
         jmp cont
-
-    
 
 ; player.take_damage(dword damage)
 ; Takes lives away from player
