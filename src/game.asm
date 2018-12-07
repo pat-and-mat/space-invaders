@@ -6,6 +6,7 @@ global input
 section .bss
 
 input resb 1
+lose.timer resd 1
 
 section .text
 
@@ -17,6 +18,11 @@ extern menu.loading
 extern menu.pause
 extern engine.run
 extern engine.start
+extern sound_player_die.update
+extern delay
+extern player.lives
+extern beep.of
+extern menu.lose
 
 global game
 game:
@@ -27,7 +33,9 @@ game:
   ; Calibrate the timing
   call menu.loading
   call calibrate
-  call engine.start
+
+  game.start:
+    call engine.start
 
   ; Game main loop
   game.loop:
@@ -38,8 +46,36 @@ game:
     ; Main loop.
     cmp byte [input], KEY.ENTER
     jne .continue
+
     call menu.pause
+    cmp eax, 1 ; back to main menu
+    je .goto_main_menu
+    cmp eax, 2 ; reset
+    je .reset_game
+    
     .continue:
       call engine.run
 
+    cmp word [player.lives], 0
+    jne game.loop
+
+    .play_dead_sound:
+        call sound_player_die.update   ;freeze the screen 1500ms and make lose sound
+        CALL delay, lose.timer, 1500
+        cmp eax, 0
+        je .play_dead_sound
+        call beep.of
+        
+    call menu.lose
+    cmp eax, 1 ; back to main menu
+    je .goto_main_menu
+    cmp eax, 2 ; reset
+    je .reset_game
+
     jmp game.loop
+
+    .goto_main_menu:
+      call menu.main
+
+    .reset_game:
+      jmp game.start

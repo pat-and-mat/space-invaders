@@ -77,7 +77,7 @@ menu.lose:
     reset:
     CALL menu.add_score, [actual.score]
     mov dword [actual.score], 0
-    call engine.reset
+    mov eax, 2
     jmp lose.end
 
     main:
@@ -87,8 +87,7 @@ menu.lose:
     mov dword [best_scores + 12], 0
     mov dword [best_scores + 16], 0
     mov dword [best_scores + 20], 0
-    call engine.reset
-    call menu.main
+    mov eax, 1
     jmp lose.end
 
 ; lose_menu.wait_for_key(dword key)

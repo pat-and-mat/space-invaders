@@ -119,7 +119,7 @@ menu.pause:
     reset:
     CALL menu.add_score, [actual.score]
     mov dword [actual.score], 0
-    call engine.reset
+    mov eax, 2
     jmp pause.end
 
     main:
@@ -129,8 +129,7 @@ menu.pause:
     mov dword [best_scores + 12], 0
     mov dword [best_scores + 16], 0
     mov dword [best_scores + 20], 0
-    call engine.reset
-    call menu.main
+    mov eax, 1
     jmp pause.end
     
 
