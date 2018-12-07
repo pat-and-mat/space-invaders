@@ -283,19 +283,19 @@ engine.run:
     call engine.update
     call engine.collision
     call engine.paint
-    call engine.debug
+    ; call engine.debug
     FUNC.END
 
 engine.debug:
     FUNC.START
-    ; CALL video.set_rect, debug_info, 24, 0, 1, 80
-    ; call video.refresh
+    CALL video.set_rect, debug_info, 24, 0, 1, 80
+    call video.refresh
 
-    ; mov edi, debug_info
-    ; mov eax, 0
-    ; mov ecx, 80
-    ; cld
-    ; rep stosw
+    mov edi, debug_info
+    mov eax, 0
+    mov ecx, 80
+    cld
+    rep stosw
 
     FUNC.END
 
@@ -310,10 +310,11 @@ engine.reset:
     FUNC.END
 
 
-;  return 1 if true, 0 if false
-;  in the directions param are the amount to mov in every direction
-;  in the count param is the number of graphics to check
-;  engine.can_move(dword *map, dword row.offset, col.offset, dword rows, dword cols, dword count, dword down, dword up, dword right, dword left, dword hash)
+; engine.can_move
+; return 1 if true, 0 if false
+; in the directions param are the amount to mov in every direction
+; in the count param is the number of graphics to check
+; engine.can_move(dword *map, dword row.offset, col.offset, dword rows, dword cols, dword count, dword down, dword up, dword right, dword left, dword hash)
 global engine.can_move
 engine.can_move:
     FUNC.START
