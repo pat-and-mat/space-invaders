@@ -16,8 +16,8 @@ extern menu.main
 
 section .data
 
-pause.gr times 17 * 25 dw '.'|FG.BLACK|BG.YELLOW
-scores.gr times 17 * 25 dw '.'|FG.BLACK|BG.YELLOW
+pause.gr times 17 * 25 dw '.'|FG.BLACK|BG.GRAY
+scores.gr times 17 * 25 dw '.'|FG.BLACK|BG.GRAY
 
 pointer_position db 0
 pointer dd 7, 12, 17

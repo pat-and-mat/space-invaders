@@ -16,13 +16,13 @@ extern actual.score
 extern play_red_enemy_die
 extern engine.add_collision
 extern player.take_damage
-extern engine.can_move
+extern can_move
 extern old_map
 extern array.index_of
 
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
-%define ZIZE 500
+%define SIZE 500
 %define SHIP.COORDS 3
 
 section .data
@@ -38,9 +38,6 @@ graphics dd 'o'|FG.RED|BG.BLACK,\
 rows dd 0, 0, 0
 cols dd 0, 2, 1
 
-row.top dd 0
-row.bottom dd 0
-
 col.left dd 0
 col.right dd 3
 
@@ -55,15 +52,15 @@ graphics.style db 0
 section .bss
 
 ;1-moving right 2-moving left
-dir resd ZIZE
+dir resd SIZE
 
-row.offset resd ZIZE
-col.offset resd ZIZE
-inst resd ZIZE
+row.offset resd SIZE
+col.offset resd SIZE
+inst resd SIZE
 
-lives resd ZIZE
+lives resd SIZE
 
-down.count resd ZIZE
+down.count resd SIZE
 
 timer.red resd 2
 
@@ -79,7 +76,7 @@ enemy_red.init:
     mov edx, HASH.ENEMY_RED << 16
     mov [LOCAL(0)], edx
 
-    CALL engine.can_move, old_map, [PARAM(0)], [PARAM(1)], rows, cols, SHIP.COORDS, 0, 0, 0, 0, [LOCAL(0)]       
+    CALL can_move, old_map, [PARAM(0)], [PARAM(1)], rows, cols, SHIP.COORDS, 0, 0, 0, 0, [LOCAL(0)]       
     cmp eax, 0
     je .end
 
@@ -123,7 +120,7 @@ enemy_red.update:
     mov ecx, 0
 
     start:
-        CALL rand, 65
+        CALL rand, 35
         cmp eax, 0
         je red.shoot
         after.shoot:
@@ -159,7 +156,7 @@ enemy_red.update:
 
         move.right: 
         push ecx
-        CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 2, 0, [LOCAL(2)]       
+        CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 2, 0, [LOCAL(2)]       
         pop ecx
         cmp eax, 0
         je condition
@@ -169,7 +166,7 @@ enemy_red.update:
 
         move.left:
         push ecx
-        CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 0, 2, [LOCAL(2)]
+        CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 0, 2, [LOCAL(2)]
         pop ecx
         cmp eax, 0
         je condition
@@ -187,7 +184,7 @@ enemy_red.update:
         jge destroy
 
         push ecx
-        CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 1, 0, 0, 0, [LOCAL(2)]
+        CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 1, 0, 0, 0, [LOCAL(2)]
         pop ecx
         cmp eax, 0
         je condition
@@ -396,20 +393,19 @@ enemy_red.take_damage:
     shl eax, 2
     mov ecx, [PARAM(0)]
 
-    sub [lives + eax], ecx
-    cmp dword [lives + eax], 0
+    cmp dword [lives + eax], ecx
     jg take_end
+    add dword [actual.score], 50
     CALL destroy.ship, eax
 
     take_end:
+    sub [lives + eax], ecx
     FUNC.END
 
 ;destroy.ship(dword index)
 ;destroyes the ship that is in the index position
 destroy.ship:
-    FUNC.START
-
-    add dword [actual.score], 100
+    FUNC.START    
 
     call play_red_enemy_die
 

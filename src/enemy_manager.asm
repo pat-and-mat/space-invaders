@@ -75,7 +75,7 @@ enemy.update:
     FUNC.START
     RESERVE(3)
     
-    CALL delay, timer, 3000  ;timing condition to generate
+    CALL delay, timer, 1000  ;timing condition to generate
     cmp eax, 0
     je end
 

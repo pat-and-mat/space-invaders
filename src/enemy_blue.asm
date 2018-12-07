@@ -16,21 +16,19 @@ extern actual.score
 extern play_blue_enemy_die
 extern engine.add_collision
 extern player.take_damage
-extern engine.can_move
+extern can_move
 extern old_map
 extern array.index_of
 
 extern debug_info
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
-%define ZIZE 500
+%define SIZE 500
 %define SHIP.COORDS 3
 
 ;the blue enemies will move right or left until find a border of the screen,
 ;then will go down and change their direction
 
 section .data
-
-timer dd 0
 
 count dd 0
 
@@ -41,9 +39,6 @@ graphics dd '/'|FG.BLUE|BG.BLACK,\
             
 rows dd 0, 0, 0
 cols dd 0, 2, 1
-
-row.top dd 0
-row.bottom dd 3
 
 col.left dd 0
 col.right dd 3
@@ -59,16 +54,14 @@ graphics.style db 0
 
 section .bss
 
-row.offset resd ZIZE
-col.offset resd ZIZE
-inst resd ZIZE
+row.offset resd SIZE
+col.offset resd SIZE
+inst resd SIZE
 
-lives resd ZIZE
+lives resd SIZE
 
 ;1-Rigth 0-left
-dir resd ZIZE
-
-; animation.count resd ZIZE
+dir resd SIZE
 
 timer.blue resd 2
 
@@ -86,7 +79,8 @@ enemy_blue.init:
     mov edx, HASH.ENEMY_BLUE << 16
     mov [LOCAL(0)], edx
 
-    CALL engine.can_move, old_map, [PARAM(0)], [PARAM(1)], rows, cols, SHIP.COORDS, 0, 0, 0, 0, [LOCAL(0)]       
+    ;check if the enemy can be generated in the designed position
+    CALL can_move, old_map, [PARAM(0)], [PARAM(1)], rows, cols, SHIP.COORDS, 0, 0, 0, 0, [LOCAL(0)]       
     cmp eax, 0
     je .end
 
@@ -101,7 +95,7 @@ enemy_blue.init:
 
     mov dword [lives + eax], 1
 
-    ;pointer of the actual moviment
+    ;pointer of the actual moviment (start right)
     mov dword [dir + eax], 1
 
     mov edx, [next_inst]
@@ -110,7 +104,7 @@ enemy_blue.init:
     
     add dword [count], 4   
 
-    .end
+    .end:
     FUNC.END
 
 ;update(dword map)
@@ -130,7 +124,7 @@ enemy_blue.update:
     mov ecx, 0   ;actual ship * 4
 
     start:                          ;while start
-        CALL rand, 90
+        CALL rand, 30
         cmp eax, 0
         je blue.shoot
         after.shoot:
@@ -161,7 +155,7 @@ enemy_blue.update:
 
         move.right:      
         push ecx
-        CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 1, 0, [LOCAL(2)]       
+        CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 1, 0, [LOCAL(2)]       
         pop ecx
         cmp eax, 0
         je condition  
@@ -171,7 +165,7 @@ enemy_blue.update:
 
         move.left:
         push ecx
-        CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 0, 1, [LOCAL(2)]       
+        CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 0, 1, [LOCAL(2)]       
         pop ecx
         cmp eax, 0
         je condition
@@ -190,7 +184,7 @@ enemy_blue.update:
         jge destroy                            ;then will be destroyed
 
         push ecx
-        CALL engine.can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 2, 0, 0, 0, [LOCAL(2)]       
+        CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 2, 0, 0, 0, [LOCAL(2)]       
         pop ecx
         cmp eax, 0
         je condition
@@ -418,23 +412,20 @@ global enemy_blue.take_damage
 enemy_blue.take_damage:
     FUNC.START
 
-    ; mov eax, [PARAM(1)]
-    ; mov [debug_info], ax
-    ; add word [debug_info], 48
-    ; or word [debug_info], FG.RED
-
     mov ecx, [count]
     shr ecx, 2    
     CALL array.index_of, inst, ecx, [PARAM(1)], 4    
     shl eax, 2
     mov ecx, [PARAM(0)]
 
-    sub [lives + eax], ecx
-    cmp dword [lives + eax], 0
+    
+    cmp dword [lives + eax], ecx
     jg take_end
+    add dword [actual.score], 50
     CALL destroy.ship, eax
 
     take_end:
+    sub [lives + eax], ecx
     FUNC.END
 
 
@@ -442,8 +433,7 @@ enemy_blue.take_damage:
 ;destroyes the ship that is in the index position
 destroy.ship:
     FUNC.START
-
-    add dword [actual.score], 50
+    
     call play_blue_enemy_die
 
     mov eax, [PARAM(0)]

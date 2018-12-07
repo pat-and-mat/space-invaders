@@ -11,14 +11,13 @@ extern engine.add_collision
 extern input
 extern beep.on
 extern beep.set
-extern beep.of
+extern beep.off
 extern delay
 extern play_shoot
 extern play_player_die
 extern menu.lose
 extern sound_player_die.update
 extern sound.timer
-extern beep.of
 extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
@@ -50,9 +49,6 @@ graphics dd '/'|FG.GRAY|BG.BLACK,\
             
 rows dd 0, 0, 0, 0, 0
 cols dd 0, 1, 2, 3, 4
-
-row.top dd 0
-row.bottom dd 0
 
 col.left dd 0
 col.right dd 3
@@ -97,7 +93,7 @@ player.init:
 global player.update
 player.update:
     FUNC.START
-    RESERVE(3)
+    RESERVE(2);shoot.row, shoot.col
 
     continue:
     
@@ -147,11 +143,14 @@ player.update:
         add dword [col.offset], 1
         jmp update.end
 
-    space:
-        
+    space:        
+        ;animating the shoot
         mov dword [graphics + 8], 173|FG.GRAY|BG.BLACK
         mov dword [animation.timer], 0
+        ;shoot sound
+        call play_shoot
 
+        ;calculate the position of the shot
         mov eax, [weapon.row]
         add eax, [row.offset]
         sub eax, 1
@@ -219,11 +218,6 @@ player.put_in_map:
 global player.collision
 player.collision:
     FUNC.START
-    ; mov eax, [PARAM(1)]
-    ; mov [debug_info], ax
-    ; add word [debug_info], 48
-    ; or word [debug_info], FG.RED
-
     cmp dword [PARAM(0)], HASH.ENEMY_BLUE
     je crash_blue
     cmp dword [PARAM(0)], HASH.ENEMY_RED
@@ -237,10 +231,6 @@ player.collision:
     FUNC.END
 
     crash_blue:
-    ; mov eax, [PARAM(1)]
-    ; mov [debug_info], ax
-    ; add word [debug_info], 48
-    ; or word [debug_info], FG.RED
     CALL enemy_blue.take_damage, 1, [PARAM(1)]
     
     jmp crashed
@@ -315,7 +305,6 @@ player.take_damage:
     jmp alive
 
     .destroyed:
-
         mov eax, 0
         mov word [lives], 0
         
@@ -324,7 +313,7 @@ player.take_damage:
         CALL delay, lose.timer, 1500
         cmp eax, 0
         je wait_for
-        call beep.of
+        call beep.off
         
         call menu.lose
         

@@ -8,7 +8,7 @@ extern delay
 section .data
 
 ;the sound's bytes
-;if one of then is 1, the sound is on
+;if one off then is 1, the sound is on
 music db 0
 shoot db 0
 blue_enemy_die db 0
@@ -44,9 +44,9 @@ beep.on:
     FUNC.END
 
 ; stop the sound sound
-; beep.of()
-global beep.of
-beep.of:
+; beep.off()
+global beep.off
+beep.off:
     FUNC.START
     push ax
     in   al, 97
@@ -112,7 +112,7 @@ sound.update:
     FUNC.END
 
 
-;those are the global methods used to play the sounds, each one put on the byte of thier sound
+;those are the global methods used to play the sounds, each one put on the byte off thier sound
 ;and reset their timer
 
 global play_shoot
@@ -153,7 +153,7 @@ play_yellow_enemy_die:
 
 
 
-;those are the methods used to emit the sound in case of a sound byte is on
+;those are the methods used to emit the sound in case off a sound byte is on
 
 sound_shoot.update:
     FUNC.START
@@ -171,7 +171,7 @@ sound_shoot.update:
     jmp shoot.end
 
     shoot.silence:
-    call beep.of
+    call beep.off
     mov byte [shoot], 0
     mov dword [shoot.count], 0
 
@@ -189,7 +189,7 @@ sound_player_die.update:
     jmp player_die.end
 
     player_die.silence:
-    call beep.of
+    call beep.off
     mov byte [player_die], 0
 
     player_die.end:
@@ -205,7 +205,7 @@ sound_blue_enemy_die.update:
     jmp blue_enemy_die.end
 
     blue_enemy_die.silence:
-    call beep.of
+    call beep.off
     mov byte[blue_enemy_die], 0
 
     blue_enemy_die.end:
@@ -221,7 +221,7 @@ sound_red_enemy_die.update:
     jmp red_enemy_die.end
 
     red_enemy_die.silence:
-    call beep.of
+    call beep.off
     mov byte[red_enemy_die], 0
 
     red_enemy_die.end:
@@ -237,7 +237,7 @@ sound_yellow_enemy_die.update:
     jmp yellow_enemy_die.end
 
     yellow_enemy_die.silence:
-    call beep.of
+    call beep.off
     mov byte[yellow_enemy_die], 0
 
     yellow_enemy_die.end:

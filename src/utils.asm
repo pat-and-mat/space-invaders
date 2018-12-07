@@ -1,6 +1,7 @@
 %include "stack.inc"
 %include "video.inc"
 %include "keyboard.inc"
+%include "utils.inc"
 
 ;rand(dword range)
 global rand
@@ -121,4 +122,72 @@ array.index_of:
     .index_of.while.end:
 
     mov eax, [LOCAL(0)]
+    FUNC.END
+
+;  return 1 if true, 0 if false
+;  in the directions param are the amount to mov in every direction
+;  in the count param is the number of graphics to check
+;  engine.can_move(dword *map, dword row.offset, col.offset, dword rows, dword cols, dword count, dword down, dword up, dword right, dword left, dword hash)
+global can_move
+can_move:
+    FUNC.START
+    RESERVE(3)    
+
+    mov dword [LOCAL(0)], 0
+    while:
+    mov ecx, [LOCAL(0)]
+    cmp ecx, [PARAM(5)]
+    je true
+
+    shl ecx, 2
+
+    mov eax, [PARAM(1)]
+    mov dword [LOCAL(1)], eax
+    mov eax, [PARAM(3)]
+    add eax, ecx
+    mov ebx, [eax]
+    add dword [LOCAL(1)], ebx
+    mov eax, [PARAM(6)]
+    add dword [LOCAL(1)], eax
+    mov eax, [PARAM(7)]
+    sub dword [LOCAL(1)], eax
+
+    mov eax, [PARAM(2)]
+    mov dword [LOCAL(2)], eax
+    mov eax, [PARAM(4)]
+    add eax, ecx
+    mov ebx, [eax]
+    add dword [LOCAL(2)], ebx
+    mov eax, [PARAM(8)]
+    add dword [LOCAL(2)], eax
+    mov eax, [PARAM(9)]
+    sub dword [LOCAL(2)], eax
+    
+    OFFSET [LOCAL(1)], [LOCAL(2)]
+
+    shl eax, 2
+    add eax, dword [PARAM(0)]
+
+    mov edx, [PARAM(10)]
+
+    cmp dword [eax], edx
+    jne can_be_false
+    no_false:
+    mov dword [eax], 1
+    add dword [LOCAL(0)], 1
+    jmp while
+
+    can_be_false:
+    cmp dword [eax], 0
+    jne false
+    jmp no_false
+    
+    true:
+    mov eax, 1
+    jmp return
+
+    false:
+    mov eax, 0
+
+    return:
     FUNC.END
