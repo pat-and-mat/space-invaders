@@ -14,6 +14,8 @@ extern main.gr.count
 
 section .data
 
+pointer_position db 0
+
 main.row.offset dw 1
 main.col.offset dw 3
 

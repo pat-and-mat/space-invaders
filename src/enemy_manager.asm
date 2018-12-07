@@ -17,13 +17,17 @@ extern enemy_blue.reset
 extern enemy_red.reset
 extern enemy_yellow.reset
 
+extern colors
+extern colors_count
+extern generate_time
+extern generate_amount
+extern bonus_time
+extern boss_time
+
 extern rand
 extern delay
 
 section .data
-
-generate_array dd 0, 0, 1, 1, 2, 2
-generate_array.count dd 6
 
 section .bss
 
@@ -32,14 +36,14 @@ timer resd 2
 section .text
 
 ;0-blue, 1-red, 2-yellow
-; generate(dword number * 4, dword col, dword color)
+; generate(dword number, dword col, dword color)
 ; generate an enemie
 global enemy.generate
 enemy.generate:
     FUNC.START
 
     mov ecx, [PARAM(0)]
-
+    shl ecx, 2
     while:
         mov eax, [PARAM(1)]  ;number of ships to generate
         add eax, ecx
@@ -60,7 +64,7 @@ enemy.generate:
     end.while:
     FUNC.END
 
-    ;the enemies are generate in the upper section of the screen
+    ;the enemies are generate in the top section of the screen
     blue:
     CALL enemy_blue.init, 1, eax
     jmp Continue
@@ -80,24 +84,26 @@ enemy.update:
     FUNC.START
     RESERVE(3)
     
-    CALL delay, timer, 1000  ;timing condition to generate
+    CALL delay, timer, [generate_time]  ;timing condition to generate
     cmp eax, 0
     je end
 
     
-    CALL rand, 5   ;max number of enemy generate 
-    shl eax, 2  
-    mov [LOCAL(0)], eax  ;LOCAL(0) = number of enemies to generate * 4
-
-    mov ebx, 5 * 4      
+    CALL rand, [generate_amount]   ;max number of enemy generate 
+    mov [LOCAL(0)], eax  ;LOCAL(0) = number of enemies to generate
+    
+    mov ebx, 20 
     sub ebx, eax
     CALL rand, ebx
     shl eax, 2 
-    mov [LOCAL(1)], eax  ;LOCAL(1) = col to generate the enemy in the right
+    mov ebx, [LOCAL(0)]
+    shl ebx, 2
+    add eax, ebx
+    mov [LOCAL(1)], eax  ;LOCAL(1) = col to generate the enemies
 
-    CALL rand, [generate_array.count]
+    CALL rand, [colors_count]
     shl eax, 2
-    mov ebx, [generate_array + eax]
+    mov ebx, [colors + eax]
     mov [LOCAL(2)], ebx  ;LOCAL(2) = color of enemy to generate
     CALL enemy.generate, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
 
