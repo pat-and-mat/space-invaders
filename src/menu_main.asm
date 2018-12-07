@@ -14,8 +14,8 @@ extern main.gr.count
 
 section .data
 
-main.row.offset dw 0
-main.col.offset dw 0
+main.row.offset dw 1
+main.col.offset dw 3
 
 section .text
 
@@ -32,7 +32,7 @@ menu.main:
 
 paint_main_gr:
     FUNC.START
-    RESERVE(3)
+    RESERVE(4)
 
     mov dword [LOCAL(0)], 0    
     .main.while:
@@ -53,8 +53,13 @@ paint_main_gr:
         add ax, [main.gr.cols + ecx]
         mov [LOCAL(2)], eax
 
+        xor eax, eax
+        mov ax, [main.gr + ecx]
+        mov [LOCAL(3)], eax
+        or dword [LOCAL(3)], FG.GREEN | BG.BLACK
+
         push ecx
-        CALL video.print, [main.gr + ecx], [LOCAL(1)], [LOCAL(2)]
+        CALL video.print, [LOCAL(3)], [LOCAL(1)], [LOCAL(2)]
         pop ecx
 
         inc dword [LOCAL(0)]
