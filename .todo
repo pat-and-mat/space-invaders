@@ -1,0 +1,6 @@
+TODO:
+    Put graphics and animations into an independent script
+    Add video.paint method that receives graphics, rows, cols, offset
+
+FIX:
+    engine.reset is fuckin breaking everything

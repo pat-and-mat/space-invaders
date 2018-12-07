@@ -1,68 +1,81 @@
-%include "video.mac"
-%include "keyboard.mac"
+%include "video.inc"
+%include "keyboard.inc"
+%include "stack.inc"
+
+global input
+section .bss
+
+input resb 1
+lose.timer resd 1
 
 section .text
 
-extern clear
+extern video.clear
 extern scan
 extern calibrate
-
-; Bind a key to a procedure
-%macro bind 2
-  cmp byte [esp], %1
-  jne %%next
-  call %2
-  %%next:
-%endmacro
-
-; Fill the screen with the given background color
-%macro FILL_SCREEN 1
-  push word %1
-  call clear
-  add esp, 2
-%endmacro
+extern menu.main
+extern menu.loading
+extern menu.pause
+extern engine.run
+extern engine.start
+extern sound_player_die.update
+extern delay
+extern player.lives
+extern beep.off
+extern menu.lose
 
 global game
 game:
   ; Initialize game
 
-  FILL_SCREEN BG.BLACK
+  call menu.main
 
   ; Calibrate the timing
+  call menu.loading
   call calibrate
 
-  ; Snakasm main loop
+  game.start:
+    call engine.start
+
+  ; Game main loop
   game.loop:
     .input:
-      call get_input
+      call scan
+      mov [input], al
 
     ; Main loop.
+    cmp byte [input], KEY.ENTER
+    jne .continue
 
-    ; Here is where you should place your game's logic.
-    ; Develop procedures like paint_map and update_content,
-    ; declare them extern and use them here.
+    call menu.pause
+    cmp eax, 1 ; back to main menu
+    je .goto_main_menu
+    cmp eax, 2 ; reset
+    je .reset_game
+    
+    .continue:
+      call engine.run
+
+    cmp word [player.lives], 0
+    jne game.loop
+
+    .play_dead_sound:
+        call sound_player_die.update   ;freeze the screen 1500ms and make lose sound
+        CALL delay, lose.timer, 1500
+        cmp eax, 0
+        je .play_dead_sound
+        call beep.off
+        
+    call menu.lose
+    cmp eax, 1 ; back to main menu
+    je .goto_main_menu
+    cmp eax, 2 ; reset
+    je .reset_game
 
     jmp game.loop
 
+    .goto_main_menu:
+      call menu.main
 
-draw.red:
-  FILL_SCREEN BG.RED
-  ret
-
-
-draw.green:
-  FILL_SCREEN BG.GREEN
-  ret
-
-
-get_input:
-    call scan
-    push ax
-    ; The value of the input is on 'word [esp]'
-
-    ; Your bindings here
-    bind KEY.UP, draw.green
-    bind KEY.DOWN, draw.red
-
-    add esp, 2 ; free the stack
-    ret
+    .reset_game:
+      jmp game.start
