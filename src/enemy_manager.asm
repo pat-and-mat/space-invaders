@@ -77,19 +77,19 @@ enemy.generate:
 
     ;the enemies are generate in the top section of the screen
     blue:
-    CALL enemy_blue.init, 1, eax
+    ; CALL enemy_blue.init, 1, eax
     jmp Continue
 
     red:
-    CALL enemy_red.init, 1, eax
+    ; CALL enemy_red.init, 1, eax
     jmp Continue
     
     yellow:
-    CALL enemy_yellow.init, 1, eax
+    ; CALL enemy_yellow.init, 1, eax
     jmp Continue
 
     meteoro:
-    CALL enemy_meteoro.init, 1, eax
+    ; CALL enemy_meteoro.init, 1, eax
     jmp end.while
 
 ; update(dword map)
@@ -99,7 +99,7 @@ enemy.update:
     FUNC.START
     RESERVE(3)
 
-    CALL delay, boss.timer, [boss_time]  ;timing condition to generate
+    CALL delay, boss.timer, 10000  ;timing condition to generate
     cmp eax, 0
     jne boss
     

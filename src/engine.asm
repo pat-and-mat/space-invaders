@@ -28,7 +28,9 @@ collisions.count dw 0
 global debug_info
 debug_info times 80 dw 0
 
+
 section .bss
+debug_timer resd 2
 
 map resd COLS * ROWS
 ;the old map is used to check can_move
@@ -221,7 +223,14 @@ engine.invoke_handler:
 global engine.add_collision
 engine.add_collision:
     FUNC.START
-    RESERVE(1)  ; i
+    RESERVE(2)  ; i
+
+    ; mov edx, [LOCAL(1)]
+    ; inc dword [LOCAL(1)]
+    ; mov [debug_info], dx
+    ; add word [debug_info], 48
+    ; or word [debug_info], FG.RED
+    ; call engine.debug
 
     CALL engine.find_hashes, [PARAM(0)], [PARAM(1)]
     
@@ -254,31 +263,41 @@ engine.add_collision:
 ; finds the given pair of hashes in collisions
 engine.find_hashes:
     FUNC.START
-    RESERVE(1)
+    RESERVE(2)
+    mov dword [LOCAL(1)], 1
 
     mov dword[LOCAL(0)], 0
-    .find_hashes.while:
+    find_hashes.while:
+        ; mov edx, [LOCAL(1)]
+        ; inc dword [LOCAL(1)]
+        ; mov [debug_info], dx
+        ; add word [debug_info], 48
+        ; or word [debug_info], FG.RED
+        ; call engine.debug
+        
         mov ecx, [LOCAL(0)]
 
         cmp cx, [collisions.count]
-        je .find_hashes.while.end
+        je find_hashes.while.end
 
         shl ecx, 2
 
         mov eax, [collisions.hashes1 + ecx]
         cmp eax, [PARAM(0)]
-        jne .find_hashes.while.cont
+        jne find_hashes.while.cont
 
         mov eax, [collisions.hashes2 + ecx]
         cmp eax, [PARAM(1)]
-        jne .find_hashes.while.cont
+        jne find_hashes.while.cont
 
-        jmp .find_hashes.while.end
+        jmp find_hashes.while.end
 
-        .find_hashes.while.cont:
-            inc dword [LOCAL(0)]
-    .find_hashes.while.end:
-    mov eax, [LOCAL(0)]
+        find_hashes.while.cont:
+        inc dword [LOCAL(0)]
+        jmp find_hashes.while
+        
+    find_hashes.while.end:
+        mov eax, [LOCAL(0)]
 
         FUNC.END
 
@@ -305,6 +324,7 @@ engine.run:
     ; call engine.debug
     FUNC.END
 
+global engine.debug
 engine.debug:
     FUNC.START
     CALL video.set_rect, debug_info, 24, 0, 1, 80

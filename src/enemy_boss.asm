@@ -23,6 +23,9 @@ extern enemy_red.take_damage
 extern enemy_blue.take_damage
 extern enemy_yellow.take_damage
 extern enemy_meteoro.take_damage
+extern debug_info
+extern engine.debug
+extern video.refresh
 
 
 
@@ -67,7 +70,7 @@ lives resd SIZE
 down.count resd SIZE
 
 timer.boss resd 2
-
+timer.debug resd 2
 animation.timer resd 2
 
 section .text
@@ -157,6 +160,7 @@ enemy_boss.update:
         jmp move.right
 
         condition:  ;the stop condition is reached when all the ships are moved
+                
         inc dword [LOCAL(3)]
         mov ecx, [LOCAL(3)]
         cmp ecx, [count]  ;compare ecx with the number of blue ships on map
@@ -275,8 +279,10 @@ boss.put_all_in_map:
 ; boss.put_one_in_map(dword *map, dword hash, dword row, dword col)
 boss.put_one_in_map:
     FUNC.START
-    RESERVE(4)  ; coord, offset
-
+    RESERVE(6)  ; coord, offset
+    
+    mov dword [LOCAL(5)], 0
+    mov dword [LOCAL(4)], 0
     mov dword [LOCAL(0)], 0
     .map.one.while:
         mov ecx, [LOCAL(0)]
@@ -306,8 +312,42 @@ boss.put_one_in_map:
 
         cmp dword [eax], 0
         je .map.one.while.cont
+        
+        mov ebx, [eax]
+        mov [LOCAL(4)], ebx
 
-        CALL engine.add_collision, [PARAM(1)], [eax]
+        ; .debug1:
+        ; mov edx, [PARAM(1)] 
+        ; shr edx, 16
+        ; ; inc dword [LOCAL(4)]
+        ; mov [debug_info], dx
+        ; add word [debug_info], 48
+        ; or word [debug_info], FG.RED
+        ; call engine.debug
+        ; CALL delay, timer.debug, 2000
+        ; cmp eax, 0
+        ; je .debug1
+
+        ; .debug2:
+        ; mov edx, [LOCAL(4)]
+        ; shr edx, 16
+        ; ; inc dword [LOCAL(4)]
+        ; mov [debug_info], dx
+        ; add word [debug_info], 48
+        ; or word [debug_info], FG.RED
+        ; call engine.debug
+        ; CALL delay, timer.debug, 2000
+        ; cmp eax, 0
+        ; je .debug2
+
+        mov edx, [LOCAL(5)]
+        inc dword [LOCAL(5)]
+        mov [debug_info], dx
+        add word [debug_info], 48
+        or word [debug_info], FG.RED
+        call engine.debug
+
+        CALL engine.add_collision, [PARAM(1)], [LOCAL(4)]
 
         .map.one.while.cont:
             mov eax, [LOCAL(1)]
@@ -327,7 +367,15 @@ boss.put_one_in_map:
 ; It is here where collisions will be handled
 global enemy_boss.collision
 enemy_boss.collision:
-    FUNC.START    
+    FUNC.START     
+    ; RESERVE(1)
+    ; mov dword [LOCAL(1)], 0
+    ; mov edx, [LOCAL(1)]
+    ; inc dword [LOCAL(1)]
+    ; mov [debug_info], dx
+    ; add word [debug_info], 48
+    ; or word [debug_info], FG.RED
+    ; call engine.debug   
 
     cmp dword [PARAM(1)], HASH.PLAYER
     je crash_player
@@ -380,7 +428,7 @@ enemy_boss.collision:
 global enemy_boss.paint
 enemy_boss.paint:
     FUNC.START
-    RESERVE(4)
+    RESERVE(5)
     
     cmp dword [count], 0
     je while.end
@@ -396,9 +444,9 @@ enemy_boss.paint:
     je set.form2
     jmp set.form1
 
-    
-    ;painting ship number LOCAL(2)
+    ;painting ship number LOCAL(2)    
     while.internal:           
+        
         mov ecx, [LOCAL(3)]
         shl ecx, 2
         mov ebx, [LOCAL(2)]
@@ -422,6 +470,7 @@ enemy_boss.paint:
 
     ;updating esi
     while.external:
+        
         mov dword [LOCAL(3)], 0  
         inc dword [LOCAL(2)]
         mov eax, [LOCAL(2)]
@@ -482,6 +531,12 @@ destroy.ship:
    mov eax, [PARAM(0)]
     mov [LOCAL(0)], eax
     while:
+        ; mov edx, [PARAM(1)]
+        ; mov [debug_info], ax
+        ; add word [debug_info], 48
+        ; or word [debug_info], FG.RED
+        ; call engine.debug
+
         ;move forward the elements of all the arrays
         mov eax, [LOCAL(0)]
         cmp eax, dword [count]
@@ -514,4 +569,4 @@ global enemy_boss.reset
 enemy_boss.reset:
     FUNC.START
     mov dword[count], 0
-    FUNC.END
+    FUNC.END 
