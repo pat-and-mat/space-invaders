@@ -263,18 +263,10 @@ engine.add_collision:
 ; finds the given pair of hashes in collisions
 engine.find_hashes:
     FUNC.START
-    RESERVE(2)
-    mov dword [LOCAL(1)], 1
+    RESERVE(1)
 
     mov dword[LOCAL(0)], 0
     find_hashes.while:
-        ; mov edx, [LOCAL(1)]
-        ; inc dword [LOCAL(1)]
-        ; mov [debug_info], dx
-        ; add word [debug_info], 48
-        ; or word [debug_info], FG.RED
-        ; call engine.debug
-        
         mov ecx, [LOCAL(0)]
 
         cmp cx, [collisions.count]

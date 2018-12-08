@@ -267,6 +267,9 @@ weapons.collision:
     cmp dword [PARAM(1)], HASH.ENEMY_METEORO
     je .kill.meteoro
 
+    cmp dword [PARAM(1)], HASH.ENEMY_BOSS
+    je .kill.boss
+
     jmp .collision.end
 
     .kill.player:
