@@ -22,6 +22,7 @@ extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
 extern debug_info
+extern engine.debug
 
 %define SHIP.COORDS 5
 

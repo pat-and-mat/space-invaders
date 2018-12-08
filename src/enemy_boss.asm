@@ -22,6 +22,7 @@ extern array.index_of
 extern enemy_red.take_damage
 extern enemy_blue.take_damage
 extern enemy_yellow.take_damage
+extern enemy_meteoro.take_damage
 
 
 
@@ -343,6 +344,9 @@ enemy_boss.collision:
     cmp dword [PARAM(1)], HASH.ENEMY_YELLOW
     je crash_yellow
 
+    cmp dword [PARAM(1)], HASH.ENEMY_METEORO
+    je crash_meteoro
+
     crashed:
     FUNC.END
 
@@ -354,15 +358,19 @@ enemy_boss.collision:
     jmp crashed
 
     crash_blue:
-    CALL enemy_blue.take_damage, 1, [PARAM(1)]
+    CALL enemy_blue.take_damage, 1, [PARAM(2)]
     jmp crashed
 
     crash_red:
-    CALL enemy_red.take_damage, 1, [PARAM(1)]
+    CALL enemy_red.take_damage, 1, [PARAM(2)]
     jmp crashed
 
     crash_yellow:
-    CALL enemy_yellow.take_damage, 1, [PARAM(1)]
+    CALL enemy_yellow.take_damage, 1, [PARAM(2)]
+    jmp crashed
+
+    crash_meteoro:
+    CALL enemy_meteoro.take_damage, 20, [PARAM(2)]
     jmp crashed
 
     FUNC.END

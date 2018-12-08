@@ -311,12 +311,17 @@ red.put_one_in_map:
 global enemy_red.collision
 enemy_red.collision:
     FUNC.START    
-
     cmp dword [PARAM(1)], HASH.PLAYER
     je crash_player
 
     cmp dword [PARAM(1)], HASH.SHOT
     je crash_shoot
+
+    cmp dword [PARAM(1)], HASH.ENEMY_BOSS
+    je crash_boss
+
+    cmp dword [PARAM(1)], HASH.ENEMY_METEORO
+    je crash_meteoro
 
     crashed:
     FUNC.END
@@ -327,8 +332,12 @@ enemy_red.collision:
 
     crash_shoot:
     jmp crashed
-    ;  FUNC.START
-    ;  inc byte[graphics]
+
+    crash_boss:
+    jmp crashed
+
+    crash_meteoro:
+    jmp crashed
      FUNC.END
 
 ;paint()

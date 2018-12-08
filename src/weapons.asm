@@ -43,6 +43,7 @@ extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
 extern enemy_boss.take_damage
+extern enemy_meteoro.take_damage
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
@@ -263,13 +264,17 @@ weapons.collision:
     cmp dword [PARAM(1)], HASH.ENEMY_YELLOW
     je .kill.enemy_yellow
 
-    cmp dword [PARAM(1)], HASH.ENEMY_BOSS
-    je .kill.boss
+    cmp dword [PARAM(1)], HASH.ENEMY_METEORO
+    je .kill.meteoro
 
     jmp .collision.end
 
     .kill.player:
         CALL player.take_damage, 5
+        jmp .collision.end
+
+    .kill.meteoro:
+        CALL enemy_meteoro.take_damage, 1, [PARAM(2)]
         jmp .collision.end
 
     .kill.boss:

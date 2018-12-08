@@ -16,9 +16,9 @@ dificult dw 2
 ;pointer dd
 
 global colors
-colors dd 0, 0, 1, 1, 2, 2, 0, 0, 0, 0, 0, 0
+colors dd 0, 0, 1, 1, 2, 2, 3, 0, 0, 0, 0, 0
 global colors_count
-colors_count dd 6
+colors_count dd 7
 global generate_time
 generate_time dd 1500
 global generate_amount
@@ -111,8 +111,9 @@ chose_dificult:
     mov dword [colors + 12], 1
     mov dword [colors + 16], 2
     mov dword [colors + 20], 2
+    mov dword [colors + 24], 3
     mov dword [generate_time], 1500
-    mov dword [generate_amount], 6
+    mov dword [generate_amount], 7
     mov dword [bonus_time], 5000
     mov dword [boss_time], 30000
     jmp input

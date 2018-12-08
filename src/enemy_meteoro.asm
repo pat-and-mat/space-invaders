@@ -13,42 +13,38 @@ extern delay
 extern weapons.shoot
 extern rand
 extern actual.score
-extern play_blue_enemy_die
+extern play_meteoro_enemy_die
 extern engine.add_collision
 extern player.take_damage
 extern can_move
 extern old_map
 extern array.index_of
+extern enemy_red.take_damage
+extern enemy_blue.take_damage
+extern enemy_yellow.take_damage
 
-extern debug_info
-;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
-%define SIZE 500
-%define SHIP.COORDS 3
 
-;the blue enemies will move right or left until find a border of the screen,
-;then will go down and change their direction
+
+%define SIZE 10
+%define meteoro.COORDS 20
 
 section .data
 
+timer dd 0
+
 count dd 0
 
-graphics dd '/'|FG.BLUE|BG.BLACK,\
-            '\'|FG.BLUE|BG.BLACK,\
-            'O'|FG.BLUE|BG.BLACK,\
+graphics dd ' '|FG.MAGENTA|BG.BLACK, 'w'|FG.MAGENTA|BG.BLACK, 'W'|FG.MAGENTA|BG.BLACK, 'w'|FG.MAGENTA|BG.BLACK, ' '|FG.MAGENTA|BG.BLACK,\
+            'w'|FG.MAGENTA|BG.BLACK, 'W'|FG.MAGENTA|BG.BLACK, 'w'|FG.MAGENTA|BG.BLACK, 'W'|FG.MAGENTA|BG.BLACK, 'w'|FG.MAGENTA|BG.BLACK,\
+            '/'|FG.MAGENTA|BG.BLACK, ' '|FG.MAGENTA|BG.BLACK, ' '|FG.MAGENTA|BG.BLACK, ' '|FG.MAGENTA|BG.BLACK, '\'|FG.MAGENTA|BG.BLACK,\
+            '\'|FG.MAGENTA|BG.BLACK, '_'|FG.MAGENTA|BG.BLACK, '_'|FG.MAGENTA|BG.BLACK, '_'|FG.MAGENTA|BG.BLACK, '/'|FG.MAGENTA|BG.BLACK, 
             
             
-rows dd 0, 0, 0
-cols dd 0, 2, 1
-
-col.left dd 0
-col.right dd 3
-
-weapon.row dd 1
-weapon.col dd 1
+            
+rows dd 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3,
+cols dd 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4,
 
 next_inst dd 1
-
-hash dd 3
 
 graphics.style db 0
 
@@ -60,33 +56,28 @@ inst resd SIZE
 
 lives resd SIZE
 
-;1-Rigth 0-left
-dir resd SIZE
-
-timer.blue resd 2
+timer.meteoro resd 2
 
 animation.timer resd 2
 
 section .text
 
 ;init(dw row.offset, dw col.offset)
-; Initialize a blue enemy
-global enemy_blue.init
-enemy_blue.init:
+; Initialize a meteoro enemy
+global enemy_meteoro.init
+enemy_meteoro.init:
     FUNC.START
     RESERVE(1)
-
-    mov edx, HASH.ENEMY_BLUE << 16
+    mov edx, HASH.ENEMY_METEORO << 16
     mov [LOCAL(0)], edx
 
-    ;check if the enemy can be generated in the designed position
-    CALL can_move, old_map, [PARAM(0)], [PARAM(1)], rows, cols, SHIP.COORDS, 0, 0, 0, 0, [LOCAL(0)]       
-    cmp eax, 0
-    je .end
+    ; CALL can_move, old_map, [PARAM(0)], [PARAM(1)], rows, cols, meteoro COORDS, 0, 0, 0, 0, [LOCAL(0)]       
+    ; cmp eax, 0
+    ; je .end
 
     ;filling local vars
     mov eax, dword [count]    
-    shl eax, 2 
+    shl eax, 2     
 
     mov edx, [PARAM(0)]
     mov [row.offset + eax], edx 
@@ -94,87 +85,54 @@ enemy_blue.init:
     mov edx, [PARAM(1)]
     mov [col.offset + eax], edx
 
-    mov dword [lives + eax], 1
-
-    ;pointer of the actual moviment (start right)
-    mov dword [dir + eax], 1
+    mov dword [lives + eax], 20
 
     mov edx, [next_inst]
     mov [inst + eax], edx
-    inc dword [next_inst]
-    
-    inc dword [count]  
+    add dword [next_inst], 1
+
+    inc dword [count]   
 
     .end:
     FUNC.END
 
-;update(dword map)
+;update(dword *map)
 ;move all the blue enemies
-global enemy_blue.update
-enemy_blue.update:
+global enemy_meteoro.update
+enemy_meteoro.update:
     FUNC.START
     RESERVE(4)
 
-    CALL delay, timer.blue, 150  ;timing condition to move
+    CALL delay, timer.meteoro, 500  ;timing condition to move
     cmp eax, 0
     je working.on.map
 
     cmp dword [count], 0
     je end
    
-    mov dword [LOCAL(3)], 0   ;actual ship
-
-    start:                          ;while start
+    mov dword [LOCAL(3)], 0   ;actual meteoro 
+    start:
         mov ecx, [LOCAL(3)]
         shl ecx, 2
-        CALL rand, 30
-        cmp eax, 0
-        je blue.shoot
-        after.shoot:
-
-        mov edx, HASH.ENEMY_BLUE << 16
+        
+        mov edx, HASH.ENEMY_METEORO << 16
         mov dx, [inst + ecx]
         mov[LOCAL(2)], edx
 
-        cmp dword [dir + ecx], 0
-        je left
-        jg right
-
-        left:
-        cmp dword [col.offset + ecx], 0     ;if the offset arrive the left border, then go down
-        je move.down
-        jmp move.left
-
-        right:
-        cmp dword [col.offset + ecx], 77    ;if the offset arrive the right border, then go down
-        je move.down
-        jmp move.right
-
-        condition:  ;the stop condition is reached when all the ships are moved
+        jmp move.down        
+        condition:  ;the stop condition is reached when all the meteoro  are moved
         inc dword [LOCAL(3)]
         mov ecx, [LOCAL(3)]
-        cmp ecx, [count]  ;compare ecx with the number of blue ships on map
+        cmp ecx, [count]  ;compare ecx with the number of blue meteoro  on map
         jl start
         jmp working.on.map  ;end cicle
 
-        move.right:      
-        push ecx
-        CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 1, 0, [LOCAL(2)]       
-        pop ecx
-        cmp eax, 0
-        je condition  
-
-        add dword [col.offset + ecx] , 1
+        move.right: 
+        add dword [col.offset + ecx] , 2
         jmp condition
 
-        move.left:
-        push ecx
-        CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 0, 1, [LOCAL(2)]       
-        pop ecx
-        cmp eax, 0
-        je condition
-
-        sub dword [col.offset + ecx] , 1
+        move.left:      
+        sub dword [col.offset + ecx] , 2
         jmp condition
 
         move.up:
@@ -183,58 +141,30 @@ enemy_blue.update:
 
         move.down:
         ;check position
-
-        cmp dword [row.offset + ecx] , 23      ;if the ship arrive de lower edge of the screen,
-        jge destroy                            ;then will be destroyed
-
-        push ecx
-        CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 2, 0, 0, 0, [LOCAL(2)]       
-        pop ecx
-        cmp eax, 0
-        je condition
-
-        add dword [row.offset + ecx] , 2   
-        cmp dword [dir + ecx], 0   ;change direction
-        jne set.left
-
-        set.right:
-        mov dword [dir + ecx], 1   
-        jmp condition
-
-        set.left:
-        mov dword [dir + ecx], 0
+        cmp dword [row.offset + ecx], 21
+        je destroy
+        ; push ecx
+        ; CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, meteoro COORDS, 1, 0, 0, 0, [LOCAL(2)]
+        ; pop ecx
+        ; cmp eax, 0
+        ; je condition
+                
+        add dword [row.offset + ecx] , 1
         jmp condition
 
         destroy:
-        CALL destroy.ship, ecx
+        CALL destroy.meteoro,  ecx
         sub ecx, 4
         jmp condition
 
-        blue.shoot:
-        mov eax, [weapon.row]
-        add eax, [row.offset + ecx]
-        add eax, 1
-        mov [LOCAL(0)], eax
-
-        mov eax, [weapon.col]
-        add eax, [col.offset + ecx]
-        mov [LOCAL(1)], eax
-
-        push ecx
-        CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 0
-        pop ecx
-        jmp after.shoot
-
-        
         working.on.map:
-        CALL blue.put_all_in_map, [PARAM(0)]
-
+        CALL meteoro.put_all_in_map, [PARAM(0)]
         end:
 
     FUNC.END
 
-; blue.put_all_in_map(dword *map)
-blue.put_all_in_map:
+; meteoro.put_all_in_map(dword *map)
+meteoro.put_all_in_map:
     FUNC.START
     RESERVE(3) ; i, row, col
     cmp dword [count], 0
@@ -242,8 +172,8 @@ blue.put_all_in_map:
 
     mov dword [LOCAL(0)], 0
     .map.all.while:
-        mov ecx, [LOCAL(0)]       
-
+        mov ecx, [LOCAL(0)]
+        
         cmp ecx, [count]
         je .map.all.while.end
 
@@ -255,18 +185,18 @@ blue.put_all_in_map:
         mov eax, [col.offset + ecx]
         mov [LOCAL(2)], eax
 
-        mov edx, HASH.ENEMY_BLUE << 16
-        mov dx, [inst + ecx]        
-        
-        CALL blue.put_one_in_map, [PARAM(0)], edx, [LOCAL(1)], [LOCAL(2)]
+        mov edx, HASH.ENEMY_METEORO << 16
+        mov dx, [inst + ecx]
+
+        CALL meteoro.put_one_in_map, [PARAM(0)], edx, [LOCAL(1)], [LOCAL(2)]
         
         inc dword [LOCAL(0)]
         jmp .map.all.while
     .map.all.while.end:
     FUNC.END
 
-; blue.put_one_in_map(dword *map, dword hash, dword row, dword col)
-blue.put_one_in_map:
+; meteoro.put_one_in_map(dword *map, dword hash, dword row, dword col)
+meteoro.put_one_in_map:
     FUNC.START
     RESERVE(4)  ; coord, offset
 
@@ -274,7 +204,7 @@ blue.put_one_in_map:
     .map.one.while:
         mov ecx, [LOCAL(0)]
 
-        cmp ecx, SHIP.COORDS
+        cmp ecx, meteoro.COORDS
         je .map.one.while.end
 
         shl ecx, 2
@@ -290,6 +220,8 @@ blue.put_one_in_map:
         add [LOCAL(3)], eax
 
         OFFSET [LOCAL(2)], [LOCAL(3)]
+        ; CALL video.print, 'X'|FG.GREEN|BG.YELLOW, [LOCAL(2)], [LOCAL(3)]
+        ; call video.refresh
 
         mov [LOCAL(1)], eax
         shl eax, 2
@@ -302,6 +234,7 @@ blue.put_one_in_map:
 
         .map.one.while.cont:
             mov eax, [LOCAL(1)]
+
             shl eax, 2
             add eax, [PARAM(0)]
 
@@ -315,44 +248,59 @@ blue.put_one_in_map:
 
 ; collision(dword inst, dword hash_other, dword inst_other)
 ; It is here where collisions will be handled
-global enemy_blue.collision
-enemy_blue.collision:
-    FUNC.START
-    
+global enemy_meteoro.collision
+enemy_meteoro.collision:
+    FUNC.START    
+
     cmp dword [PARAM(1)], HASH.PLAYER
     je crash_player
 
     cmp dword [PARAM(1)], HASH.SHOT
     je crash_shoot
 
+    cmp dword [PARAM(1)], HASH.ENEMY_BLUE
+    je crash_blue
+
+    cmp dword [PARAM(1)], HASH.ENEMY_RED
+    je crash_red
+
+    cmp dword [PARAM(1)], HASH.ENEMY_YELLOW
+    je crash_yellow
+
     cmp dword [PARAM(1)], HASH.ENEMY_BOSS
     je crash_boss
-
-    cmp dword [PARAM(1)], HASH.ENEMY_METEORO
-    je crash_meteoro
 
     crashed:
     FUNC.END
 
     crash_player:
-    CALL player.take_damage, 5
+    CALL player.take_damage, 25
     jmp crashed
 
     crash_shoot:
     jmp crashed
 
+    crash_blue:
+    CALL enemy_blue.take_damage, 1, [PARAM(2)]
+    jmp crashed
+
+    crash_red:
+    CALL enemy_red.take_damage, 1, [PARAM(2)]
+    jmp crashed
+
+    crash_yellow:
+    CALL enemy_yellow.take_damage, 1, [PARAM(2)]
+    jmp crashed
+
     crash_boss:
     jmp crashed
 
-    crash_meteoro:
-    jmp crashed
-    
     FUNC.END
 
 ;paint()
-;paint all the blue enemies
-global enemy_blue.paint
-enemy_blue.paint:
+;paint all the meteoro enemies
+global enemy_meteoro.paint
+enemy_meteoro.paint:
     FUNC.START
     RESERVE(4)
     
@@ -360,20 +308,18 @@ enemy_blue.paint:
     je while.end
    
     mov dword [LOCAL(2)], 0    
-    mov dword [LOCAL(3)], 0 
+    mov dword [LOCAL(3)], 0
 
-    ;change form
-    CALL delay, animation.timer, 150   ;the form of the ship change every half-second
+    CALL delay, animation.timer, 100   ;the form of the meteoro change every 100ms
     cmp eax, 0
     je while.internal
 
     cmp byte [graphics.style], 1
-    jg set.form3
     je set.form2
-    jl set.form1
+    jmp set.form1
 
     
-    ;painting ship number LOCAL(2)
+    ;painting meteoro number LOCAL(2)
     while.internal:           
         mov ecx, [LOCAL(3)]
         shl ecx, 2
@@ -392,7 +338,7 @@ enemy_blue.paint:
 
         inc dword [LOCAL(3)]
         mov ecx, [LOCAL(3)]
-        cmp ecx, SHIP.COORDS
+        cmp ecx, meteoro.COORDS
         jl while.internal   
         ;while end
 
@@ -406,33 +352,34 @@ enemy_blue.paint:
         while.end:
     FUNC.END
 
-    set.form3:
-        mov byte [graphics.style], 0
-        mov dword [graphics], '\'|FG.BLUE|BG.BLACK
-        mov dword [graphics + 4], '/'|FG.BLUE|BG.BLACK
-        jmp while.internal
-
     set.form2:
-        mov byte [graphics.style], 2
-        mov dword [graphics], '-'|FG.BLUE|BG.BLACK
-        mov dword [graphics + 4], '-'|FG.BLUE|BG.BLACK
+        mov byte [graphics.style], 0
+        mov dword [graphics + 4], 'W'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 8], 'w'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 12], 'W'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 20], 'W'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 24], 'w'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 28], 'W'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 32], 'w'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 36], 'W'|FG.MAGENTA|BG.BLACK
         jmp while.internal
 
     set.form1:
         mov byte [graphics.style], 1
-        mov dword [graphics], '/'|FG.BLUE|BG.BLACK
-        mov dword [graphics + 4], '\'|FG.BLUE|BG.BLACK
+        mov dword [graphics + 4], 'w'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 8], 'W'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 12], 'w'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 20], 'w'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 24], 'W'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 28], 'w'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 32], 'W'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 36], 'w'|FG.MAGENTA|BG.BLACK
         jmp while.internal
 
-
-
-
-    
-
-; enemy_blue.take_damage(dword damage, dword inst)
+; enemy_meteoro.take_damage(dword damage, dword instance)
 ; Takes lives away from an enemy
-global enemy_blue.take_damage
-enemy_blue.take_damage:
+global enemy_meteoro.take_damage
+enemy_meteoro.take_damage:
     FUNC.START
     RESERVE(1)
 
@@ -440,27 +387,25 @@ enemy_blue.take_damage:
     CALL array.index_of, inst, ecx, [PARAM(1)], 4 
     mov [LOCAL(0)], eax
     shl eax, 2
-    mov ecx, [PARAM(0)]
 
-    
+    mov ecx, [PARAM(0)]    
     cmp dword [lives + eax], ecx
     jg take_end
+
     add dword [actual.score], 50
     mov eax, [LOCAL(0)]
-    CALL destroy.ship, eax
+    CALL destroy.meteoro, eax
 
     take_end:
     sub [lives + eax], ecx
     FUNC.END
 
+;destroy.meteoro dword index)
+;destroyes the meteoro that is in the index position
+destroy.meteoro: 
+    FUNC.START    
 
-;destroy.ship(dword index)
-;destroyes the ship that is in the index position
-destroy.ship:
-    FUNC.START
-    RESERVE(1)
-    
-    call play_blue_enemy_die
+    ; call play_meteoro_enemy_die
 
     mov eax, [PARAM(0)]
     mov [LOCAL(0)], eax
@@ -477,8 +422,6 @@ destroy.ship:
         mov dword [row.offset + eax], ebx
         mov ebx, [col.offset + eax + 4]
         mov dword [col.offset + eax], ebx
-        mov ebx, [dir + eax + 4]
-        mov dword [dir + eax], ebx
         mov ebx, [inst + eax + 4]
         mov dword [inst + eax], ebx
 
@@ -491,12 +434,10 @@ destroy.ship:
     FUNC.END
 
 
-; enemy_blue.reset()
-; reset the blue enemies
-global enemy_blue.reset
-enemy_blue.reset:
+; enemy_meteoro.reset()
+; reset the meteoro enemies
+global enemy_meteoro.reset
+enemy_meteoro.reset:
     FUNC.START
     mov dword[count], 0
     FUNC.END
-
-

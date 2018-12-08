@@ -20,6 +20,10 @@ extern enemy_boss.update
 extern enemy_boss.init
 extern enemy_boss.paint
 extern enemy_boss.reset
+extern enemy_meteoro.update
+extern enemy_meteoro.init
+extern enemy_meteoro.paint
+extern enemy_meteoro.reset
 
 extern colors
 extern colors_count
@@ -58,6 +62,8 @@ enemy.generate:
         je red
         cmp [PARAM(2)], dword 2
         je yellow
+        cmp [PARAM(2)], dword 3
+        je meteoro
 
         Continue:
 
@@ -81,6 +87,10 @@ enemy.generate:
     yellow:
     CALL enemy_yellow.init, 1, eax
     jmp Continue
+
+    meteoro:
+    CALL enemy_meteoro.init, 1, eax
+    jmp end.while
 
 ; update(dword map)
 ; It is here where all the actions related to this object will be taking place
@@ -119,6 +129,7 @@ enemy.update:
     CALL enemy_red.update, [PARAM(0)]
     CALL enemy_yellow.update, [PARAM(0)]
     CALL enemy_boss.update, [PARAM(0)]
+    CALL enemy_meteoro.update, [PARAM(0)]
     
     FUNC.END
 
@@ -135,6 +146,7 @@ enemy.paint:
     call enemy_red.paint
     call enemy_yellow.paint
     call enemy_boss.paint
+    call enemy_meteoro.paint
     FUNC.END
 
 ; enemy.take_damage(dword damage)
@@ -153,6 +165,7 @@ enemy_manager.reset:
     call enemy_red.reset
     call enemy_yellow.reset
     call enemy_boss.reset
+    call enemy_meteoro.reset
     FUNC.END
 
 
