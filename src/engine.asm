@@ -47,6 +47,7 @@ extern player.update
 extern weapons.update
 extern enemy.update
 extern sound.update
+extern bonus.update
 
 extern info.paint
 
@@ -57,10 +58,16 @@ extern enemy_red.collision
 extern enemy_blue.collision
 extern enemy_boss.collision
 extern enemy_meteoro.collision
+extern bonus_lives.collision
+extern bonus_shield.collision
+extern bonus_weapon1.collision
+extern bonus_weapon2.collision
 
 extern player.paint
 extern weapons.paint
 extern enemy.paint
+extern bonus.paint
+
 extern video.clear
 extern video.refresh
 extern video.print
@@ -70,6 +77,7 @@ extern delay
 extern video.set_rect
 
 extern enemy_manager.reset
+extern bonus_manager.reset
 extern weapons.reset
 
 ; update()
@@ -88,6 +96,7 @@ engine.update:
     CALL player.update, map
     CALL weapons.update, map
     CALL enemy.update, map
+    CALL bonus.update, map
     call sound.update
     FUNC.END
 
@@ -99,6 +108,7 @@ engine.paint:
     call player.paint
     call weapons.paint
     call enemy.paint
+    call bonus.paint
     call info.paint
     call video.refresh    
     FUNC.END
@@ -185,6 +195,18 @@ engine.invoke_handler:
     cmp dword [PARAM(0)], HASH.ENEMY_METEORO
     je .handler.enemy_meteoro
 
+    cmp dword [PARAM(0)], HASH.BONUS_LIVES
+    je .handler.bonus_lives
+
+    cmp dword [PARAM(0)], HASH.BONUS_SHIELD
+    je .handler.bonus_shield
+
+    cmp dword [PARAM(0)], HASH.BONUS_WEAPON1
+    je .handler.bonus_weapon1
+
+    cmp dword [PARAM(0)], HASH.BONUS_WEAPON2
+    je .handler.bonus_weapon2
+
     jmp .handler.end
 
     .handler.player:
@@ -214,6 +236,23 @@ engine.invoke_handler:
     .handler.enemy_meteoro:
     CALL enemy_meteoro.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
     jmp .handler.end
+
+    .handler.bonus_lives:
+    CALL bonus_lives.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.bonus_shield:
+    CALL bonus_shield.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.bonus_weapon1:
+    CALL bonus_weapon1.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.bonus_weapon2:
+    CALL bonus_weapon2.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
 
     .handler.end:
         FUNC.END
@@ -303,6 +342,7 @@ engine.start:
     CALL player.init, 25, 20, 38
     call enemy_manager.reset
     call weapons.reset
+    call bonus_manager.reset
     FUNC.END
 
 ; engine.run()

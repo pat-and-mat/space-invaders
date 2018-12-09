@@ -23,6 +23,7 @@ extern delay
 extern player.lives
 extern beep.off
 extern menu.lose
+extern bonus_lives.init
 
 global game
 game:

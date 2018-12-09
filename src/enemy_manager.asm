@@ -111,7 +111,7 @@ enemy.update:
     CALL rand, [generate_amount]   ;max number of enemy generate 
     mov [LOCAL(0)], eax  ;LOCAL(0) = number of enemies to generate
     
-    mov ebx, 20      
+    mov ebx, 19      
     sub ebx, eax
     CALL rand, ebx
     shl eax, 2 
@@ -166,6 +166,7 @@ enemy_manager.reset:
     call enemy_yellow.reset
     call enemy_boss.reset
     call enemy_meteoro.reset
+    ; mov dword [boss_time], 0
     FUNC.END
 
 

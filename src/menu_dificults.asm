@@ -114,25 +114,22 @@ chose_dificult:
     mov dword [colors + 24], 3
     mov dword [generate_time], 1500
     mov dword [generate_amount], 7
-    mov dword [bonus_time], 5000
+    mov dword [bonus_time], 8000
     mov dword [boss_time], 30000
     jmp input
 
     insane:
-    mov dword [colors_count], 10
+    mov dword [colors_count], 6
     mov dword [colors],      0
     mov dword [colors + 4],  0
-    mov dword [colors + 8],  0
+    mov dword [colors + 8],  1
     mov dword [colors + 12], 1
-    mov dword [colors + 16], 1
-    mov dword [colors + 20], 1
-    mov dword [colors + 24],  2
-    mov dword [colors + 28], 2
-    mov dword [colors + 32], 2
-    mov dword [colors + 36], 3
+    mov dword [colors + 16], 2
+    mov dword [colors + 20], 2
+    mov dword [colors + 24], 3
     mov dword [generate_time], 1000
     mov dword [generate_amount], 10
-    mov dword [bonus_time], 7000
+    mov dword [bonus_time], 12000
     mov dword [boss_time], 30000
     jmp input
 
@@ -151,6 +148,6 @@ chose_dificult:
     mov dword [colors + 40], 3
     mov dword [generate_time], 500
     mov dword [generate_amount], 10
-    mov dword [bonus_time], 10000
+    mov dword [bonus_time], 15000
     mov dword [boss_time], 30000
     jmp input

@@ -23,9 +23,13 @@ extern enemy_red.take_damage
 extern enemy_blue.take_damage
 extern enemy_yellow.take_damage
 extern enemy_meteoro.take_damage
+extern bonus_lives.take_damage
 extern debug_info
 extern engine.debug
 extern video.refresh
+extern bonus_shield.take_damage
+extern bonus_weapon1.take_damage
+extern bonus_weapon2.take_damage
 
 
 
@@ -395,6 +399,16 @@ enemy_boss.collision:
     cmp dword [PARAM(1)], HASH.ENEMY_METEORO
     je crash_meteoro
 
+    cmp dword [PARAM(1)], HASH.BONUS_LIVES
+    je crash_lives
+    cmp dword [PARAM(0)], HASH.BONUS_SHIELD
+    je crash_shield
+    cmp dword [PARAM(0)], HASH.BONUS_WEAPON1
+    je crash_weapon1
+    cmp dword [PARAM(0)], HASH.BONUS_WEAPON2
+    je crash_weapon2
+
+
     crashed:
     FUNC.END
 
@@ -419,6 +433,22 @@ enemy_boss.collision:
 
     crash_meteoro:
     CALL enemy_meteoro.take_damage, 20, [PARAM(2)]
+    jmp crashed
+
+    crash_lives:
+    CALL bonus_lives.take_damage, 10, [PARAM(2)]
+    jmp crashed
+
+    crash_shield:
+    CALL bonus_shield.take_damage, 10, [PARAM(2)]
+    jmp crashed
+
+    crash_weapon1:
+    CALL bonus_weapon1.take_damage, 10, [PARAM(2)]
+    jmp crashed
+
+    crash_weapon2:
+    CALL bonus_weapon2.take_damage, 10, [PARAM(2)]
     jmp crashed
 
     FUNC.END

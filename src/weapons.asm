@@ -44,6 +44,10 @@ extern enemy_red.take_damage
 extern enemy_yellow.take_damage
 extern enemy_boss.take_damage
 extern enemy_meteoro.take_damage
+extern bonus_lives.take_damage
+extern bonus_shield.take_damage
+extern bonus_weapon1.take_damage
+extern bonus_weapon2.take_damage
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
@@ -270,6 +274,19 @@ weapons.collision:
     cmp dword [PARAM(1)], HASH.ENEMY_BOSS
     je .kill.boss
 
+    cmp dword [PARAM(1)], HASH.BONUS_LIVES
+    je .kill.bonus_lives
+
+    cmp dword [PARAM(1)], HASH.BONUS_SHIELD
+    je .kill.bonus_shield
+
+    cmp dword [PARAM(1)], HASH.BONUS_WEAPON1
+    je .kill.bonus_weapon1
+
+    cmp dword [PARAM(1)], HASH.BONUS_WEAPON2
+    je .kill.bonus_weapon2
+
+
     jmp .collision.end
 
     .kill.player:
@@ -294,6 +311,22 @@ weapons.collision:
 
     .kill.enemy_yellow:
         CALL enemy_yellow.take_damage, 1, [PARAM(2)]
+        jmp .collision.end
+
+    .kill.bonus_lives:
+        CALL bonus_lives.take_damage, 1, [PARAM(2)]
+        jmp .collision.end
+
+    .kill.bonus_shield:
+        CALL bonus_shield.take_damage, 1, [PARAM(2)]
+        jmp .collision.end
+
+    .kill.bonus_weapon1:
+        CALL bonus_weapon1.take_damage, 1, [PARAM(2)]
+        jmp .collision.end
+
+    .kill.bonus_weapon2:
+        CALL bonus_weapon2.take_damage, 1, [PARAM(2)]
         jmp .collision.end
 
     .collision.end:
