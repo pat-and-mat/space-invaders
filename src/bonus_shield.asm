@@ -19,6 +19,7 @@ extern player.take_damage
 extern can_move
 extern old_map
 extern array.index_of
+extern shield_life
 
 
 %define SIZE 500
@@ -123,7 +124,7 @@ bonus_shield.update:
         add dword [right.count + ecx], 1
 
         CALL rand, 10
-        cmp eax, 6
+        cmp eax, 5
         jge down
         
 
@@ -147,14 +148,14 @@ bonus_shield.update:
         move.right:
         cmp dword [col.offset + ecx] , 79
         jge destroy
+        mov dword [right.count + ecx], 0
 
         push ecx
         CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, BONUS.COORDS, 0, 0, 1, 0, [LOCAL(2)]       
         pop ecx
         cmp eax, 0
-        je condition
+        je condition        
         
-        mov dword [right.count + ecx], 0
         add dword [col.offset + ecx] , 1
         jmp condition
 
@@ -304,7 +305,7 @@ bonus_shield.collision:
     FUNC.END
 
     crash_player:
-
+    mov dword [shield_life], 10
     jmp crashed
 
     crash_shoot:

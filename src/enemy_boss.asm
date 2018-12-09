@@ -123,7 +123,7 @@ enemy_boss.update:
     FUNC.START
     RESERVE(4)
 
-    CALL delay, timer.boss, 1000  ;timing condition to move
+    CALL delay, timer.boss, 800  ;timing condition to move
     cmp eax, 0
     je working.on.map
 

@@ -51,10 +51,18 @@ graphics dd '/'|FG.GRAY|BG.BLACK,\
             '^'|FG.GRAY|BG.BLACK,\
             '-'|FG.GRAY|BG.BLACK,\
             '\'|FG.GRAY|BG.BLACK,\
- 
+
+shield_graphics dd  ' '|FG.YELLOW|BG.BLACK,'-'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,'-'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,'-'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,\
+                    '|'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,'|'|FG.YELLOW|BG.BLACK,\
+                    ' '|FG.YELLOW|BG.BLACK,'_'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,'_'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,'_'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,\
             
 rows dd 0, 0, 0, 0, 0
 cols dd 0, 1, 2, 3, 4
+
+shield_rows dd 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2
+shield_cols dd 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6
+
+shield_graphics.style db 0
 
 col.left dd 0
 col.right dd 3
@@ -63,6 +71,9 @@ weapon.row dd 0
 weapon.col dd 2
 
 graphics.style db 0
+
+global shield_life
+shield_life dd 0
 
 section .bss
 
@@ -73,6 +84,7 @@ row.offset resd 1
 col.offset resd 1
 
 animation.timer resd 2
+shield_animation.timer resd 2
 lose.timer resd 2
 
 section .text
@@ -85,6 +97,8 @@ player.init:
     ;filling local vars of player
     mov bx, [PARAM(0)]
     mov [player.lives], bx
+
+    mov dword [shield_life], 10
     
     mov ebx, [PARAM(1)]
     mov [row.offset], ebx
@@ -277,7 +291,16 @@ player.collision:
 global player.paint
 player.paint:
     FUNC.START
-    RESERVE(2)
+    RESERVE(4)
+    cmp dword [shield_life], 0
+    jle cont
+    mov eax, [row.offset]
+    dec eax
+    mov [LOCAL(2)], eax
+    mov eax, [col.offset]
+    dec eax
+    mov [LOCAL(3)], eax
+    CALL paint_shield, [LOCAL(2)], [LOCAL(3)]    
 
     CALL delay, animation.timer, 250   ;the form of the ship change every 300ms
     cmp eax, 0
@@ -319,6 +342,15 @@ player.paint:
 global player.take_damage
 player.take_damage:
     FUNC.START
+
+    mov eax, [PARAM(0)]
+    cmp eax, [shield_life]
+    jge destroy_shield
+    sub [shield_life], eax
+    jmp end
+
+    destroy_shield:
+    mov dword [shield_life], 0
     
     mov eax, [PARAM(0)]
     cmp [player.lives], ax
@@ -333,3 +365,89 @@ player.take_damage:
 
     end:
         FUNC.END
+
+;paint_shield(dword row.offset, dword col.offset)
+paint_shield:
+    FUNC.START
+    RESERVE(2)
+    CALL delay, shield_animation.timer, 300   ;the form of the shield change every 300ms
+    cmp eax, 0
+    je shield_cont
+
+    cmp byte [shield_graphics.style], 1
+    je set.shield_form2
+    jmp set.shield_form1
+
+    shield_cont:
+
+    mov ecx, 0    
+    shield_while:
+        cmp ecx, 21 * 4
+        jnl shield_while.end
+        
+        mov eax, [PARAM(0)]
+        add eax, [shield_rows + ecx]
+        cmp eax, 0
+        jle painted
+        cmp eax, 24
+        jge painted
+        mov [LOCAL(0)], eax        
+
+        mov eax, [PARAM(1)]
+        add eax, [shield_cols + ecx]
+        cmp eax, 0
+        jle painted
+        cmp eax, 79
+        jge painted
+        mov [LOCAL(1)], eax
+
+        push ecx
+        CALL video.print, [shield_graphics + ecx], [LOCAL(0)], [LOCAL(1)]
+        pop ecx
+
+        painted:
+        add ecx, 4
+        jmp shield_while
+        shield_while.end:
+        FUNC.END
+    
+    set.shield_form2:
+        mov byte [shield_graphics.style], 0
+        mov dword [shield_graphics], '/'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 4], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 8], '-'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 12], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 16], '-'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 20], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 24], '\'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 28], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 52], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 56], '\'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 60], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 64], '_'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 68], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 72], '_'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 76], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 80], '/'|FG.YELLOW|BG.BLACK
+        jmp shield_cont
+
+
+    set.shield_form1:
+        mov byte [shield_graphics.style], 1
+        mov dword [shield_graphics], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 4], '-'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 8], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 12], '-'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 16], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 20], '-'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 24], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 28], '|'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 52], '|'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 56], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 60], '_'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 64], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 68], '_'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 72], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 76], '_'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics + 80], ' '|FG.YELLOW|BG.BLACK
+        jmp shield_cont

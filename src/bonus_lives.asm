@@ -124,7 +124,7 @@ bonus_lives.update:
         add dword [left.count + ecx], 1
 
         CALL rand, 10
-        cmp eax, 6
+        cmp eax, 5
         jge down
         
 
@@ -158,14 +158,13 @@ bonus_lives.update:
         move.left:
         cmp dword [col.offset + ecx] , 1
         jle destroy
+        mov dword [left.count + ecx], 0
 
         push ecx
         CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, BONUS.COORDS, 0, 0, 0, 1, [LOCAL(2)]
         pop ecx
         cmp eax, 0
-        je condition
-
-        mov dword [left.count + ecx], 0
+        je condition        
         sub dword [col.offset + ecx] , 1
         jmp condition
 
