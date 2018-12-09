@@ -134,7 +134,7 @@ enemy.update:
     FUNC.END
 
     boss:
-    CALL enemy_boss.init, 1, 37
+    ; CALL enemy_boss.init, 1, 37
     jmp end
 
 ; paint()

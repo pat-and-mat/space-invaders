@@ -122,7 +122,7 @@ bonus_weapon2.update:
         add dword [right.count + ecx], 1
 
         CALL rand, 10
-        cmp eax, 4
+        cmp eax, 6
         jge down
         
 
@@ -132,7 +132,7 @@ bonus_weapon2.update:
         jmp move.up
 
         down:
-        cmp dword [row.offset + ecx], 24
+        cmp dword [row.offset + ecx], 22
         jge move.up
         jmp move.down
 
@@ -143,7 +143,10 @@ bonus_weapon2.update:
         jl start
         jmp working.on.map  ;end cicle
 
-        move.right: 
+        move.right:
+        cmp dword [col.offset + ecx] , 79
+        jge destroy
+
         push ecx
         CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, BONUS.COORDS, 0, 0, 1, 0, [LOCAL(2)]       
         pop ecx
@@ -155,9 +158,6 @@ bonus_weapon2.update:
         jmp condition
 
         move.left:
-        cmp dword [col.offset + ecx] , 1
-        jle destroy
-
         push ecx
         CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, BONUS.COORDS, 0, 0, 0, 1, [LOCAL(2)]
         pop ecx

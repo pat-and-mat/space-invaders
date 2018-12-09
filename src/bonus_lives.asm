@@ -124,7 +124,7 @@ bonus_lives.update:
         add dword [left.count + ecx], 1
 
         CALL rand, 10
-        cmp eax, 4
+        cmp eax, 6
         jge down
         
 
@@ -134,7 +134,7 @@ bonus_lives.update:
         jmp move.up
 
         down:
-        cmp dword [row.offset + ecx], 24
+        cmp dword [row.offset + ecx], 22
         jge move.up
         jmp move.down
 
