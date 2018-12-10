@@ -22,7 +22,7 @@ extern array.index_of
 extern shield_life
 
 
-%define SIZE 500
+%define SIZE 100
 %define BONUS.COORDS 4
 
 section .data

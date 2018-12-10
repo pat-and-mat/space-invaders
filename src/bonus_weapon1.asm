@@ -20,7 +20,7 @@ extern old_map
 extern array.index_of
 
 
-%define SIZE 500
+%define SIZE 100
 %define BONUS.COORDS 1
 
 section .data
