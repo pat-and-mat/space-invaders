@@ -40,11 +40,13 @@ section .text
 extern array.index_of
 
 extern player.init
+extern ai.init
 
 extern player.update
 extern weapons.update
 extern enemy.update
 extern sound.update
+extern ai.update
 
 extern info.paint
 
@@ -53,7 +55,9 @@ extern weapons.collision
 extern enemy_yellow.collision
 extern enemy_red.collision
 extern enemy_blue.collision
+extern ai.collision
 
+extern ai.paint
 extern player.paint
 extern weapons.paint
 extern enemy.paint
@@ -84,6 +88,7 @@ engine.update:
     CALL player.update, map
     CALL weapons.update, map
     CALL enemy.update, map
+    CALL ai.update, map
     call sound.update
     FUNC.END
 
@@ -95,6 +100,7 @@ engine.paint:
     call player.paint
     call weapons.paint
     call enemy.paint
+    call ai.paint
     call info.paint
     call video.refresh    
     FUNC.END
@@ -274,6 +280,7 @@ global engine.start
 engine.start:
     FUNC.START
     CALL player.init, 25, 20, 38
+    CALL ai.init, 25, 20, 56
     call enemy_manager.reset
     call weapons.reset
     FUNC.END
@@ -289,16 +296,17 @@ engine.run:
     ; call engine.debug
     FUNC.END
 
+global engine.debug
 engine.debug:
     FUNC.START
     CALL video.set_rect, debug_info, 24, 0, 1, 80
     call video.refresh
 
-    mov edi, debug_info
-    mov eax, 0
-    mov ecx, 80
-    cld
-    rep stosw
+    ; mov edi, debug_info
+    ; mov eax, 0
+    ; mov ecx, 80
+    ; cld
+    ; rep stosw
 
     FUNC.END
 

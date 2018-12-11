@@ -6,5 +6,6 @@
 %define HASH.ENEMY_BLUE 3
 %define HASH.ENEMY_RED 4
 %define HASH.ENEMY_YELLOW 5
+%define HASH.AI 6
 
 %endif ; HASH_MAC
