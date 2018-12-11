@@ -26,6 +26,7 @@ extern bonus_lives.take_damage
 extern bonus_shield.take_damage
 extern bonus_weapon1.take_damage
 extern bonus_weapon2.take_damage
+extern arrayd.shiftl
 
 
 
@@ -38,10 +39,10 @@ timer dd 0
 
 count dd 0
 
-graphics dd ' '|FG.MAGENTA|BG.BLACK, 'w'|FG.MAGENTA|BG.BLACK, 'W'|FG.MAGENTA|BG.BLACK, 'w'|FG.MAGENTA|BG.BLACK, ' '|FG.MAGENTA|BG.BLACK,\
-            'w'|FG.MAGENTA|BG.BLACK, 'W'|FG.MAGENTA|BG.BLACK, 'w'|FG.MAGENTA|BG.BLACK, 'W'|FG.MAGENTA|BG.BLACK, 'w'|FG.MAGENTA|BG.BLACK,\
-            '/'|FG.MAGENTA|BG.BLACK, ' '|FG.MAGENTA|BG.BLACK, ' '|FG.MAGENTA|BG.BLACK, ' '|FG.MAGENTA|BG.BLACK, '\'|FG.MAGENTA|BG.BLACK,\
-            '\'|FG.MAGENTA|BG.BLACK, '_'|FG.MAGENTA|BG.BLACK, '_'|FG.MAGENTA|BG.BLACK, '_'|FG.MAGENTA|BG.BLACK, '/'|FG.MAGENTA|BG.BLACK, 
+graphics dd ' '|FG.RED|BG.BLACK, 'w'|FG.RED|BG.BLACK, 'W'|FG.RED|BG.BLACK, 'w'|FG.RED|BG.BLACK, ' '|FG.RED|BG.BLACK,\
+            'w'|FG.RED|BG.BLACK, 'W'|FG.RED|BG.BLACK, 'w'|FG.RED|BG.BLACK, 'W'|FG.RED|BG.BLACK, 'w'|FG.RED|BG.BLACK,\
+            '/'|FG.GRAY|BG.BLACK, ' '|FG.GRAY|BG.BLACK, ' '|FG.GRAY|BG.BLACK, ' '|FG.GRAY|BG.BLACK, '\'|FG.GRAY|BG.BLACK,\
+            '\'|FG.GRAY|BG.BLACK, '_'|FG.GRAY|BG.BLACK, '_'|FG.GRAY|BG.BLACK, '_'|FG.GRAY|BG.BLACK, '/'|FG.GRAY|BG.BLACK, 
             
             
             
@@ -105,28 +106,27 @@ enemy_meteoro.init:
 global enemy_meteoro.update
 enemy_meteoro.update:
     FUNC.START
-    RESERVE(4)
-
-    CALL delay, timer.meteoro, 500  ;timing condition to move
-    cmp eax, 0
-    je working.on.map
-
+    RESERVE(2)
     cmp dword [count], 0
     je end
+
+    CALL delay, timer.meteoro, 400  ;timing condition to move
+    cmp eax, 0
+    je working.on.map
    
-    mov dword [LOCAL(3)], 0   ;actual meteoro 
+    mov dword [LOCAL(1)], 0   ;actual meteoro 
     start:
-        mov ecx, [LOCAL(3)]
+        mov ecx, [LOCAL(1)]
         shl ecx, 2
         
         mov edx, HASH.ENEMY_METEORO << 16
         mov dx, [inst + ecx]
-        mov[LOCAL(2)], edx
+        mov[LOCAL(0)], edx
 
         jmp move.down        
         condition:  ;the stop condition is reached when all the meteoro  are moved
-        inc dword [LOCAL(3)]
-        mov ecx, [LOCAL(3)]
+        inc dword [LOCAL(1)]
+        mov ecx, [LOCAL(1)]
         cmp ecx, [count]  ;compare ecx with the number of blue meteoro  on map
         jl start
         jmp working.on.map  ;end cicle
@@ -146,7 +146,7 @@ enemy_meteoro.update:
         move.down:
         ;check position
         cmp dword [row.offset + ecx], 21
-        je destroy
+        jge destroy
         ; push ecx
         ; CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, meteoro COORDS, 1, 0, 0, 0, [LOCAL(2)]
         ; pop ecx
@@ -157,8 +157,8 @@ enemy_meteoro.update:
         jmp condition
 
         destroy:
-        CALL destroy.meteoro,  ecx
-        sub ecx, 4
+        CALL destroy.meteoro, [LOCAL(1)]
+        dec dword [LOCAL(1)]
         jmp condition
 
         working.on.map:
@@ -383,26 +383,26 @@ enemy_meteoro.paint:
 
     set.form2:
         mov byte [graphics.style], 0
-        mov dword [graphics + 4], 'W'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 8], 'w'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 12], 'W'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 20], 'W'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 24], 'w'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 28], 'W'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 32], 'w'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 36], 'W'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 4], 'W'|FG.RED|BG.BLACK
+        mov dword [graphics + 8], 'w'|FG.RED|BG.BLACK
+        mov dword [graphics + 12], 'W'|FG.RED|BG.BLACK
+        mov dword [graphics + 20], 'W'|FG.RED|BG.BLACK
+        mov dword [graphics + 24], 'w'|FG.RED|BG.BLACK
+        mov dword [graphics + 28], 'W'|FG.RED|BG.BLACK
+        mov dword [graphics + 32], 'w'|FG.RED|BG.BLACK
+        mov dword [graphics + 36], 'W'|FG.RED|BG.BLACK
         jmp while.internal
 
     set.form1:
         mov byte [graphics.style], 1
-        mov dword [graphics + 4], 'w'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 8], 'W'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 12], 'w'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 20], 'w'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 24], 'W'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 28], 'w'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 32], 'W'|FG.MAGENTA|BG.BLACK
-        mov dword [graphics + 36], 'w'|FG.MAGENTA|BG.BLACK
+        mov dword [graphics + 4], 'w'|FG.RED|BG.BLACK
+        mov dword [graphics + 8], 'W'|FG.RED|BG.BLACK
+        mov dword [graphics + 12], 'w'|FG.RED|BG.BLACK
+        mov dword [graphics + 20], 'w'|FG.RED|BG.BLACK
+        mov dword [graphics + 24], 'W'|FG.RED|BG.BLACK
+        mov dword [graphics + 28], 'w'|FG.RED|BG.BLACK
+        mov dword [graphics + 32], 'W'|FG.RED|BG.BLACK
+        mov dword [graphics + 36], 'w'|FG.RED|BG.BLACK
         jmp while.internal
 
 ; enemy_meteoro.take_damage(dword damage, dword instance)
@@ -432,32 +432,18 @@ enemy_meteoro.take_damage:
 ;destroy.meteoro dword index)
 ;destroyes the meteoro that is in the index position
 destroy.meteoro: 
-    FUNC.START    
+    FUNC.START
+    RESERVE(1)    
 
     ; call play_meteoro_enemy_die
 
     mov eax, [PARAM(0)]
     mov [LOCAL(0)], eax
-    while:
-        ;move forward the elements of all the arrays
-        mov eax, [LOCAL(0)]
-        cmp eax, dword [count]
-        je end.while
-
-        shl eax, 2
-        mov ebx, [lives + eax + 4]
-        mov dword [lives + eax], ebx
-        mov ebx, [row.offset + eax + 4]
-        mov dword [row.offset + eax], ebx
-        mov ebx, [col.offset + eax + 4]
-        mov dword [col.offset + eax], ebx
-        mov ebx, [inst + eax + 4]
-        mov dword [inst + eax], ebx
-
-        inc dword [LOCAL(0)]
-        jmp while
-
-    end.while:
+    
+    CALL arrayd.shiftl, lives, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, row.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, col.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, inst, [count], [LOCAL(0)]
 
     sub dword [count], 1
     FUNC.END

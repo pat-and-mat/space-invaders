@@ -43,6 +43,31 @@ array.shiftl:
 
     FUNC.END
 
+global arrayd.shiftl
+arrayd.shiftl:
+    FUNC.START
+    inc dword [PARAM(2)]
+
+    .shiftl.while:
+        mov ecx, [PARAM(2)]
+        
+        cmp ecx, [PARAM(1)]
+        je .shiftl.while.end
+
+        shl ecx, 2
+
+        mov edx, [PARAM(0)]
+        add edx, ecx
+
+        mov eax, [edx]
+        mov [edx - 4], eax
+
+        inc dword [PARAM(2)]
+        jmp .shiftl.while
+    .shiftl.while.end:
+
+    FUNC.END
+
 ; array.shiftr(dword *array, dword count, dword i)
 ; shifts elements in the array one position to the right
 global array.shiftr

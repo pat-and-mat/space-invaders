@@ -33,8 +33,8 @@ extern engine.debug
 
 %macro SHIP.ROW 1
     xor eax, eax
-    mov ax, [row.offset]
-    add ax, %1
+    ; mov ax, [row.offset]
+    ; add ax, %1
 %endmacro
 
 %macro SHIP.COL 1
@@ -342,6 +342,12 @@ player.paint:
 global player.take_damage
 player.take_damage:
     FUNC.START
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+    mov dword [PARAM(0)], 0 ; debug
+>>>>>>> Stashed changes
 
     mov eax, [PARAM(0)]
     cmp eax, [shield_life]
@@ -351,6 +357,10 @@ player.take_damage:
 
     destroy_shield:
     mov dword [shield_life], 0
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
     
     mov eax, [PARAM(0)]
     cmp [player.lives], ax

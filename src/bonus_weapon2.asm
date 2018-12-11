@@ -408,7 +408,8 @@ bonus_weapon2.take_damage:
 ;destroy.bonus(dword index)
 ;destroyes the bonus that is in the index position
 destroy.bonus:
-    FUNC.START    
+    FUNC.START 
+    RESERVE(1)
 
    mov eax, [PARAM(0)]
     mov [LOCAL(0)], eax
@@ -430,6 +431,10 @@ destroy.bonus:
         mov ebx, [inst + eax + 4]
         mov dword [inst + eax], ebx
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
         inc dword [LOCAL(0)]
         jmp while
 

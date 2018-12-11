@@ -6,6 +6,7 @@
 %include "utils.inc"
 
 extern video.print_at
+extern arrayd.shiftl
 extern video.print
 extern video.clear
 extern scan
@@ -122,14 +123,13 @@ global enemy_boss.update
 enemy_boss.update:
     FUNC.START
     RESERVE(4)
-
-    CALL delay, timer.boss, 800  ;timing condition to move
-    cmp eax, 0
-    je working.on.map
-
     cmp dword [count], 0
     je end
    
+    CALL delay, timer.boss, 800  ;timing condition to move
+    cmp eax, 0
+    je working.on.map
+    
     mov dword [LOCAL(3)], 0   ;actual ship
 
     start:
@@ -197,8 +197,8 @@ enemy_boss.update:
 
         move.down:
         ;check position
-        cmp dword [row.offset + ecx] , 15
-        jge no_mov
+        ; cmp dword [row.offset + ecx] , 15
+        ; jge no_mov
 
         ; push ecx
         ; CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 1, 0, 0, 0, [LOCAL(2)]
@@ -207,13 +207,13 @@ enemy_boss.update:
         ; je condition
                 
         add dword [row.offset + ecx] , 1
-        no_mov:
+        ; no_mov:
         mov dword [down.count + ecx], 0
         jmp condition
 
         destroy:
-        CALL destroy.ship, ecx
-        sub ecx, 4
+        CALL destroy.ship, [LOCAL(3)]
+        dec dword [LOCAL(3)]
         jmp condition
 
         boss.shoot:
@@ -371,16 +371,7 @@ boss.put_one_in_map:
 ; It is here where collisions will be handled
 global enemy_boss.collision
 enemy_boss.collision:
-    FUNC.START     
-    ; RESERVE(1)
-    ; mov dword [LOCAL(1)], 0
-    ; mov edx, [LOCAL(1)]
-    ; inc dword [LOCAL(1)]
-    ; mov [debug_info], dx
-    ; add word [debug_info], 48
-    ; or word [debug_info], FG.RED
-    ; call engine.debug   
-
+    FUNC.START
     cmp dword [PARAM(1)], HASH.PLAYER
     je crash_player
 
@@ -408,7 +399,10 @@ enemy_boss.collision:
     cmp dword [PARAM(0)], HASH.BONUS_WEAPON2
     je crash_weapon2
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
     crashed:
     FUNC.END
 
@@ -554,40 +548,19 @@ enemy_boss.take_damage:
 ;destroy.ship(dword index)
 ;destroyes the ship that is in the index position
 destroy.ship:
-    FUNC.START    
+    FUNC.START   
+    RESERVE(1) 
 
     call play_boss_enemy_die
 
-   mov eax, [PARAM(0)]
+    mov eax, [PARAM(0)]
     mov [LOCAL(0)], eax
-    while:
-        ; mov edx, [PARAM(1)]
-        ; mov [debug_info], ax
-        ; add word [debug_info], 48
-        ; or word [debug_info], FG.RED
-        ; call engine.debug
-
-        ;move forward the elements of all the arrays
-        mov eax, [LOCAL(0)]
-        cmp eax, dword [count]
-        je end.while
-
-        shl eax, 2
-        mov ebx, [lives + eax + 4]
-        mov dword [lives + eax], ebx
-        mov ebx, [row.offset + eax + 4]
-        mov dword [row.offset + eax], ebx
-        mov ebx, [col.offset + eax + 4]
-        mov dword [col.offset + eax], ebx
-        mov ebx, [down.count + eax + 4]
-        mov dword [down.count + eax], ebx
-        mov ebx, [inst + eax + 4]
-        mov dword [inst + eax], ebx
-
-        inc dword [LOCAL(0)]
-        jmp while
-
-    end.while:
+    
+    CALL arrayd.shiftl, lives, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, row.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, col.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, down.count, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, inst, [count], [LOCAL(0)]
 
     sub dword [count], 1
     FUNC.END

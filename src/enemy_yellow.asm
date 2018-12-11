@@ -6,6 +6,7 @@
 %include "utils.inc"
 
 extern video.print_at
+extern arrayd.shiftl
 extern video.print
 extern video.clear
 extern scan
@@ -178,8 +179,8 @@ enemy_yellow.update:
         move.down:
 
         destroy:
-        CALL destroy.ship, ecx
-        sub ecx, 4
+        CALL destroy.ship, [LOCAL(3)]
+        dec dword [LOCAL(3)]
         jmp condition
 
         yellow.shoot:
@@ -415,31 +416,17 @@ enemy_yellow.take_damage:
 ;destroyes the ship that is in the index position
 destroy.ship:
     FUNC.START   
+    RESERVE(1)
 
     call play_yellow_enemy_die
     
     mov eax, [PARAM(0)]
     mov [LOCAL(0)], eax
-    while:
-        ;move forward the elements of all the arrays
-        mov eax, [LOCAL(0)]
-        cmp eax, dword [count]
-        je end.while
-
-        shl eax, 2
-        mov ebx, [lives + eax + 4]
-        mov dword [lives + eax], ebx
-        mov ebx, [row.offset + eax + 4]
-        mov dword [row.offset + eax], ebx
-        mov ebx, [col.offset + eax + 4]
-        mov dword [col.offset + eax], ebx
-        mov ebx, [inst + eax + 4]
-        mov dword [inst + eax], ebx
-
-        inc dword [LOCAL(0)]
-        jmp while
-
-    end.while:
+    
+    CALL arrayd.shiftl, lives, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, row.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, col.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, inst, [count], [LOCAL(0)]
 
     sub dword [count], 1
     FUNC.END

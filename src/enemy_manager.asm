@@ -45,31 +45,35 @@ boss.timer resd 2
 section .text
 
 ;0-blue, 1-red, 2-yellow
-; generate(dword number, dword col, dword color)
+; generate(dword number, dword color)
 ; generate an enemie
 global enemy.generate
 enemy.generate:
     FUNC.START
+    RESERVE(3)
+    ; mov dword [LOCAL(2)], 1
+    ; mov ecx, 5
 
-    mov ecx, [PARAM(0)]
-    shl ecx, 2
+    mov eax, [PARAM(0)]
+    mov [LOCAL(1)], eax
     while:
-        mov eax, [PARAM(1)]  ;number of ships to generate
-        add eax, ecx
-        cmp [PARAM(2)], dword 0  ;type of ships to generate
+        CALL rand, 73
+        mov [LOCAL(0)], eax
+
+        cmp [PARAM(1)], dword 0  ;type of ships to generate
         je blue
-        cmp [PARAM(2)], dword 1
+        cmp [PARAM(1)], dword 1
         je red
-        cmp [PARAM(2)], dword 2
+        cmp [PARAM(1)], dword 2
         je yellow
-        cmp [PARAM(2)], dword 3
+        cmp [PARAM(1)], dword 3
         je meteoro
 
         Continue:
 
-        cmp ecx, dword 0
-        jng end.while
-        sub ecx, dword 4
+        cmp dword [LOCAL(1)], 0
+        je end.while
+        dec dword [LOCAL(1)]
         jmp while
 
     end.while:
@@ -97,7 +101,7 @@ enemy.generate:
 global enemy.update
 enemy.update:
     FUNC.START
-    RESERVE(3)
+    RESERVE(2)
 
     CALL delay, boss.timer, [boss_time]  ;timing condition to generate
     cmp eax, 0
@@ -111,17 +115,11 @@ enemy.update:
     CALL rand, [generate_amount]   ;max number of enemy generate 
     mov [LOCAL(0)], eax  ;LOCAL(0) = number of enemies to generate
     
-    mov ebx, 20      
-    sub ebx, eax
-    CALL rand, ebx
-    shl eax, 2 
-    mov [LOCAL(1)], eax   ;LOCAL(1) = col to generate the enemies
-
     CALL rand, [colors_count]
     shl eax, 2
     mov ebx, [colors + eax]
-    mov [LOCAL(2)], ebx  ;LOCAL(2) = color of enemy to generate
-    CALL enemy.generate, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+    mov [LOCAL(1)], ebx  ;LOCAL(2) = color of enemy to generate
+    CALL enemy.generate, [LOCAL(0)], [LOCAL(1)]
 
     end:      
     
