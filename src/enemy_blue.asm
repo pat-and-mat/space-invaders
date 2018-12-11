@@ -5,6 +5,7 @@
 %include "sound.inc"
 %include "utils.inc"
 
+extern arrayd.shiftl
 extern video.print_at
 extern video.print
 extern video.clear
@@ -119,9 +120,6 @@ enemy_blue.update:
     cmp eax, 0
     je working.on.map
 
-    cmp dword [count], 0
-    je end
-   
     mov dword [LOCAL(3)], 0   ;actual ship
 
     start:                          ;while start
@@ -138,7 +136,7 @@ enemy_blue.update:
 
         cmp dword [dir + ecx], 0
         je left
-        jg right
+        jmp right
 
         left:
         cmp dword [col.offset + ecx], 0     ;if the offset arrive the left border, then go down
@@ -206,8 +204,8 @@ enemy_blue.update:
         jmp condition
 
         destroy:
-        CALL destroy.ship, ecx
-        sub ecx, 4
+        CALL destroy.ship, [LOCAL(3)]
+        dec dword [LOCAL(3)]
         jmp condition
 
         blue.shoot:
@@ -325,6 +323,12 @@ enemy_blue.collision:
     cmp dword [PARAM(1)], HASH.SHOT
     je crash_shoot
 
+    cmp dword [PARAM(1)], HASH.ENEMY_BOSS
+    je crash_boss
+
+    cmp dword [PARAM(1)], HASH.ENEMY_METEORO
+    je crash_meteoro
+
     crashed:
     FUNC.END
 
@@ -333,6 +337,12 @@ enemy_blue.collision:
     jmp crashed
 
     crash_shoot:
+    jmp crashed
+
+    crash_boss:
+    jmp crashed
+
+    crash_meteoro:
     jmp crashed
     
     FUNC.END
@@ -452,28 +462,12 @@ destroy.ship:
 
     mov eax, [PARAM(0)]
     mov [LOCAL(0)], eax
-    while:
-        ;move forward the elements of all the arrays
-        mov eax, [LOCAL(0)]
-        cmp eax, dword [count]
-        je end.while
 
-        shl eax, 2
-        mov ebx, [lives + eax + 4]
-        mov dword [lives + eax], ebx
-        mov ebx, [row.offset + eax + 4]
-        mov dword [row.offset + eax], ebx
-        mov ebx, [col.offset + eax + 4]
-        mov dword [col.offset + eax], ebx
-        mov ebx, [dir + eax + 4]
-        mov dword [dir + eax], ebx
-        mov ebx, [inst + eax + 4]
-        mov dword [inst + eax], ebx
-
-        inc dword [LOCAL(0)]
-        jmp while
-
-    end.while:
+    CALL arrayd.shiftl, lives, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, row.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, col.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, dir, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, inst, [count], [LOCAL(0)]
 
     sub dword [count], 1
     FUNC.END

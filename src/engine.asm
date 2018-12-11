@@ -28,7 +28,9 @@ collisions.count dw 0
 global debug_info
 debug_info times 80 dw 0
 
+
 section .bss
+debug_timer resd 2
 
 map resd COLS * ROWS
 ;the old map is used to check can_move
@@ -45,6 +47,7 @@ extern player.update
 extern weapons.update
 extern enemy.update
 extern sound.update
+extern bonus.update
 
 extern info.paint
 
@@ -53,10 +56,18 @@ extern weapons.collision
 extern enemy_yellow.collision
 extern enemy_red.collision
 extern enemy_blue.collision
+extern enemy_boss.collision
+extern enemy_meteoro.collision
+extern bonus_lives.collision
+extern bonus_shield.collision
+extern bonus_weapon1.collision
+extern bonus_weapon2.collision
 
 extern player.paint
 extern weapons.paint
 extern enemy.paint
+extern bonus.paint
+
 extern video.clear
 extern video.refresh
 extern video.print
@@ -66,6 +77,7 @@ extern delay
 extern video.set_rect
 
 extern enemy_manager.reset
+extern bonus_manager.reset
 extern weapons.reset
 
 ; update()
@@ -84,6 +96,7 @@ engine.update:
     CALL player.update, map
     CALL weapons.update, map
     CALL enemy.update, map
+    CALL bonus.update, map
     call sound.update
     FUNC.END
 
@@ -95,6 +108,7 @@ engine.paint:
     call player.paint
     call weapons.paint
     call enemy.paint
+    call bonus.paint
     call info.paint
     call video.refresh    
     FUNC.END
@@ -175,6 +189,24 @@ engine.invoke_handler:
     cmp dword [PARAM(0)], HASH.ENEMY_BLUE
     je .handler.enemy_blue
 
+    cmp dword [PARAM(0)], HASH.ENEMY_BOSS
+    je .handler.enemy_boss
+
+    cmp dword [PARAM(0)], HASH.ENEMY_METEORO
+    je .handler.enemy_meteoro
+
+    cmp dword [PARAM(0)], HASH.BONUS_LIVES
+    je .handler.bonus_lives
+
+    cmp dword [PARAM(0)], HASH.BONUS_SHIELD
+    je .handler.bonus_shield
+
+    cmp dword [PARAM(0)], HASH.BONUS_WEAPON1
+    je .handler.bonus_weapon1
+
+    cmp dword [PARAM(0)], HASH.BONUS_WEAPON2
+    je .handler.bonus_weapon2
+
     jmp .handler.end
 
     .handler.player:
@@ -197,6 +229,31 @@ engine.invoke_handler:
     CALL enemy_blue.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
     jmp .handler.end
 
+    .handler.enemy_boss:
+    CALL enemy_boss.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.enemy_meteoro:
+    CALL enemy_meteoro.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.bonus_lives:
+    CALL bonus_lives.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.bonus_shield:
+    CALL bonus_shield.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.bonus_weapon1:
+    CALL bonus_weapon1.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.bonus_weapon2:
+    CALL bonus_weapon2.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+
     .handler.end:
         FUNC.END
 
@@ -205,7 +262,14 @@ engine.invoke_handler:
 global engine.add_collision
 engine.add_collision:
     FUNC.START
-    RESERVE(1)  ; i
+    RESERVE(2)  ; i
+
+    ; mov edx, [LOCAL(1)]
+    ; inc dword [LOCAL(1)]
+    ; mov [debug_info], dx
+    ; add word [debug_info], 48
+    ; or word [debug_info], FG.RED
+    ; call engine.debug
 
     CALL engine.find_hashes, [PARAM(0)], [PARAM(1)]
     
@@ -241,28 +305,30 @@ engine.find_hashes:
     RESERVE(1)
 
     mov dword[LOCAL(0)], 0
-    .find_hashes.while:
+    find_hashes.while:
         mov ecx, [LOCAL(0)]
 
         cmp cx, [collisions.count]
-        je .find_hashes.while.end
+        je find_hashes.while.end
 
         shl ecx, 2
 
         mov eax, [collisions.hashes1 + ecx]
         cmp eax, [PARAM(0)]
-        jne .find_hashes.while.cont
+        jne find_hashes.while.cont
 
         mov eax, [collisions.hashes2 + ecx]
         cmp eax, [PARAM(1)]
-        jne .find_hashes.while.cont
+        jne find_hashes.while.cont
 
-        jmp .find_hashes.while.end
+        jmp find_hashes.while.end
 
-        .find_hashes.while.cont:
-            inc dword [LOCAL(0)]
-    .find_hashes.while.end:
-    mov eax, [LOCAL(0)]
+        find_hashes.while.cont:
+        inc dword [LOCAL(0)]
+        jmp find_hashes.while
+        
+    find_hashes.while.end:
+        mov eax, [LOCAL(0)]
 
         FUNC.END
 
@@ -276,6 +342,7 @@ engine.start:
     CALL player.init, 25, 20, 38
     call enemy_manager.reset
     call weapons.reset
+    call bonus_manager.reset
     FUNC.END
 
 ; engine.run()
@@ -289,6 +356,7 @@ engine.run:
     ; call engine.debug
     FUNC.END
 
+global engine.debug
 engine.debug:
     FUNC.START
     CALL video.set_rect, debug_info, 24, 0, 1, 80

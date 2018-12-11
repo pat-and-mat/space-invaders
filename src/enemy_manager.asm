@@ -16,51 +16,70 @@ extern enemy_yellow.paint
 extern enemy_blue.reset
 extern enemy_red.reset
 extern enemy_yellow.reset
+extern enemy_boss.update
+extern enemy_boss.init
+extern enemy_boss.paint
+extern enemy_boss.reset
+extern enemy_meteoro.update
+extern enemy_meteoro.init
+extern enemy_meteoro.paint
+extern enemy_meteoro.reset
+
+extern colors
+extern colors_count
+extern generate_time
+extern generate_amount
+extern bonus_time
+extern boss_time
 
 extern rand
 extern delay
 
 section .data
 
-generate_array dd 0, 0, 1, 1, 2, 2
-generate_array.count dd 6
-
 section .bss
 
 timer resd 2
+boss.timer resd 2
 
 section .text
 
 ;0-blue, 1-red, 2-yellow
-; generate(dword number * 4, dword col, dword color)
+; generate(dword number, dword color)
 ; generate an enemie
 global enemy.generate
 enemy.generate:
     FUNC.START
+    RESERVE(3)
+    ; mov dword [LOCAL(2)], 1
+    ; mov ecx, 5
 
-    mov ecx, [PARAM(0)]
-
+    mov eax, [PARAM(0)]
+    mov [LOCAL(1)], eax
     while:
-        mov eax, [PARAM(1)]  ;number of ships to generate
-        add eax, ecx
-        cmp [PARAM(2)], dword 0  ;type of ships to generate
+        CALL rand, 73
+        mov [LOCAL(0)], eax
+
+        cmp [PARAM(1)], dword 0  ;type of ships to generate
         je blue
-        cmp [PARAM(2)], dword 1
+        cmp [PARAM(1)], dword 1
         je red
-        cmp [PARAM(2)], dword 2
+        cmp [PARAM(1)], dword 2
         je yellow
+        cmp [PARAM(1)], dword 3
+        je meteoro
 
         Continue:
 
-        cmp ecx, dword 0
-        jng end.while
-        sub ecx, dword 4
+        cmp dword [LOCAL(1)], 0
+        je end.while
+        dec dword [LOCAL(1)]
         jmp while
 
     end.while:
     FUNC.END
 
-    ;the enemies are generate in the upper section of the screen
+    ;the enemies are generate in the top section of the screen
     blue:
     CALL enemy_blue.init, 1, eax
     jmp Continue
@@ -73,41 +92,48 @@ enemy.generate:
     CALL enemy_yellow.init, 1, eax
     jmp Continue
 
+    meteoro:
+    CALL enemy_meteoro.init, 1, eax
+    jmp end.while
+
 ; update(dword map)
 ; It is here where all the actions related to this object will be taking place
 global enemy.update
 enemy.update:
     FUNC.START
-    RESERVE(3)
+    RESERVE(2)
+
+    CALL delay, boss.timer, [boss_time]  ;timing condition to generate
+    cmp eax, 0
+    jne boss
     
-    CALL delay, timer, 1000  ;timing condition to generate
+    CALL delay, timer, [generate_time]  ;timing condition to generate
     cmp eax, 0
     je end
 
     
-    CALL rand, 5   ;max number of enemy generate 
-    shl eax, 2  
-    mov [LOCAL(0)], eax  ;LOCAL(0) = number of enemies to generate * 4
-
-    mov ebx, 5 * 4      
-    sub ebx, eax
-    CALL rand, ebx
-    shl eax, 2 
-    mov [LOCAL(1)], eax  ;LOCAL(1) = col to generate the enemy in the right
-
-    CALL rand, [generate_array.count]
+    CALL rand, [generate_amount]   ;max number of enemy generate 
+    mov [LOCAL(0)], eax  ;LOCAL(0) = number of enemies to generate
+    
+    CALL rand, [colors_count]
     shl eax, 2
-    mov ebx, [generate_array + eax]
-    mov [LOCAL(2)], ebx  ;LOCAL(2) = color of enemy to generate
-    CALL enemy.generate, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+    mov ebx, [colors + eax]
+    mov [LOCAL(1)], ebx  ;LOCAL(2) = color of enemy to generate
+    CALL enemy.generate, [LOCAL(0)], [LOCAL(1)]
 
     end:      
     
     CALL enemy_blue.update, [PARAM(0)]
     CALL enemy_red.update, [PARAM(0)]
     CALL enemy_yellow.update, [PARAM(0)]
+    CALL enemy_boss.update, [PARAM(0)]
+    CALL enemy_meteoro.update, [PARAM(0)]
     
     FUNC.END
+
+    boss:
+    CALL enemy_boss.init, 1, 37
+    jmp end
 
 ; paint()
 ; Put the object's graphics in the canvas
@@ -117,6 +143,8 @@ enemy.paint:
     call enemy_blue.paint    ;each subprogram paint all the ships of the mentioned color
     call enemy_red.paint
     call enemy_yellow.paint
+    call enemy_boss.paint
+    call enemy_meteoro.paint
     FUNC.END
 
 ; enemy.take_damage(dword damage)
@@ -134,6 +162,8 @@ enemy_manager.reset:
     call enemy_blue.reset
     call enemy_red.reset
     call enemy_yellow.reset
+    call enemy_boss.reset
+    call enemy_meteoro.reset
     FUNC.END
 
 
