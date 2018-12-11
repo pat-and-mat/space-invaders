@@ -21,10 +21,7 @@ extern sound.timer
 extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
-extern bonus_lives.take_damage
-extern bonus_shield.take_damage
-extern bonus_weapon1.take_damage
-extern bonus_weapon2.take_damage
+
 
 extern debug_info
 extern engine.debug
@@ -244,15 +241,7 @@ player.collision:
     je crash_red
     cmp dword [PARAM(0)], HASH.ENEMY_YELLOW
     je crash_yellow
-    cmp dword [PARAM(0)], HASH.BONUS_LIVES
-    je crash_lives
-    cmp dword [PARAM(0)], HASH.BONUS_SHIELD
-    je crash_shield
-    cmp dword [PARAM(0)], HASH.BONUS_WEAPON1
-    je crash_weapon1
-    cmp dword [PARAM(0)], HASH.BONUS_WEAPON2
-    je crash_weapon2
-
+    
     jmp crashed
 
     crash_blue:
@@ -266,23 +255,7 @@ player.collision:
     crash_yellow:
     CALL enemy_yellow.take_damage, 1, [PARAM(1)]
     jmp crashed
-
-    crash_lives:
-    CALL bonus_lives.take_damage, 10, [PARAM(1)]
-    jmp crashed
-
-    crash_shield:
-    CALL bonus_shield.take_damage, 10, [PARAM(1)]
-    jmp crashed
-
-    crash_weapon1:
-    CALL bonus_weapon1.take_damage, 10, [PARAM(1)]
-    jmp crashed
-
-    crash_weapon2:
-    CALL bonus_weapon2.take_damage, 10, [PARAM(1)]
-    jmp crashed
-
+    
     crashed:
     FUNC.END
 
@@ -342,12 +315,7 @@ player.paint:
 global player.take_damage
 player.take_damage:
     FUNC.START
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
     mov dword [PARAM(0)], 0 ; debug
->>>>>>> Stashed changes
 
     mov eax, [PARAM(0)]
     cmp eax, [shield_life]
@@ -357,10 +325,6 @@ player.take_damage:
 
     destroy_shield:
     mov dword [shield_life], 0
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
     
     mov eax, [PARAM(0)]
     cmp [player.lives], ax
@@ -399,7 +363,7 @@ paint_shield:
         add eax, [shield_rows + ecx]
         cmp eax, 0
         jle painted
-        cmp eax, 24
+        cmp eax, 25
         jge painted
         mov [LOCAL(0)], eax        
 
@@ -407,7 +371,7 @@ paint_shield:
         add eax, [shield_cols + ecx]
         cmp eax, 0
         jle painted
-        cmp eax, 79
+        cmp eax, 80
         jge painted
         mov [LOCAL(1)], eax
 

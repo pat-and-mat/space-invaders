@@ -22,10 +22,6 @@ extern array.index_of
 extern enemy_red.take_damage
 extern enemy_blue.take_damage
 extern enemy_yellow.take_damage
-extern bonus_lives.take_damage
-extern bonus_shield.take_damage
-extern bonus_weapon1.take_damage
-extern bonus_weapon2.take_damage
 extern arrayd.shiftl
 
 
@@ -274,15 +270,7 @@ enemy_meteoro.collision:
     cmp dword [PARAM(1)], HASH.ENEMY_BOSS
     je crash_boss
 
-    cmp dword [PARAM(1)], HASH.BONUS_LIVES
-    je crash_lives
-    cmp dword [PARAM(0)], HASH.BONUS_SHIELD
-    je crash_shield
-    cmp dword [PARAM(0)], HASH.BONUS_WEAPON1
-    je crash_weapon1
-    cmp dword [PARAM(0)], HASH.BONUS_WEAPON2
-    je crash_weapon2
-
+    
     crashed:
     FUNC.END
 
@@ -305,22 +293,7 @@ enemy_meteoro.collision:
     CALL enemy_yellow.take_damage, 1, [PARAM(2)]
     jmp crashed
 
-    crash_lives:
-    CALL bonus_lives.take_damage, 1, [PARAM(2)]
-    jmp crashed
-
-    crash_shield:
-    CALL bonus_shield.take_damage, 10, [PARAM(2)]
-    jmp crashed
-
-    crash_weapon1:
-    CALL bonus_weapon1.take_damage, 10, [PARAM(2)]
-    jmp crashed
-
-    crash_weapon2:
-    CALL bonus_weapon2.take_damage, 10, [PARAM(2)]
-    jmp crashed
-
+    
     crash_boss:
     jmp crashed
 

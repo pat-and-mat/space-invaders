@@ -18,7 +18,7 @@ extern player.take_damage
 extern can_move
 extern old_map
 extern array.index_of
-
+extern arrayd.shiftl
 
 %define SIZE 100
 %define BONUS.COORDS 1
@@ -79,7 +79,7 @@ bonus_weapon1.init:
     mov edx, [PARAM(1)]
     mov [col.offset + eax], edx
 
-    mov dword [lives + eax], 10
+    mov dword [lives + eax], 5
 
     ;pointer of the actual moviment    
     mov dword [left.count + eax], 0
@@ -188,8 +188,8 @@ bonus_weapon1.update:
         jmp condition
 
         destroy:
-        CALL destroy.bonus, ecx
-        sub ecx, 4
+        CALL destroy.bonus, [LOCAL(3)]
+        dec dword [LOCAL(3)]
         jmp condition
 
         working.on.map:
@@ -286,6 +286,11 @@ weapon1.put_one_in_map:
 global bonus_weapon1.collision
 bonus_weapon1.collision:
     FUNC.START    
+    RESERVE(1)
+
+    CALL array.index_of, inst, ecx, [PARAM(0)], 4 
+    mov [LOCAL(0)], eax
+
     cmp dword [PARAM(1)], HASH.PLAYER
     je crash_player
 
@@ -303,15 +308,18 @@ bonus_weapon1.collision:
 
     crash_player:
 
+    CALL destroy.bonus, [LOCAL(0)]
     jmp crashed
 
     crash_shoot:
     jmp crashed
 
     crash_boss:
+    CALL destroy.bonus, [LOCAL(0)]
     jmp crashed
 
     crash_meteoro:
+    CALL destroy.bonus, [LOCAL(0)]
     jmp crashed
      FUNC.END
 
@@ -380,61 +388,24 @@ bonus_weapon1.paint:
         mov dword [graphics], 5|FG.BLUE|BG.BLACK
         jmp while.internal
 
-; bonus_weapon1.take_damage(dword damage, dword instance)
-; Takes weapon1 away from an enemy
-global bonus_weapon1.take_damage
-bonus_weapon1.take_damage:
-    FUNC.START
-    RESERVE(1)
-
-    mov ecx, [count]
-    CALL array.index_of, inst, ecx, [PARAM(1)], 4 
-    mov [LOCAL(0)], eax
-    shl eax, 2
-    mov ecx, [PARAM(0)]
-
-    
-    cmp dword [lives + eax], ecx
-    jg take_end
-    ; add dword [actual.score], 100
-    mov eax, [LOCAL(0)]
-    CALL destroy.bonus, eax
-
-    take_end:
-    sub [lives + eax], ecx
-    FUNC.END
 
 ;destroy.bonus(dword index)
 ;destroyes the bonus that is in the index position
 destroy.bonus:
     FUNC.START    
-
-   mov eax, [PARAM(0)]
+    RESERVE(1)
+   
+    mov eax, [PARAM(0)]
     mov [LOCAL(0)], eax
-    while:
-        ;move forward the elements of all the arrays
-        mov eax, [LOCAL(0)]
-        cmp eax, dword [count]
-        je end.while
 
-        shl eax, 2
-        mov ebx, [lives + eax + 4]
-        mov dword [lives + eax], ebx
-        mov ebx, [row.offset + eax + 4]
-        mov dword [row.offset + eax], ebx
-        mov ebx, [col.offset + eax + 4]
-        mov dword [col.offset + eax], ebx
-        mov ebx, [left.count + eax + 4]
-        mov dword [left.count + eax], ebx
-        mov ebx, [inst + eax + 4]
-        mov dword [inst + eax], ebx
-
-        inc dword [LOCAL(0)]
-        jmp while
-
-    end.while:
+    CALL arrayd.shiftl, lives, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, row.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, col.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, left.count, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, inst, [count], [LOCAL(0)]
 
     sub dword [count], 1
+
     FUNC.END
 
 

@@ -24,13 +24,10 @@ extern enemy_red.take_damage
 extern enemy_blue.take_damage
 extern enemy_yellow.take_damage
 extern enemy_meteoro.take_damage
-extern bonus_lives.take_damage
 extern debug_info
 extern engine.debug
 extern video.refresh
-extern bonus_shield.take_damage
-extern bonus_weapon1.take_damage
-extern bonus_weapon2.take_damage
+
 
 
 
@@ -320,30 +317,6 @@ boss.put_one_in_map:
         mov ebx, [eax]
         mov [LOCAL(4)], ebx
 
-        ; .debug1:
-        ; mov edx, [PARAM(1)] 
-        ; shr edx, 16
-        ; ; inc dword [LOCAL(4)]
-        ; mov [debug_info], dx
-        ; add word [debug_info], 48
-        ; or word [debug_info], FG.RED
-        ; call engine.debug
-        ; CALL delay, timer.debug, 2000
-        ; cmp eax, 0
-        ; je .debug1
-
-        ; .debug2:
-        ; mov edx, [LOCAL(4)]
-        ; shr edx, 16
-        ; ; inc dword [LOCAL(4)]
-        ; mov [debug_info], dx
-        ; add word [debug_info], 48
-        ; or word [debug_info], FG.RED
-        ; call engine.debug
-        ; CALL delay, timer.debug, 2000
-        ; cmp eax, 0
-        ; je .debug2
-
         mov edx, [LOCAL(5)]
         inc dword [LOCAL(5)]
         mov [debug_info], dx
@@ -390,19 +363,7 @@ enemy_boss.collision:
     cmp dword [PARAM(1)], HASH.ENEMY_METEORO
     je crash_meteoro
 
-    cmp dword [PARAM(1)], HASH.BONUS_LIVES
-    je crash_lives
-    cmp dword [PARAM(0)], HASH.BONUS_SHIELD
-    je crash_shield
-    cmp dword [PARAM(0)], HASH.BONUS_WEAPON1
-    je crash_weapon1
-    cmp dword [PARAM(0)], HASH.BONUS_WEAPON2
-    je crash_weapon2
-
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
+    
     crashed:
     FUNC.END
 
@@ -429,22 +390,7 @@ enemy_boss.collision:
     CALL enemy_meteoro.take_damage, 20, [PARAM(2)]
     jmp crashed
 
-    crash_lives:
-    CALL bonus_lives.take_damage, 10, [PARAM(2)]
-    jmp crashed
-
-    crash_shield:
-    CALL bonus_shield.take_damage, 10, [PARAM(2)]
-    jmp crashed
-
-    crash_weapon1:
-    CALL bonus_weapon1.take_damage, 10, [PARAM(2)]
-    jmp crashed
-
-    crash_weapon2:
-    CALL bonus_weapon2.take_damage, 10, [PARAM(2)]
-    jmp crashed
-
+    
     FUNC.END
 
 ;paint()

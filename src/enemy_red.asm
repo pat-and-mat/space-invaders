@@ -368,16 +368,6 @@ enemy_red.paint:
 
     ;painting ship number LOCAL(2)
     while.internal: 
-        ; mov edx, [LOCAL(4)]
-        ; mov [debug_info + 79*2], dx
-        ; add word [debug_info + 79*2], 48
-        ; or word [debug_info + 79*2], FG.YELLOW
-        ; call engine.debug      
-
-        ; CALL delay, debug_timer, 1000
-        ; cmp eax, 0
-        ; je while.internal
-
         mov ecx, [LOCAL(3)]
         shl ecx, 2
         mov ebx, [LOCAL(2)]
