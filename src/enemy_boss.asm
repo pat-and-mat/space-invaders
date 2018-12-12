@@ -17,6 +17,7 @@ extern actual.score
 extern play_boss_enemy_die
 extern engine.add_collision
 extern player.take_damage
+extern ai.take_damage
 extern can_move
 extern old_map
 extern array.index_of
@@ -363,6 +364,8 @@ enemy_boss.collision:
     cmp dword [PARAM(1)], HASH.ENEMY_METEORO
     je crash_meteoro
 
+    cmp dword [PARAM(1)], HASH.AI
+    je crash_ai
     
     crashed:
     FUNC.END
@@ -388,6 +391,10 @@ enemy_boss.collision:
 
     crash_meteoro:
     CALL enemy_meteoro.take_damage, 20, [PARAM(2)]
+    jmp crashed
+
+    crash_ai:
+    CALL ai.take_damage, 25, [PARAM(2)]
     jmp crashed
 
     
