@@ -13,5 +13,6 @@
 %define HASH.BONUS_WEAPON1 10
 %define HASH.BONUS_WEAPON2 11
 
+%define HASH.OTHER_SHOT 12
 
 %endif ; HASH_MAC

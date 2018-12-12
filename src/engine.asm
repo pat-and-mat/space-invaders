@@ -43,11 +43,14 @@ extern array.index_of
 
 extern player.init
 
+extern other_weapons.reset
+
 extern player.update
 extern weapons.update
 extern enemy.update
 extern sound.update
 extern bonus.update
+extern other_weapons.update
 
 extern info.paint
 
@@ -62,9 +65,11 @@ extern bonus_lives.collision
 extern bonus_shield.collision
 extern bonus_weapon1.collision
 extern bonus_weapon2.collision
+extern other_weapons.collision
 
 extern player.paint
 extern weapons.paint
+extern other_weapons.paint
 extern enemy.paint
 extern bonus.paint
 
@@ -95,6 +100,7 @@ engine.update:
     CLEAR_MAP 0
     CALL player.update, map
     CALL weapons.update, map
+    CALL other_weapons.update, map
     CALL enemy.update, map
     CALL bonus.update, map
     call sound.update
@@ -107,6 +113,7 @@ engine.paint:
     CALL video.clear, BG.BLACK
     call player.paint
     call weapons.paint
+    call other_weapons.paint
     call enemy.paint
     call bonus.paint
     call info.paint
@@ -206,6 +213,9 @@ engine.invoke_handler:
 
     cmp dword [PARAM(0)], HASH.BONUS_WEAPON2
     je .handler.bonus_weapon2
+    
+    cmp dword [PARAM(0)], HASH.OTHER_SHOT
+    je .handler.other_shot
 
     jmp .handler.end
 
@@ -253,6 +263,9 @@ engine.invoke_handler:
     CALL bonus_weapon2.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
     jmp .handler.end
 
+    .handler.other_shot:
+    CALL other_weapons.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
 
     .handler.end:
         FUNC.END
@@ -263,13 +276,6 @@ global engine.add_collision
 engine.add_collision:
     FUNC.START
     RESERVE(2)  ; i
-
-    ; mov edx, [LOCAL(1)]
-    ; inc dword [LOCAL(1)]
-    ; mov [debug_info], dx
-    ; add word [debug_info], 48
-    ; or word [debug_info], FG.RED
-    ; call engine.debug
 
     CALL engine.find_hashes, [PARAM(0)], [PARAM(1)]
     
@@ -343,6 +349,7 @@ engine.start:
     call enemy_manager.reset
     call weapons.reset
     call bonus_manager.reset
+    call other_weapons.reset
     FUNC.END
 
 ; engine.run()

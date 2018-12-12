@@ -25,6 +25,7 @@ extern enemy_yellow.take_damage
 
 extern debug_info
 extern engine.debug
+extern other_weapons.shoot
 
 %define SHIP.COORDS 5
 
@@ -177,7 +178,7 @@ player.update:
         add eax, [col.offset]
         mov [LOCAL(1)], eax
 
-        CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
+        CALL other_weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
         
         jmp update.end 
 
@@ -318,6 +319,7 @@ player.take_damage:
     mov dword [PARAM(0)], 0 ; debug
 
     mov eax, [PARAM(0)]
+
     cmp eax, [shield_life]
     jge destroy_shield
     sub [shield_life], eax
@@ -325,19 +327,19 @@ player.take_damage:
 
     destroy_shield:
     mov dword [shield_life], 0
+    sub eax, [shield_life]
     
-    mov eax, [PARAM(0)]
     cmp [player.lives], ax
     jng .destroyed
     sub [player.lives], ax
     jmp end
 
     .destroyed:
-        mov eax, 0
         mov word [player.lives], 0
-        jmp end
 
     end:
+        xor eax, eax
+        mov ax, [player.lives]
         FUNC.END
 
 ;paint_shield(dword row.offset, dword col.offset)

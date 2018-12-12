@@ -409,6 +409,12 @@ enemy_yellow.take_damage:
 
     take_end:
     sub [lives + eax], ecx
+
+    mov eax, [lives + eax]
+    cmp eax, 0
+    jg .take_damage.end
+    mov eax, 0
+    .take_damage.end:
     FUNC.END
 
 

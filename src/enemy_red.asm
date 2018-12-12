@@ -22,6 +22,7 @@ extern old_map
 extern array.index_of
 extern debug_info
 extern engine.debug
+extern other_weapons.shoot
 
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)
@@ -431,6 +432,12 @@ enemy_red.take_damage:
 
     take_end:
     sub [lives + eax], ecx
+
+    mov eax, [lives + eax]
+    cmp eax, 0
+    jg .take_damage.end
+    mov eax, 0
+    .take_damage.end:
     FUNC.END
 
 ;destroy.ship(dword index)
