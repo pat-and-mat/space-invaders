@@ -17,7 +17,7 @@ yellow_enemy_die db 0
 red_enemy_die db 0
 player_die db 0
 
-shoot.freq dw 0200h, 00030h, 03000h
+shoot.freq dd 5340h, 1500h, 3500h
 shoot.count dd 0
 
 section .bss
@@ -178,7 +178,7 @@ sound_shoot.update:
     je shoot.silence
     shoot_continue:
     mov eax, dword [shoot.count]
-    CALL beep.set, word [shoot.freq + eax]      
+    CALL beep.set, [shoot.freq + eax]      
     call beep.on
     jmp shoot.end
 
