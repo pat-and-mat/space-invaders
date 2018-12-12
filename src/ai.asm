@@ -25,7 +25,7 @@ extern enemy_yellow.take_damage
 extern debug_info
 
 %define SHIP.COORDS 5
-%define AI.FEAT 8
+%define AI.FEAT 9
 %define AI.THRESHOLD 50
 
 %macro SHIP.ROW 1
@@ -59,11 +59,11 @@ col.right dd 3
 weapon.row dd 0
 weapon.col dd 2
 
-ai.shoot.weights dd 0, 0, 0, 0, 0, 0, 0, 0
-ai.right.weights dd 0, 0, 0, 0, 0, 0, 0, 0
-ai.left.weights dd 0, 0, 0, 0, 0, 0, 0, 0
-ai.up.weights dd 0, 0, 0, 0, 0, 0, 0, 0
-ai.down.weights dd 0, 0, 0, 0, 0, 0, 0, 0
+ai.shoot.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.right.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.left.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.up.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.down.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 section .bss
 
@@ -73,7 +73,7 @@ ai.lives resw 1
 row.offset resd 1
 col.offset resd 1
 
-; 0-left_enemies 1-right_enemies 2-left_danger 3-right_danger 4-forward_danger 5-backward_danger 6-Killable
+; 0-left_enemies 1-right_enemies 2-left_danger 3-right_danger 4-forward_danger 5-backward_danger 6-Killable 7-danger
 ai.features resd AI.FEAT
 ai.predictions resd 5
 
@@ -427,6 +427,9 @@ ai.comp_feats:
             CALL ai.is_killable, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
             add [ai.features + 6*4], eax
 
+            CALL ai.is_danger, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            add [ai.features + 7*4], eax
+
             inc dword [LOCAL(1)]
             jmp .comp_feats.while_j
         .comp_feats.while_j.end:
@@ -449,10 +452,66 @@ ai.comp_sigmoid:
 
 ai.is_enemy_left:
     FUNC.START
+    mov eax, [col.offset]
+    add eax, 2
+    cmp dword [PARAM(1)], eax
+    jge enemy_right.false
+    mov eax[row.offset]
+    cmp dword [PARAM(1)], eax
+    jge enemy_right.false
+
+    cmp dword [PARAM(2)], 3
+    je enemy_right.true
+    cmp dword [PARAM(2)], 4
+    je enemy_right.true
+    cmp dword [PARAM(2)], 5
+    je enemy_right.true
+    cmp dword [PARAM(2)], 6
+    je enemy_right.true
+    cmp dword [PARAM(2)], 7
+    je enemy_right.true
+
+
+    enemy_right.true:
+    mov eax, 1
+    jmp end
+    
+    enemy_right.false:
+    mov eax, 0
+
+    end:
     FUNC.END
 
 ai.is_enemy_right:
     FUNC.START
+    mov eax, [col.offset]
+    add eax, 2
+    cmp dword [PARAM(1)], eax
+    jle enemy_right.false
+    mov eax[row.offset]
+    cmp dword [PARAM(1)], eax
+    jge enemy_right.false
+
+    cmp dword [PARAM(2)], 3
+    je enemy_right.true
+    cmp dword [PARAM(2)], 4
+    je enemy_right.true
+    cmp dword [PARAM(2)], 5
+    je enemy_right.true
+    cmp dword [PARAM(2)], 6
+    je enemy_right.true
+    cmp dword [PARAM(2)], 7
+    je enemy_right.true
+
+
+    enemy_right.true:
+    mov eax, 1
+    jmp end
+    
+    enemy_right.false:
+    mov eax, 0
+
+    end:
     FUNC.END
 
 ai.is_danger_left:
@@ -472,5 +531,9 @@ ai.is_danger_backward:
     FUNC.END
 
 ai.is_killable:
+    FUNC.START
+    FUNC.END
+
+ai.is_danger:
     FUNC.START
     FUNC.END
