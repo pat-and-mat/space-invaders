@@ -302,7 +302,7 @@ enemy_yellow.collision:
     cmp dword [PARAM(1)], HASH.ENEMY_METEORO
     je crash_meteoro
 
-    cmp dword [PARAM(1)], HASH.ENEMY_AI
+    cmp dword [PARAM(1)], HASH.AI
     je crash_ai
 
     crashed:
