@@ -25,7 +25,7 @@ extern enemy_yellow.take_damage
 extern debug_info
 
 %define SHIP.COORDS 5
-%define AI.FEAT 5
+%define AI.FEAT 8
 %define AI.THRESHOLD 50
 
 %macro SHIP.ROW 1
@@ -59,11 +59,11 @@ col.right dd 3
 weapon.row dd 0
 weapon.col dd 2
 
-ai.shoot.weights times AI.FEAT dd 0
-ai.right.weights times AI.FEAT dd 0
-ai.left.weights times AI.FEAT dd 0
-ai.up.weights times AI.FEAT dd 0
-ai.down.weights times AI.FEAT dd 0
+ai.shoot.weights dd 0, 0, 0, 0, 0, 0, 0, 0
+ai.right.weights dd 0, 0, 0, 0, 0, 0, 0, 0
+ai.left.weights dd 0, 0, 0, 0, 0, 0, 0, 0
+ai.up.weights dd 0, 0, 0, 0, 0, 0, 0, 0
+ai.down.weights dd 0, 0, 0, 0, 0, 0, 0, 0
 
 section .bss
 
@@ -102,8 +102,9 @@ ai.init:
 global ai.update
 ai.update:
     FUNC.START
+    RESERVE(2)
 
-    CALL ai.compute_next, [PARAM(0)]
+    CALL ai.comp_next, [PARAM(0)]
 
     cmp eax, 1
     je .update.move.up
@@ -147,7 +148,7 @@ ai.update:
         jmp .update.end
 
     .update.shoot:
-        CALL delay, ai.timer, 1000
+        CALL delay, ai.timer, 250
         cmp eax, 0
         je .update.end
 
@@ -295,78 +296,77 @@ ai.take_damage:
     end:
         FUNC.END
 
-; ai.compute_next(dword *map)
-; computes the next action of the ai
-ai.compute_next:
+; ai.comp_next(dword *map)
+; comps the next action of the ai
+ai.comp_next:
     FUNC.START
     RESERVE(3) ; i, pred_ind, pred_val
 
-    CALL ai.compute_feats, [PARAM(0)]
-    call ai.compute_preds
+    CALL ai.comp_feats, [PARAM(0)]
+    call ai.comp_preds
     
     mov dword [LOCAL(1)], 0
     mov dword [LOCAL(2)], 0
     mov dword [LOCAL(0)], 0
-    .compute_next.while:
+    .comp_next.while:
 
         mov ecx, [LOCAL(0)]
         cmp ecx, 5
-        jae .compute_next.while.end
+        jae .comp_next.while.end
 
         shl ecx, 2
 
         mov eax, [ai.predictions + ecx]
 
         cmp eax, AI.THRESHOLD
-        jng .compute_next.while.cont
+        jng .comp_next.while.cont
 
         cmp eax, [LOCAL(2)]
-        jng .compute_next.while.cont
+        jng .comp_next.while.cont
 
         mov ecx, [LOCAL(0)]
         inc ecx
         mov [LOCAL(1)], ecx
         mov [LOCAL(2)], eax
 
-    .compute_next.while.cont:
+    .comp_next.while.cont:
         inc dword [LOCAL(0)]
-        jmp .compute_next.while
+        jmp .comp_next.while
 
-    .compute_next.while.end:
+    .comp_next.while.end:
     
     mov eax, [LOCAL(1)]
     
     FUNC.END
 
-; ai.compute_preds(dword *weights)
-ai.compute_preds:
+; ai.comp_preds(dword *weights)
+ai.comp_preds:
     FUNC.START
-    CALL ai.compute_pred, ai.up.weights
+    CALL ai.comp_pred, ai.up.weights
     mov [ai.predictions + 0*4], eax
-    CALL ai.compute_pred, ai.down.weights
+    CALL ai.comp_pred, ai.down.weights
     mov [ai.predictions + 1*4], eax
-    CALL ai.compute_pred, ai.left.weights
+    CALL ai.comp_pred, ai.left.weights
     mov [ai.predictions + 2*4], eax
-    CALL ai.compute_pred, ai.right.weights
+    CALL ai.comp_pred, ai.right.weights
     mov [ai.predictions + 3*4], eax
-    CALL ai.compute_pred, ai.shoot.weights
-    ; mov [ai.predictions + 4*4], eax
-    mov dword [ai.predictions + 16], 100
+    CALL ai.comp_pred, ai.shoot.weights
+    mov [ai.predictions + 4*4], eax
     FUNC.END
 
 
-; ai.compute_pred(dword *weights)
-ai.compute_pred:
+; ai.comp_pred(dword *weights)
+ai.comp_pred:
     FUNC.START
     RESERVE(2) ; i, sum
 
     mov dword [LOCAL(1)], 0
     mov dword [LOCAL(0)], 0
 
-    .compute_preds.while:
+    .comp_preds.while:
         mov ecx, [LOCAL(0)]
         cmp ecx, AI.FEAT
-        je .compute_preds.while.end
+        je .comp_preds.while.end
 
         shl ecx, 2
         mov eax, [ai.features + ecx]
@@ -375,18 +375,37 @@ ai.compute_pred:
         add [LOCAL(1)], eax
 
         inc dword [LOCAL(0)]
-    .compute_preds.while.end:
+        jmp .comp_preds.while
+    .comp_preds.while.end:
 
-    CALL ai.compute_sigmoid, [LOCAL(1)]
+    CALL ai.comp_sigmoid, [LOCAL(1)]
 
     FUNC.END
 
-; ai.compute_feats(dword *map)
-; computes feature vect
-ai.compute_feats:
+; ai.comp_feats(dword *map)
+; comps feature vect
+ai.comp_feats:
     FUNC.START
+    CALL comp_left_enemies, [PARAM(0)]
+    mov [ai.features], eax
+    CALL comp_right_enemies, [PARAM(0)]
+    mov [ai.features + 1*4], eax
+    CALL comp_left_danger, [PARAM(0)]
+    mov [ai.features + 2*4], eax
+    CALL comp_right_danger, [PARAM(0)]
+    mov [ai.features + 3*4], eax
+    CALL comp_forward_danger, [PARAM(0)]
+    mov [ai.features + 4*4], eax
+    CALL comp_backward_danger, [PARAM(0)]
+    mov [ai.features + 5*4], eax
+    CALL comp_killable_enemies, [PARAM(0)]
+    mov [ai.features + 6*4], eax
+
+    mov dword [ai.features + (AI.FEAT - 1)*4], 1
     FUNC.END
 
-ai.compute_sigmoid:
+; ai.comp_sigmoid(dword x)
+ai.comp_sigmoid:
     FUNC.START
+    mov eax, [PARAM(0)]
     FUNC.END
