@@ -386,20 +386,53 @@ ai.comp_pred:
 ; comps feature vect
 ai.comp_feats:
     FUNC.START
-    CALL comp_left_enemies, [PARAM(0)]
-    mov [ai.features], eax
-    CALL comp_right_enemies, [PARAM(0)]
-    mov [ai.features + 1*4], eax
-    CALL comp_left_danger, [PARAM(0)]
-    mov [ai.features + 2*4], eax
-    CALL comp_right_danger, [PARAM(0)]
-    mov [ai.features + 3*4], eax
-    CALL comp_forward_danger, [PARAM(0)]
-    mov [ai.features + 4*4], eax
-    CALL comp_backward_danger, [PARAM(0)]
-    mov [ai.features + 5*4], eax
-    CALL comp_killable_enemies, [PARAM(0)]
-    mov [ai.features + 6*4], eax
+    RESERVE(3)  ; i, j, hash
+
+    mov dword [LOCAL(0)], 0
+    .comp_feats.while_i:
+        cmp dword [LOCAL(0)], ROWS
+        je .comp_feats.while_i.end
+
+        mov dword [LOCAL(1)], 0
+        .comp_feats.while_j:
+            cmp dword [LOCAL(1)], COLS
+            je .comp_feats.while_j.end
+
+            OFFSET [LOCAL(0)], [LOCAL(1)]
+            shl eax, 2
+            
+            mov eax, [eax]
+            shr eax, 16
+            mov [LOCAL(2)], eax
+
+            CALL ai.is_enemy_left, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            add [ai.features + 0*4], eax
+
+            CALL ai.is_enemy_right, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            add [ai.features + 1*4], eax
+
+            CALL ai.is_danger_left, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            add [ai.features + 2*4], eax
+
+            CALL ai.is_danger_right, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            add [ai.features + 3*4], eax
+
+            CALL ai.is_danger_forward, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            add [ai.features + 4*4], eax
+
+            CALL ai.is_danger_backward, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            add [ai.features + 5*4], eax
+
+            CALL ai.is_killable, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            add [ai.features + 6*4], eax
+
+            inc dword [LOCAL(1)]
+            jmp .comp_feats.while_j
+        .comp_feats.while_j.end:
+
+        inc dword [LOCAL(0)]
+        jmp .comp_feats.while_i
+    .comp_feats.while_i.end:
 
     mov dword [ai.features + (AI.FEAT - 1)*4], 1
     FUNC.END
@@ -408,4 +441,35 @@ ai.comp_feats:
 ai.comp_sigmoid:
     FUNC.START
     mov eax, [PARAM(0)]
+    FUNC.END
+
+; ai.is_***(dword i, dword j, dword hash)
+; Returns 1 if condition is met, 0 otherwise
+
+ai.is_enemy_left:
+    FUNC.START
+    FUNC.END
+
+ai.is_enemy_right:
+    FUNC.START
+    FUNC.END
+
+ai.is_danger_left:
+    FUNC.START
+    FUNC.END
+
+ai.is_danger_right:
+    FUNC.START
+    FUNC.END
+
+ai.is_danger_forward:
+    FUNC.START
+    FUNC.END
+
+ai.is_danger_backward:
+    FUNC.START
+    FUNC.END
+
+ai.is_killable:
+    FUNC.START
     FUNC.END
