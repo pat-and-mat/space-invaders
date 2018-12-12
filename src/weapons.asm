@@ -29,7 +29,7 @@ shots.cols resw ROWS * COLS
 shots.dirs resw ROWS * COLS
 shots.insts resw ROWS * COLS
 
-timer resd 1
+timer resd 2
 
 section .text
 
@@ -45,6 +45,8 @@ extern enemy_yellow.take_damage
 extern enemy_boss.take_damage
 extern enemy_meteoro.take_damage
 
+extern debug_info
+extern engine.debug
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
@@ -61,7 +63,7 @@ weapons.update:
     mov dword [LOCAL(0)], 0
     .update.move:
         mov ecx, [LOCAL(0)]
-        
+
         cmp cx, [shots.count]
         jae .update.move.end
 

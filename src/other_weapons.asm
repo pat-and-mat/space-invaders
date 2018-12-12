@@ -30,7 +30,7 @@ other_shots.dirs resw ROWS * COLS
 other_shots.insts resw ROWS * COLS
 other_shots.lives resw ROWS * COLS
 
-timer resd 1
+timer resd 2
 
 section .text
 
@@ -43,6 +43,9 @@ extern player.take_damage
 extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
+
+extern debug_info
+extern engine.debug
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
@@ -246,8 +249,7 @@ other_weapons.paint_shot:
 global other_weapons.collision
 other_weapons.collision:
     FUNC.START
-    RESERVE(2)
-
+    RESERVE(3)
     xor eax, eax
     mov ax, [other_shots.count]
     CALL array.index_of, other_shots.insts, eax, [PARAM(0)], 2
@@ -300,7 +302,7 @@ other_weapons.collision:
     .kill.enemy_red:
         CALL enemy_red.take_damage, 1, [PARAM(2)]
         mov [LOCAL(1)], eax
-
+        
         mov eax, [LOCAL(0)]
         dec word [other_shots.lives + eax]
 

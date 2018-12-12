@@ -369,11 +369,11 @@ engine.debug:
     CALL video.set_rect, debug_info, 24, 0, 1, 80
     call video.refresh
 
-    mov edi, debug_info
-    mov eax, 0
-    mov ecx, 80
-    cld
-    rep stosw
+    ; mov edi, debug_info
+    ; mov eax, 0
+    ; mov ecx, 80
+    ; cld
+    ; rep stosw
 
     FUNC.END
 

@@ -481,14 +481,19 @@ enemy_boss.take_damage:
 
     mov ecx, [PARAM(0)]    
     cmp dword [lives + eax], ecx
-    jg take_end
+    jg .take_end
 
     add dword [actual.score], 5000
     mov eax, [LOCAL(0)]
     CALL destroy.ship, eax
+    mov eax, 0
+    jmp .take_damage.end
 
-    take_end:
+    .take_end:
     sub [lives + eax], ecx
+
+    mov eax, [lives + eax]
+    .take_damage.end:
     FUNC.END
 
 ;destroy.ship(dword index)
