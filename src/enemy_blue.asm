@@ -446,9 +446,11 @@ enemy_blue.take_damage:
     add dword [actual.score], 50
     mov eax, [LOCAL(0)]
     CALL destroy.ship, eax
+    jmp take_damage.end
 
     take_end:
     sub [lives + eax], ecx
+    take_damage.end:
     FUNC.END
 
 
