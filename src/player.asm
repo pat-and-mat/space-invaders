@@ -21,6 +21,8 @@ extern sound.timer
 extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
+extern hard_weapons.shoot
+extern multi_weapons.shoot
 
 
 extern debug_info
@@ -67,6 +69,10 @@ col.right dd 3
 
 weapon.row dd 0
 weapon.col dd 2
+global hard_bullet
+hard_bullet dd 0
+global multi_bullet
+multi_bullet dd 0
 
 graphics.style db 0
 
@@ -177,6 +183,24 @@ player.update:
         mov eax, [weapon.col]
         add eax, [col.offset]
         mov [LOCAL(1)], eax
+
+        cmp dword [hard_bullet], 0
+        je no_hard
+        dec dword [hard_bullet]
+        CALL hard_weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
+        jmp update.end
+        no_hard:
+        cmp dword [multi_bullet], 0
+        je no_multi
+        dec dword [multi_bullet]
+        CALL multi_weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
+        dec dword [LOCAL(1)]
+        CALL multi_weapons.shoot, [LOCAL(0)], [LOCAL(1)], 6
+        add dword [LOCAL(1)], 2
+        CALL multi_weapons.shoot, [LOCAL(0)], [LOCAL(1)], 4
+        jmp update.end
+
+        no_multi:
 
         CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
         

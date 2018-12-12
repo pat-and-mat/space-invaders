@@ -19,6 +19,7 @@ extern can_move
 extern old_map
 extern array.index_of
 extern arrayd.shiftl
+extern hard_bullet
 
 %define SIZE 100
 %define BONUS.COORDS 1
@@ -307,7 +308,7 @@ bonus_weapon1.collision:
     FUNC.END
 
     crash_player:
-
+    mov dword [hard_bullet], 7
     CALL destroy.bonus, [LOCAL(0)]
     jmp crashed
 
