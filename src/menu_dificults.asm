@@ -43,8 +43,6 @@ extern can_not.gr.count
 
 
 
-section .bss
-
 section .data
 ;0-piece of cake 1-cake 2-poker face 3-insane 4- dont try
 dificult dw 2
@@ -63,29 +61,30 @@ global boss_time
 boss_time dd 30000
 
 piece.row.offset dw 1
-piece.col.offset dw 10
+piece.col.offset dw 15
 
 cake.row.offset dw 5
-cake.col.offset dw 10
+cake.col.offset dw 27
 
 poker.row.offset dw 9
-poker.col.offset dw 10
+poker.col.offset dw 18
 
 insane.row.offset dw 14
-insane.col.offset dw 10
+insane.col.offset dw 23
 
 can_not.row.offset dw 19
 can_not.col.offset dw 10
 
+section .bss
+debug_timer resd 2
 
 section .text
 global chose_dificult
 chose_dificult:
     FUNC.START
-
-    paint:
+    
     CALL video.clear, BG.BLACK
-
+    paint:
     cmp word [dificult], 0
     jne no0
     CALL paint_piece_gr, FG.MAGENTA|BG.BLACK
@@ -294,7 +293,7 @@ paint_piece_gr:
     FUNC.END
 
 paint_cake_gr:
-    FUNC.cake
+    FUNC.START
     RESERVE(4)
 
     mov dword [LOCAL(0)], 0    
@@ -370,7 +369,7 @@ paint_cake_gr:
     FUNC.END
 
 paint_insane_gr:
-    FUNC.insane
+    FUNC.START
     RESERVE(4)
 
     mov dword [LOCAL(0)], 0    

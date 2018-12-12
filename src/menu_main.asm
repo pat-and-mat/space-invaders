@@ -28,7 +28,7 @@ section .data
 pointer_position db 0
 
 main.row.offset dw 1
-main.col.offset dw 3
+main.col.offset dw 8
 
 start.row.offset dw 15
 start.col.offset dw 5
