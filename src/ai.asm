@@ -25,7 +25,7 @@ extern enemy_yellow.take_damage
 extern debug_info
 
 %define SHIP.COORDS 5
-%define AI.FEAT 8
+%define AI.FEAT 9
 %define AI.THRESHOLD 50
 
 %macro SHIP.ROW 1
@@ -62,11 +62,11 @@ col.right dd 3
 weapon.row dd 0
 weapon.col dd 2
 
-ai.shoot.weights dd 0, 0, 0, 0, 0, 0, 0, 0
-ai.right.weights dd 0, 0, 0, 0, 0, 0, 0, 0
-ai.left.weights dd 0, 0, 0, 0, 0, 0, 0, 0
-ai.up.weights dd 0, 0, 0, 0, 0, 0, 0, 0
-ai.down.weights dd 0, 0, 0, 0, 0, 0, 0, 0
+ai.shoot.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.right.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.left.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.up.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.down.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 section .bss
 
@@ -76,7 +76,7 @@ ai.lives resw 1
 row.offset resd 1
 col.offset resd 1
 
-; 0-left_enemies 1-right_enemies 2-left_danger 3-right_danger 4-forward_danger 5-backward_danger 6-Killable
+; 0-left_enemies 1-right_enemies 2-left_danger 3-right_danger 4-forward_danger 5-backward_danger 6-Killable 7-danger
 ai.features resd AI.FEAT
 ai.predictions resd 5
 
@@ -221,7 +221,7 @@ ai.put_in_map:
     .map.while.end:
     FUNC.END
 
-; collision(dword hash_other, dword inst_other)
+; collision(dword HASH.other, dword inst_other)
 ; It is here where collisions will be handled
 global ai.collision
 ai.collision:
@@ -430,6 +430,9 @@ ai.comp_feats:
             CALL ai.is_killable, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
             add [ai.features + 6*4], eax
 
+            CALL ai.is_danger, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            add [ai.features + 7*4], eax
+
             inc dword [LOCAL(1)]
             jmp .comp_feats.while_j
         .comp_feats.while_j.end:
@@ -452,26 +455,96 @@ ai.comp_sigmoid:
 
 ai.is_enemy_left:
     FUNC.START
+    mov eax, [col.offset]
+    add eax, 2
+    cmp dword [PARAM(1)], eax
+    jge enemy_left.false
+    mov eax, [row.offset]
+    cmp dword [PARAM(1)], eax
+    jge enemy_left.false
+
+    cmp dword [PARAM(2)], HASH.ENEMY_BLUE
+    je enemy_left.true
+    cmp dword [PARAM(2)], HASH.ENEMY_RED
+    je enemy_left.true
+    cmp dword [PARAM(2)], HASH.ENEMY_YELLOW
+    je enemy_left.true
+    cmp dword [PARAM(2)], HASH.ENEMY_BOSS
+    je enemy_left.true
+    cmp dword [PARAM(2)], HASH.ENEMY_METEORO
+    je enemy_left.true
+    jmp enemy_left.false
+
+
+    enemy_left.true:
+    mov eax, 1
+    jmp enemy_left.end
+    
+    enemy_left.false:
+    mov eax, 0
+
+    enemy_left.end:
     FUNC.END
 
 ai.is_enemy_right:
     FUNC.START
+    mov eax, [col.offset]
+    add eax, 2
+    cmp dword [PARAM(1)], eax
+    jle enemy_right.false
+    mov eax, [row.offset]
+    cmp dword [PARAM(1)], eax
+    jge enemy_right.false
+
+    cmp dword [PARAM(2)], HASH.ENEMY_BLUE
+    je enemy_right.true
+    cmp dword [PARAM(2)], HASH.ENEMY_RED
+    je enemy_right.true
+    cmp dword [PARAM(2)], HASH.ENEMY_YELLOW
+    je enemy_right.true
+    cmp dword [PARAM(2)], HASH.ENEMY_BOSS
+    je enemy_right.true
+    cmp dword [PARAM(2)], HASH.ENEMY_METEORO
+    je enemy_right.true
+    jmp enemy_right.false
+
+
+    enemy_right.true:
+    mov eax, 1
+    jmp enemy_right.end
+    
+    enemy_right.false:
+    mov eax, 0
+
+    enemy_right.end:
     FUNC.END
 
 ai.is_danger_left:
     FUNC.START
+    dec dword [col.offset]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)]
+    inc dword [col.offset]
     FUNC.END
 
 ai.is_danger_right:
     FUNC.START
+    inc dword [col.offset]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)]
+    dec dword [col.offset]
     FUNC.END
 
 ai.is_danger_forward:
     FUNC.START
+    dec dword [row.offset]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)]
+    inc dword [row.offset]
     FUNC.END
 
 ai.is_danger_backward:
     FUNC.START
+    inc dword [row.offset]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)]
+    dec dword [row.offset]
     FUNC.END
 
 ai.is_killable:
@@ -520,4 +593,56 @@ ai.is_killable:
     mov eax, 1
 
     .killable.end:
+    FUNC.END
+
+ai.is_danger:
+    FUNC.START
+
+    mov eax, [row.offset]
+    add eax, ROW.BOTTOM
+    cmp [PARAM(0)], eax
+    jg is_danger.false
+
+    mov eax, [col.offset]
+    cmp [PARAM(1)], eax
+    jl is_danger.false
+
+    mov eax, [row.offset]
+    sub eax, 5
+    cmp [PARAM(0)], eax
+    jl is_danger.false
+
+    mov eax, [col.offset]
+    add eax, COL.RIGHT
+    cmp [PARAM(1)], eax
+    jg is_danger.false
+
+    cmp dword [PARAM(2)], HASH.ENEMY_BLUE
+    je is_danger.true1
+    cmp dword [PARAM(2)], HASH.ENEMY_RED
+    je is_danger.true1
+    cmp dword [PARAM(2)], HASH.ENEMY_YELLOW
+    je is_danger.true1
+    cmp dword [PARAM(2)], HASH.ENEMY_BOSS
+    je is_danger.true1
+    cmp dword [PARAM(2)], HASH.ENEMY_METEORO
+    je is_danger.true1
+
+    cmp dword [PARAM(2)], HASH.SHOT
+    je is_danger.true5
+
+    jmp is_danger.false
+
+    is_danger.true1:
+    mov eax, 1
+    jmp is_danger.end
+
+    is_danger.true5:
+    mov eax, 5
+    jmp is_danger.end
+
+    is_danger.false:
+    mov eax, 0
+
+    is_danger.end:
     FUNC.END
