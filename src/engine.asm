@@ -223,6 +223,9 @@ engine.invoke_handler:
     cmp dword [PARAM(0)], HASH.OTHER_SHOT
     je .handler.other_shot
 
+    cmp dword [PARAM(0)], HASH.AI
+    je .handler.ai
+
     jmp .handler.end
 
     .handler.player:
@@ -271,6 +274,10 @@ engine.invoke_handler:
 
     .handler.other_shot:
     CALL other_weapons.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.ai:
+    CALL ai.collision, [PARAM(2)], [PARAM(3)]
     jmp .handler.end
 
     .handler.end:
