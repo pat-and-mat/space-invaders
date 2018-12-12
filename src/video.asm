@@ -2,12 +2,18 @@
 %include "stack.inc"
 %include "utils.inc"
 
+extern delay
+
 ; Frame buffer location
 %define FBUFFER 0xB8000
 
 section .data
 
 screen times ROWS*COLS dw BG.BLACK
+
+section .bss
+
+debug_timer resd 2
 
 section .text
 
@@ -105,6 +111,12 @@ video.refresh:
     mov ecx, ROWS * COLS
     cld
     rep movsw
+    
+    ; debug:
+    ; CALL delay, debug_timer, 100
+    ; cmp eax, 0
+    ; je debug
+    
     FUNC.END
 
 

@@ -281,9 +281,8 @@ boss.put_all_in_map:
 ; boss.put_one_in_map(dword *map, dword hash, dword row, dword col)
 boss.put_one_in_map:
     FUNC.START
-    RESERVE(6)  ; coord, offset
+    RESERVE(5)  ; coord, offset
     
-    mov dword [LOCAL(5)], 0
     mov dword [LOCAL(4)], 0
     mov dword [LOCAL(0)], 0
     .map.one.while:
@@ -305,8 +304,6 @@ boss.put_one_in_map:
         add [LOCAL(3)], eax
 
         OFFSET [LOCAL(2)], [LOCAL(3)]
-        ; CALL video.print, 'X'|FG.GREEN|BG.YELLOW, [LOCAL(2)], [LOCAL(3)]
-        ; call video.refresh
 
         mov [LOCAL(1)], eax
         shl eax, 2
@@ -317,13 +314,6 @@ boss.put_one_in_map:
         
         mov ebx, [eax]
         mov [LOCAL(4)], ebx
-
-        mov edx, [LOCAL(5)]
-        inc dword [LOCAL(5)]
-        mov [debug_info], dx
-        add word [debug_info], 48
-        or word [debug_info], FG.RED
-        call engine.debug
 
         CALL engine.add_collision, [PARAM(1)], [LOCAL(4)]
 
