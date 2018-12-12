@@ -293,12 +293,13 @@ ai.take_damage:
     jmp end
 
     .destroyed:
-        mov eax, 0
         mov word [ai.lives], 0
         jmp end
 
     end:
-        FUNC.END
+        xor eax, eax
+        mov ax, [ai.lives]
+    FUNC.END
 
 ; ai.comp_next(dword *map)
 ; comps the next action of the ai

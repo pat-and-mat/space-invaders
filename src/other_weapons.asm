@@ -43,6 +43,7 @@ extern player.take_damage
 extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
+extern ai.take_damage
 
 extern debug_info
 extern engine.debug
@@ -304,6 +305,9 @@ other_weapons.collision:
     cmp dword [PARAM(1)], HASH.PLAYER
     je .kill.player
 
+    cmp dword [PARAM(1)], HASH.AI
+    je .kill.ai
+
     cmp dword [PARAM(1)], HASH.ENEMY_BLUE
     je .kill.enemy_blue
 
@@ -317,6 +321,21 @@ other_weapons.collision:
 
     .kill.player:
         CALL player.take_damage, 1
+        mov [LOCAL(1)], eax
+
+        mov eax, [LOCAL(0)]
+        dec word [other_shots.lives + eax]
+
+        cmp word [other_shots.lives + eax], 0
+        je .collision.check_lives
+
+        cmp dword [LOCAL(1)], 0
+        ja .kill.player
+
+        jmp .collision.check_lives
+
+    .kill.ai:
+        CALL ai.take_damage, 1
         mov [LOCAL(1)], eax
 
         mov eax, [LOCAL(0)]
