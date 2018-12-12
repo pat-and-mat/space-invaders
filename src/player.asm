@@ -316,7 +316,7 @@ player.paint:
 global player.take_damage
 player.take_damage:
     FUNC.START
-    ; mov dword [PARAM(0)], 0 ; debug
+    mov dword [PARAM(0)], 0 ; debug
 
     mov eax, [PARAM(0)]
 

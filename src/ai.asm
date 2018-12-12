@@ -23,10 +23,12 @@ extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
 extern debug_info
+extern video.print_number
+extern video.refresh
 
 %define SHIP.COORDS 5
-%define AI.FEAT 9
-%define AI.THRESHOLD 50
+%define AI.FEAT 8
+%define AI.THRESHOLD 10
 
 %macro SHIP.ROW 1
     xor eax, eax
@@ -62,11 +64,12 @@ col.right dd 3
 weapon.row dd 0
 weapon.col dd 2
 
-ai.shoot.weights dd  0, 0, 0, 0, 0, 0, 0, 0, 0
-ai.right.weights dd  0, 0, 0, 0, 0, 0, 0, 0, 0
-ai.left.weights  dd  0, 0, 0, 0, 0, 0, 0, 0, 0
-ai.up.weights    dd  0, 0, 0, 0, 0, 0, 0, 0, 0
-ai.down.weights  dd  0, 0, 0, 0, 0, 0, 0, 0, 0
+; 0-enemyl 1-enemyr 2-dangerl 3-dangerr 4-dangerf 5-dangerb 6-Killable
+ai.shoot.weights dd  0,  0,  0,  0,  0,  0, 15, 12
+ai.right.weights dd -1,  2, 12,-12, 12,  1, -1,  0
+ai.left.weights  dd  2, -1,-12, 12, 12,  1, -1,  0
+ai.up.weights    dd  0,  0,  0,  0, -5,  4, -1,  5
+ai.down.weights  dd  0,  0,  0,  0,  1, -5, -1,  0
 
 section .bss
 
@@ -76,11 +79,12 @@ ai.lives resw 1
 row.offset resd 1
 col.offset resd 1
 
-; 0-left_enemies 1-right_enemies 2-left_danger 3-right_danger 4-forward_danger 5-backward_danger 6-Killable 7-danger
 ai.features resd AI.FEAT
+; 1-up 2-down 3-left 4-right 5-shot
 ai.predictions resd 5
 
-ai.timer resd 1
+ai.timer resd 2
+debug_timer resd 2
 
 section .text
 
@@ -110,6 +114,10 @@ ai.update:
 
     cmp word [ai.lives], 0
     je .update.end
+
+    CALL delay, ai.timer, 100
+    cmp eax, 0
+    je .update.map
 
     CALL ai.comp_next, [PARAM(0)]
 
@@ -155,12 +163,8 @@ ai.update:
         jmp .update.map
 
     .update.shoot:
-        CALL delay, ai.timer, 250
-        cmp eax, 0
-        je .update.map
-
         ;shoot sound
-        call play_shoot
+        ; call play_shoot
 
         ;calculate the position of the shot
         mov eax, [weapon.row]
@@ -179,6 +183,7 @@ ai.update:
     .update.map:
         CALL ai.put_in_map, [PARAM(0)]   
     .update.end:
+
     FUNC.END
 
 ; ai.put_in_map(dword *map)
@@ -293,6 +298,8 @@ ai.paint:
 global ai.take_damage
 ai.take_damage:
     FUNC.START
+
+    mov dword [PARAM(0)], 0 ;debug
     
     mov eax, [PARAM(0)]
     cmp [ai.lives], ax
@@ -349,7 +356,8 @@ ai.comp_next:
     .comp_next.while.end:
     
     mov eax, [LOCAL(1)]
-    
+    ; mov eax, 5
+
     FUNC.END
 
 ; ai.comp_preds(dword *weights)
@@ -365,6 +373,15 @@ ai.comp_preds:
     mov [ai.predictions + 3*4], eax
     CALL ai.comp_pred, ai.shoot.weights
     mov [ai.predictions + 4*4], eax
+
+    ; debug
+    ; CALL video.print, [ai.predictions + 0*4], 39, 24
+    ; CALL video.print, [ai.predictions + 1*4], 49, 24
+    ; CALL video.print, [ai.predictions + 2*4], 59, 24
+    ; CALL video.print, [ai.predictions + 3*4], 69, 24
+    ; CALL video.print, [ai.predictions + 4*4], 79, 24
+    ; call video.refresh
+
     FUNC.END
 
 
@@ -384,7 +401,7 @@ ai.comp_pred:
         shl ecx, 2
         mov eax, [ai.features + ecx]
         mov edx, [PARAM(0)]
-        mul dword [edx + ecx]
+        imul dword [edx + ecx]
         add [LOCAL(1)], eax
 
         inc dword [LOCAL(0)]
@@ -401,25 +418,38 @@ ai.comp_feats:
     FUNC.START
     RESERVE(3)  ; i, j, hash
 
+    mov edi, ai.features
+    mov ecx, AI.FEAT
+    mov eax, 0
+    cld
+    rep stosd
+
     mov dword [LOCAL(0)], 0
     .comp_feats.while_i:
         cmp dword [LOCAL(0)], ROWS
-        je .comp_feats.while_i.end
+        je .comp_feats.while_i.end        
 
         mov dword [LOCAL(1)], 0
         .comp_feats.while_j:
             cmp dword [LOCAL(1)], COLS
-            je .comp_feats.while_j.end
+            je .comp_feats.while_j.end            
 
             OFFSET [LOCAL(0)], [LOCAL(1)]
             shl eax, 2
+            add eax, [PARAM(0)]
             
             mov eax, [eax]
             shr eax, 16
-            mov [LOCAL(2)], eax
+            mov [LOCAL(2)], eax            
 
             CALL ai.is_enemy_left, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
-            add [ai.features + 0*4], eax
+            add [ai.features + 0*4], eax   
+
+            ; cmp eax, 0
+            ; je .debug_continue
+            ; CALL video.print_number, eax, 79, 24
+            ; call video.refresh
+            ; .debug_continue:         
 
             CALL ai.is_enemy_right, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
             add [ai.features + 1*4], eax
@@ -437,10 +467,7 @@ ai.comp_feats:
             add [ai.features + 5*4], eax
 
             CALL ai.is_killable, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
-            add [ai.features + 6*4], eax
-
-            CALL ai.is_danger, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
-            add [ai.features + 7*4], eax
+            add [ai.features + 6*4], eax            
 
             inc dword [LOCAL(1)]
             jmp .comp_feats.while_j
@@ -451,6 +478,22 @@ ai.comp_feats:
     .comp_feats.while_i.end:
 
     mov dword [ai.features + (AI.FEAT - 1)*4], 1
+
+
+        ; ; debug
+        ; CALL video.print_number, [ai.features + 0*4], 9, 24
+        ; CALL video.print_number, [ai.features + 1*4], 19, 24
+        ; CALL video.print_number, [ai.features + 2*4], 29, 24
+        ; CALL video.print_number, [ai.features + 3*4], 39, 24
+        ; CALL video.print_number, [ai.features + 4*4], 49, 24
+        ; CALL video.print_number, [ai.features + 5*4], 59, 24
+        ; CALL video.print_number, [ai.features + 6*4], 69, 24
+        ; call video.refresh
+        ; debug:
+        ; CALL delay, debug_timer, 1000
+        ; cmp eax, 0
+        ; je debug
+
     FUNC.END
 
 ; ai.comp_sigmoid(dword x)
@@ -469,7 +512,7 @@ ai.is_enemy_left:
     cmp dword [PARAM(1)], eax
     jge enemy_left.false
     mov eax, [row.offset]
-    cmp dword [PARAM(1)], eax
+    cmp dword [PARAM(0)], eax
     jge enemy_left.false
 
     cmp dword [PARAM(2)], HASH.ENEMY_BLUE
@@ -480,8 +523,7 @@ ai.is_enemy_left:
     je enemy_left.true
     cmp dword [PARAM(2)], HASH.ENEMY_BOSS
     je enemy_left.true
-    cmp dword [PARAM(2)], HASH.ENEMY_METEORO
-    je enemy_left.true
+    
     jmp enemy_left.false
 
 
@@ -502,7 +544,7 @@ ai.is_enemy_right:
     cmp dword [PARAM(1)], eax
     jle enemy_right.false
     mov eax, [row.offset]
-    cmp dword [PARAM(1)], eax
+    cmp dword [PARAM(0)], eax
     jge enemy_right.false
 
     cmp dword [PARAM(2)], HASH.ENEMY_BLUE
@@ -513,8 +555,7 @@ ai.is_enemy_right:
     je enemy_right.true
     cmp dword [PARAM(2)], HASH.ENEMY_BOSS
     je enemy_right.true
-    cmp dword [PARAM(2)], HASH.ENEMY_METEORO
-    je enemy_right.true
+   
     jmp enemy_right.false
 
 
@@ -530,16 +571,16 @@ ai.is_enemy_right:
 
 ai.is_danger_left:
     FUNC.START
-    dec dword [col.offset]
+    sub dword [col.offset], 2
     CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)]
-    inc dword [col.offset]
+    add dword [col.offset], 2
     FUNC.END
 
 ai.is_danger_right:
     FUNC.START
-    inc dword [col.offset]
+    add dword [col.offset], 2
     CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)]
-    dec dword [col.offset]
+    sub dword [col.offset], 2
     FUNC.END
 
 ai.is_danger_forward:
@@ -617,7 +658,7 @@ ai.is_danger:
     jl is_danger.false
 
     mov eax, [row.offset]
-    sub eax, 5
+    sub eax, 4
     cmp [PARAM(0)], eax
     jl is_danger.false
 
@@ -647,7 +688,7 @@ ai.is_danger:
     jmp is_danger.end
 
     is_danger.true5:
-    mov eax, 5
+    mov eax, 8
     jmp is_danger.end
 
     is_danger.false:
