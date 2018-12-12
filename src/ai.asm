@@ -73,6 +73,7 @@ ai.lives resw 1
 row.offset resd 1
 col.offset resd 1
 
+; 0-left_enemies 1-right_enemies 2-left_danger 3-right_danger 4-forward_danger 5-backward_danger 6-Killable
 ai.features resd AI.FEAT
 ai.predictions resd 5
 
