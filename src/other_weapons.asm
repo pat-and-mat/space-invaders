@@ -30,7 +30,7 @@ other_shots.dirs resw ROWS * COLS
 other_shots.insts resw ROWS * COLS
 other_shots.lives resw ROWS * COLS
 
-timer resd 1
+timer resd 2
 
 section .text
 
@@ -43,6 +43,9 @@ extern player.take_damage
 extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
+
+extern debug_info
+extern engine.debug
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
@@ -74,6 +77,24 @@ other_weapons.update:
         cmp eax, 1
         je .move.up
 
+        cmp eax, 2
+        je .move.left
+
+        cmp eax, 3
+        je .move.right
+
+        cmp eax, 4
+        je .move.diag_left_up
+
+        cmp eax, 5
+        je .move.diag_left_down
+
+        cmp eax, 6
+        je .move.diag_right_up
+
+        cmp eax, 7
+        je .move.diag_right_down
+
         jmp .update.move.end
 
         .move.up:
@@ -82,6 +103,34 @@ other_weapons.update:
 
         .move.down:
             inc word [other_shots.rows + ecx]
+            jmp .update.move.cont
+
+        .move.left:
+            dec word [other_shots.cols + ecx]
+            jmp .update.move.cont
+
+        .move.right:
+            inc word [other_shots.cols + ecx]
+            jmp .update.move.cont
+
+        .move.diag_left_down:
+            dec word [other_shots.cols + ecx]
+            inc word [other_shots.rows + ecx]
+            jmp .update.move.cont
+
+        .move.diag_left_up:
+            dec word [other_shots.cols + ecx]
+            dec word [other_shots.rows + ecx]
+            jmp .update.move.cont
+
+        .move.diag_right_down:
+            inc word [other_shots.cols + ecx]
+            inc word [other_shots.rows + ecx]
+            jmp .update.move.cont
+
+        .move.diag_right_up:
+            inc word [other_shots.cols + ecx]
+            dec word [other_shots.rows + ecx]
             jmp .update.move.cont
 
         .update.move.cont:
@@ -246,8 +295,7 @@ other_weapons.paint_shot:
 global other_weapons.collision
 other_weapons.collision:
     FUNC.START
-    RESERVE(2)
-
+    RESERVE(3)
     xor eax, eax
     mov ax, [other_shots.count]
     CALL array.index_of, other_shots.insts, eax, [PARAM(0)], 2
@@ -300,7 +348,7 @@ other_weapons.collision:
     .kill.enemy_red:
         CALL enemy_red.take_damage, 1, [PARAM(2)]
         mov [LOCAL(1)], eax
-
+        
         mov eax, [LOCAL(0)]
         dec word [other_shots.lives + eax]
 
@@ -417,6 +465,9 @@ other_weapons.check_boundaries:
     shl ecx, 1
 
     cmp word [other_shots.rows + ecx], ROWS
+    jae .check.rm
+
+    cmp word [other_shots.cols + ecx], COLS
     jae .check.rm
 
     mov eax, 1

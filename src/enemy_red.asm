@@ -340,8 +340,6 @@ enemy_red.collision:
 
     crash_meteoro:
     jmp crashed
-    
-    FUNC.END
 
 ;paint()
 ;move all the red enemies
@@ -423,21 +421,19 @@ enemy_red.take_damage:
     shl eax, 2
     mov ecx, [PARAM(0)]
 
-    
     cmp dword [lives + eax], ecx
     jg take_end
     add dword [actual.score], 100
     mov eax, [LOCAL(0)]
     CALL destroy.ship, eax
+    mov eax, 0
+    jmp take_damage.end
 
     take_end:
     sub [lives + eax], ecx
 
     mov eax, [lives + eax]
-    cmp eax, 0
-    jg .take_damage.end
-    mov eax, 0
-    .take_damage.end:
+    take_damage.end:
     FUNC.END
 
 ;destroy.ship(dword index)

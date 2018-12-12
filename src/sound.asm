@@ -17,7 +17,7 @@ yellow_enemy_die db 0
 red_enemy_die db 0
 player_die db 0
 
-shoot.freq dw 0200000, 0003000, 0300000
+shoot.freq dw 0200h, 00030h, 03000h
 shoot.count dd 0
 
 section .bss

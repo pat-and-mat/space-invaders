@@ -6,7 +6,7 @@ global input
 section .bss
 
 input resb 1
-lose.timer resd 1
+lose.timer resd 2
 
 section .text
 

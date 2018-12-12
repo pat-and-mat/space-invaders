@@ -397,9 +397,14 @@ enemy_meteoro.take_damage:
     add dword [actual.score], 50
     mov eax, [LOCAL(0)]
     CALL destroy.meteoro, eax
+    mov eax, 0
+    jmp take_damage.end
 
     take_end:
     sub [lives + eax], ecx
+
+    mov eax, [lives + eax]
+    take_damage.end:
     FUNC.END
 
 ;destroy.meteoro dword index)
