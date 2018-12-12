@@ -77,6 +77,24 @@ other_weapons.update:
         cmp eax, 1
         je .move.up
 
+        cmp eax, 2
+        je .move.left
+
+        cmp eax, 3
+        je .move.right
+
+        cmp eax, 4
+        je .move.diag_left_up
+
+        cmp eax, 5
+        je .move.diag_left_down
+
+        cmp eax, 6
+        je .move.diag_right_up
+
+        cmp eax, 7
+        je .move.diag_right_down
+
         jmp .update.move.end
 
         .move.up:
@@ -85,6 +103,34 @@ other_weapons.update:
 
         .move.down:
             inc word [other_shots.rows + ecx]
+            jmp .update.move.cont
+
+        .move.left:
+            dec word [other_shots.cols + ecx]
+            jmp .update.move.cont
+
+        .move.right:
+            inc word [other_shots.cols + ecx]
+            jmp .update.move.cont
+
+        .move.diag_left_down:
+            dec word [other_shots.cols + ecx]
+            inc word [other_shots.rows + ecx]
+            jmp .update.move.cont
+
+        .move.diag_left_up:
+            dec word [other_shots.cols + ecx]
+            dec word [other_shots.rows + ecx]
+            jmp .update.move.cont
+
+        .move.diag_right_down:
+            inc word [other_shots.cols + ecx]
+            inc word [other_shots.rows + ecx]
+            jmp .update.move.cont
+
+        .move.diag_right_up:
+            inc word [other_shots.cols + ecx]
+            dec word [other_shots.rows + ecx]
             jmp .update.move.cont
 
         .update.move.cont:
@@ -419,6 +465,9 @@ other_weapons.check_boundaries:
     shl ecx, 1
 
     cmp word [other_shots.rows + ecx], ROWS
+    jae .check.rm
+
+    cmp word [other_shots.cols + ecx], COLS
     jae .check.rm
 
     mov eax, 1

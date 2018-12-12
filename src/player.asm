@@ -178,7 +178,7 @@ player.update:
         add eax, [col.offset]
         mov [LOCAL(1)], eax
 
-        CALL other_weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
+        CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
         
         jmp update.end 
 
@@ -316,7 +316,7 @@ player.paint:
 global player.take_damage
 player.take_damage:
     FUNC.START
-    mov dword [PARAM(0)], 0 ; debug
+    ; mov dword [PARAM(0)], 0 ; debug
 
     mov eax, [PARAM(0)]
 
