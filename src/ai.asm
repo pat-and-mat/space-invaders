@@ -62,11 +62,11 @@ col.right dd 3
 weapon.row dd 0
 weapon.col dd 2
 
-ai.shoot.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
-ai.right.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
-ai.left.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
-ai.up.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
-ai.down.weights dd 0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.shoot.weights dd  0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.right.weights dd  0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.left.weights  dd  0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.up.weights    dd  0, 0, 0, 0, 0, 0, 0, 0, 0
+ai.down.weights  dd  0, 0, 0, 0, 0, 0, 0, 0, 0
 
 section .bss
 
