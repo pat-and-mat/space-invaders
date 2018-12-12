@@ -445,7 +445,7 @@ ai.comp_sigmoid:
     FUNC.END
 
 ; ai.is_***(dword i, dword j, dword hash)
-; Returns 1 if condition is met, 0 otherwise
+; Returns value for given condition
 
 ai.is_enemy_left:
     FUNC.START
