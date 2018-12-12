@@ -40,6 +40,9 @@ extern debug_info
     add ax, %1
 %endmacro
 
+%define ROW.BOTTOM 0
+%define COL.RIGHT 4
+
 ; Data section is meant to hold constant values, do not modify
 section .data
 
@@ -473,4 +476,48 @@ ai.is_danger_backward:
 
 ai.is_killable:
     FUNC.START
+    xor eax, eax
+    
+    .killable.check_hash:
+        cmp dword [PARAM(2)], HASH.ENEMY_BLUE
+        jne .killable.end
+        jmp .killable.check_row
+
+        cmp dword [PARAM(2)], HASH.ENEMY_RED
+        jne .killable.end
+        jmp .killable.check_row
+
+        cmp dword [PARAM(2)], HASH.ENEMY_YELLOW
+        jne .killable.end
+        jmp .killable.check_row
+
+        cmp dword [PARAM(2)], HASH.ENEMY_BOSS
+        jne .killable.end
+        jmp .killable.check_row
+
+        cmp dword [PARAM(2)], HASH.ENEMY_METEORO
+        jne .killable.end
+        jmp .killable.check_row
+
+    .killable.check_row:
+        mov edx, [row.offset]
+
+        cmp [PARAM(0)], edx
+        jnl .killable.end
+
+    .killable.check_col:
+        mov edx, [col.offset]
+
+        cmp [PARAM(1)], edx
+        jng .killable.end
+
+        mov edx, [col.offset]
+        add edx, COL.RIGHT
+
+        cmp [PARAM(1)], edx
+        jnl .killable.end
+    
+    mov eax, 1
+
+    .killable.end:
     FUNC.END
