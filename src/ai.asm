@@ -108,6 +108,9 @@ ai.update:
     FUNC.START
     RESERVE(2)
 
+    cmp word [ai.lives], 0
+    je .update.end
+
     CALL ai.comp_next, [PARAM(0)]
 
     cmp eax, 1
@@ -125,36 +128,36 @@ ai.update:
     cmp eax, 5
     je .update.shoot
 
-    jmp .update.end
+    jmp .update.map
 
     .update.move.up:
         cmp dword [row.offset], 1
-        je .update.end
+        je .update.map
         sub dword [row.offset], 1
-        jmp .update.end
+        jmp .update.map
 
     .update.move.down:
         cmp dword [row.offset], 24
-        je .update.end
+        je .update.map
         add dword [row.offset], 1
-        jmp .update.end
+        jmp .update.map
 
     .update.move.left:
         cmp dword [col.offset], 0
-        je .update.end
+        je .update.map
         sub dword [col.offset], 1
-        jmp .update.end
+        jmp .update.map
 
     .update.move.right:
         cmp dword [col.offset], 75
-        je .update.end    
+        je .update.map    
         add dword [col.offset], 1
-        jmp .update.end
+        jmp .update.map
 
     .update.shoot:
         CALL delay, ai.timer, 250
         cmp eax, 0
-        je .update.end
+        je .update.map
 
         ;shoot sound
         call play_shoot
@@ -171,10 +174,11 @@ ai.update:
 
         CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
         
-        jmp .update.end 
+        jmp .update.map 
 
-    .update.end:
+    .update.map:
         CALL ai.put_in_map, [PARAM(0)]   
+    .update.end:
     FUNC.END
 
 ; ai.put_in_map(dword *map)
@@ -257,6 +261,9 @@ ai.paint:
     FUNC.START
     RESERVE(2)
 
+    cmp word [ai.lives], 0
+    je paint.end
+
     mov ecx, 0    
     while:
         cmp ecx, SHIP.COORDS * 4
@@ -276,8 +283,9 @@ ai.paint:
 
         add ecx, 4
         jmp while
-        while.end:
-        FUNC.END
+    while.end:
+    paint.end:
+    FUNC.END
 
 ; ai.take_damage(dword damage)
 ; Takes ai.lives away from ai
@@ -293,12 +301,13 @@ ai.take_damage:
     jmp end
 
     .destroyed:
-        mov eax, 0
         mov word [ai.lives], 0
         jmp end
 
     end:
-        FUNC.END
+        xor eax, eax
+        mov ax, [ai.lives]
+    FUNC.END
 
 ; ai.comp_next(dword *map)
 ; comps the next action of the ai

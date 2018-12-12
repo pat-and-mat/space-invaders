@@ -44,6 +44,7 @@ extern enemy_red.take_damage
 extern enemy_yellow.take_damage
 extern enemy_boss.take_damage
 extern enemy_meteoro.take_damage
+extern ai.take_damage
 
 extern debug_info
 extern engine.debug
@@ -258,6 +259,9 @@ weapons.collision:
     cmp dword [PARAM(1)], HASH.PLAYER
     je .kill.player
 
+    cmp dword [PARAM(1)], HASH.AI
+    je .kill.ai
+
     cmp dword [PARAM(1)], HASH.ENEMY_BLUE
     je .kill.enemy_blue
 
@@ -278,6 +282,10 @@ weapons.collision:
 
     .kill.player:
         CALL player.take_damage, 5
+        jmp .collision.end
+
+    .kill.ai:
+        CALL ai.take_damage, 5
         jmp .collision.end
 
     .kill.meteoro:
