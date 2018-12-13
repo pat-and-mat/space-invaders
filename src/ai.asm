@@ -375,17 +375,14 @@ ai.comp_preds:
     mov [ai.predictions + 3*4], eax
     CALL ai.comp_pred, ai.shoot.weights
     mov [ai.predictions + 4*4], eax
-
-    ; debug
-    ; CALL video.print, [ai.predictions + 0*4], 39, 24
-    ; CALL video.print, [ai.predictions + 1*4], 49, 24
-    ; CALL video.print, [ai.predictions + 2*4], 59, 24
-    ; CALL video.print, [ai.predictions + 3*4], 69, 24
-    ; CALL video.print, [ai.predictions + 4*4], 79, 24
-    ; call video.refresh
+    call ai.rm_impossible
 
     FUNC.END
 
+ai.rm_impossible:
+    FUNC.START
+    ; TODO: Check collision with player
+    FUNC.END
 
 ; ai.comp_pred(dword *weights)
 ai.comp_pred:
