@@ -65,9 +65,9 @@ weapon.row dd 0
 weapon.col dd 2
 
 ; 0-enemyl 1-enemyr 2-dangerl 3-dangerr 4-dangerf 5-dangerb 6-Killable
-ai.shoot.weights dd  0,  0,  0,  0,  0,  0, 15, 12
-ai.right.weights dd -1,  2, 12,-12, 12,  1, -1,  0
-ai.left.weights  dd  2, -1,-12, 12, 12,  1, -1,  0
+ai.shoot.weights dd  0,  0,  0,  0,  0,  0, 30, 9
+ai.right.weights dd -1,  2, 12,-12, 17,  1, -1,  0
+ai.left.weights  dd  2, -1,-12, 12, 17,  1, -1,  0
 ai.up.weights    dd  0,  0,  0,  0, -5,  4, -1,  5
 ai.down.weights  dd  0,  0,  0,  0,  1, -5, -1,  0
 
