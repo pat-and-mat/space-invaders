@@ -42,31 +42,22 @@ extern can_not.gr.rows
 extern can_not.gr.cols
 extern can_not.gr.count
 
+extern p1.gr
+extern p1.gr.rows
+extern p1.gr.cols
+extern p1.gr.count
+
+extern p2.gr
+extern p2.gr.rows
+extern p2.gr.cols
+extern p2.gr.count
+
 
 
 section .data
 ;0-piece of cake 1-cake 2-poker face 3-insane 4- dont try
 dificult dw 2
 
-string_player1_off  dw  "P"|FG.RED|BG.GREEN, "l"|FG.RED|BG.GREEN,\
-                        "a"|FG.RED|BG.GREEN, "y"|FG.RED|BG.GREEN,\
-                        "e"|FG.RED|BG.GREEN, "r"|FG.RED|BG.GREEN,\
-                        " "|FG.RED|BG.GREEN, "1"|FG.RED|BG.GREEN, 0 
-
-string_player2_off  dw  "P"|FG.RED|BG.GREEN, "l"|FG.RED|BG.GREEN,\
-                        "a"|FG.RED|BG.GREEN, "y"|FG.RED|BG.GREEN,\
-                        "e"|FG.RED|BG.GREEN, "r"|FG.RED|BG.GREEN,\
-                        " "|FG.RED|BG.GREEN, "2"|FG.RED|BG.GREEN, 0
-
-string_player1_on   dw  "P"|FG.RED|BG.BLACK, "l"|FG.RED|BG.BLACK,\
-                        "a"|FG.RED|BG.BLACK, "y"|FG.RED|BG.BLACK,\
-                        "e"|FG.RED|BG.BLACK, "r"|FG.RED|BG.BLACK,\
-                        " "|FG.RED|BG.BLACK, "1"|FG.RED|BG.BLACK, 0
-
-string_player2_on   dw  "P"|FG.RED|BG.BLACK, "l"|FG.RED|BG.BLACK,\
-                        "a"|FG.RED|BG.BLACK, "y"|FG.RED|BG.BLACK,\
-                        "e"|FG.RED|BG.BLACK, "r"|FG.RED|BG.BLACK,\
-                        " "|FG.RED|BG.BLACK, "2"|FG.RED|BG.BLACK, 0
 
 global colors
 colors dd 0, 0, 1, 1, 2, 2, 3, 0, 0, 0, 0, 0
@@ -100,6 +91,12 @@ insane.col.offset dw 23
 
 can_not.row.offset dw 19
 can_not.col.offset dw 10
+
+p1.row.offset dw 13
+p1.col.offset dw 5
+
+p2.row.offset dw 13
+p2.col.offset dw 65
 
 section .bss
 debug_timer resd 2
@@ -164,19 +161,19 @@ chose_dificult:
     player1:
     cmp byte [player_on], 0
     je no_player1
-    CALL video.set_rect, string_player1_off, 13, 5, 1, 8
+    CALL paint_p1_gr, FG.RED|BG.BLACK
     jmp player2
     no_player1:
-    CALL video.set_rect, string_player1_on, 13, 5, 1, 8
+    CALL paint_p1_gr, FG.GREEN|BG.BLACK
     jmp player2
 
     player2:
     cmp byte [player2_on], 0
     je no_player2
-    CALL video.set_rect, string_player2_off, 13, 65, 1, 8
+    CALL paint_p2_gr, FG.RED|BG.BLACK
     jmp input_key
     no_player2:
-    CALL video.set_rect, string_player2_on, 13, 65, 1, 8
+    CALL paint_p2_gr, FG.GREEN|BG.BLACK
     jmp input_key
 
     input_key:
@@ -508,5 +505,81 @@ paint_insane_gr:
         inc dword [LOCAL(0)]
         jmp .can_not.while
     .can_not.while.end:
+    FUNC.END
+
+    paint_p1_gr:
+    FUNC.START
+    RESERVE(4)
+
+    mov dword [LOCAL(0)], 0    
+    .p1.while:
+        mov ecx, [LOCAL(0)]
+
+        cmp ecx, [p1.gr.count]
+        jnl .p1.while.end
+
+        shl ecx, 1
+        
+        xor eax, eax
+        mov ax, [p1.row.offset]
+        add ax, [p1.gr.rows + ecx]
+        mov [LOCAL(1)], eax
+
+        xor eax, eax
+        mov ax, [p1.col.offset]
+        add ax, [p1.gr.cols + ecx]
+        mov [LOCAL(2)], eax
+
+        xor eax, eax
+        mov ax, [p1.gr + ecx]
+        mov [LOCAL(3)], eax
+        mov eax, [PARAM(0)]
+        or dword [LOCAL(3)], eax
+
+        push ecx
+        CALL video.print, [LOCAL(3)], [LOCAL(1)], [LOCAL(2)]
+        pop ecx
+
+        inc dword [LOCAL(0)]
+        jmp .p1.while
+    .p1.while.end:
+    FUNC.END
+
+    paint_p2_gr:
+    FUNC.START
+    RESERVE(4)
+
+    mov dword [LOCAL(0)], 0    
+    .p2.while:
+        mov ecx, [LOCAL(0)]
+
+        cmp ecx, [p2.gr.count]
+        jnl .p2.while.end
+
+        shl ecx, 1
+        
+        xor eax, eax
+        mov ax, [p2.row.offset]
+        add ax, [p2.gr.rows + ecx]
+        mov [LOCAL(1)], eax
+
+        xor eax, eax
+        mov ax, [p2.col.offset]
+        add ax, [p2.gr.cols + ecx]
+        mov [LOCAL(2)], eax
+
+        xor eax, eax
+        mov ax, [p2.gr + ecx]
+        mov [LOCAL(3)], eax
+        mov eax, [PARAM(0)]
+        or dword [LOCAL(3)], eax
+
+        push ecx
+        CALL video.print, [LOCAL(3)], [LOCAL(1)], [LOCAL(2)]
+        pop ecx
+
+        inc dword [LOCAL(0)]
+        jmp .p2.while
+    .p2.while.end:
     FUNC.END
 

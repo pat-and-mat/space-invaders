@@ -417,6 +417,9 @@ global engine.start
 engine.start:
     FUNC.START
 
+    CALL player.init, 0, 20, 38
+    CALL player2.init, 0, 20, 38
+
     cmp byte[player_on], 0
     je no_init_player
     CALL player.init, 20, 20, 38
@@ -425,7 +428,7 @@ engine.start:
     cmp byte[player2_on], 0
     je no_init_player2
     CALL player2.init, 20, 20, 30
-    no_init_player2:    
+    no_init_player2:
     
     CALL ai.init, 25, 20, 56
     call enemy_manager.reset
@@ -440,14 +443,20 @@ engine.start:
 global engine.run
 engine.run:
     FUNC.START
+    cmp byte [player_on], 1
+    je cont1
     cmp byte [input], KEY.SPACE
     jne cont1
     mov byte [player_on], 1
+    CALL player.init, 20, 20, 38
     cont1:
 
+    cmp byte [player2_on], 1
+    je cont2
     cmp byte [input], KEY.E
     jne cont2
     mov byte [player2_on], 1
+    CALL player2.init, 20, 20, 30
     cont2:
 
     call engine.update
