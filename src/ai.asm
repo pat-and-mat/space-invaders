@@ -25,6 +25,7 @@ extern enemy_yellow.take_damage
 extern debug_info
 extern video.print_number
 extern video.refresh
+extern weapons.get_dir
 
 %define SHIP.COORDS 5
 %define AI.FEAT 8
@@ -416,7 +417,7 @@ ai.comp_pred:
 ; comps feature vect
 ai.comp_feats:
     FUNC.START
-    RESERVE(3)  ; i, j, hash
+    RESERVE(4)  ; i, j, hash, inst
 
     mov edi, ai.features
     mov ecx, AI.FEAT
@@ -439,10 +440,15 @@ ai.comp_feats:
             add eax, [PARAM(0)]
             
             mov eax, [eax]
+
+            xor edx, edx
+            mov dx, ax
+            mov [LOCAL(3)], edx
+
             shr eax, 16
             mov [LOCAL(2)], eax            
 
-            CALL ai.is_enemy_left, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            CALL ai.is_enemy_left, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
             add [ai.features + 0*4], eax   
 
             ; cmp eax, 0
@@ -451,19 +457,19 @@ ai.comp_feats:
             ; call video.refresh
             ; .debug_continue:         
 
-            CALL ai.is_enemy_right, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            CALL ai.is_enemy_right, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
             add [ai.features + 1*4], eax
 
-            CALL ai.is_danger_left, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            CALL ai.is_danger_left, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
             add [ai.features + 2*4], eax
 
-            CALL ai.is_danger_right, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            CALL ai.is_danger_right, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
             add [ai.features + 3*4], eax
 
-            CALL ai.is_danger_forward, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            CALL ai.is_danger_forward, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
             add [ai.features + 4*4], eax
 
-            CALL ai.is_danger_backward, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
+            CALL ai.is_danger_backward, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
             add [ai.features + 5*4], eax
 
             CALL ai.is_killable, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)]
@@ -502,7 +508,7 @@ ai.comp_sigmoid:
     mov eax, [PARAM(0)]
     FUNC.END
 
-; ai.is_***(dword i, dword j, dword hash)
+; ai.is_***(dword i, dword j, dword hash, dword inst)
 ; Returns value for given condition
 
 ai.is_enemy_left:
@@ -572,28 +578,28 @@ ai.is_enemy_right:
 ai.is_danger_left:
     FUNC.START
     sub dword [col.offset], 2
-    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)]
     add dword [col.offset], 2
     FUNC.END
 
 ai.is_danger_right:
     FUNC.START
     add dword [col.offset], 2
-    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)]
     sub dword [col.offset], 2
     FUNC.END
 
 ai.is_danger_forward:
     FUNC.START
     dec dword [row.offset]
-    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)]
     inc dword [row.offset]
     FUNC.END
 
 ai.is_danger_backward:
     FUNC.START
     inc dword [row.offset]
-    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)]
     dec dword [row.offset]
     FUNC.END
 
@@ -679,6 +685,17 @@ ai.is_danger:
     je is_danger.true1
 
     cmp dword [PARAM(2)], HASH.SHOT
+    jne is_danger.false
+
+    CALL weapons.get_dir, [PARAM(3)]
+
+    cmp eax, 0
+    je is_danger.true5
+
+    cmp eax, 5
+    je is_danger.true5
+
+    cmp eax, 7
     je is_danger.true5
 
     jmp is_danger.false
