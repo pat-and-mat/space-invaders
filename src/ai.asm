@@ -28,7 +28,7 @@ extern video.refresh
 extern weapons.get_dir
 
 %define SHIP.COORDS 5
-%define AI.FEAT 8
+%define AI.FEAT 10
 %define AI.THRESHOLD 10
 
 %macro SHIP.ROW 1
@@ -65,13 +65,13 @@ col.right dd 3
 weapon.row dd 0
 weapon.col dd 2
 
-; 0-enemyl 1-enemyr 2-dangerl 3-dangerr 4-dangerf 5-dangerb 6-Killable
-;                    0   1    2    3   4   5   6  7
-ai.shoot.weights dd  0,  0,  0,  0,  0,  0, 30, 10
-ai.right.weights dd  0,  1, 12,-20, 20,  1, -1,  0
-ai.left.weights  dd  1,  0,-20, 12, 20,  1, -1,  0
-ai.up.weights    dd  0,  0,  0,  0, -5,  4, -1,  5
-ai.down.weights  dd  0,  0,  0,  0,  1, -5, -1,  0
+; 0-enemyl 1-enemyr 2-dangerl 3-dangerr 4-dangerf 5-dangerb 6-Killable 7-move_cont 8-shots_cont 9-1
+;                    0   1    2    3   4   5   6   7   8   9
+ai.shoot.weights dd  0,  0,   0,   0,  0,  0, 30, 10, -7, 10
+ai.right.weights dd  0,  1,  12, -20, 20,  1, -1, -5,  7,  0
+ai.left.weights  dd  1,  0, -20,  12, 20,  1, -1, -5,  7,  0
+ai.up.weights    dd  0,  0,   0,   0, -5,  4, -1, -5,  7,  5
+ai.down.weights  dd  0,  0,   0,   0,  1, -5, -1, -5,  7,  0
 
 section .bss
 
@@ -82,6 +82,9 @@ row.offset resd 1
 col.offset resd 1
 
 ai.features resd AI.FEAT
+ai.feat.shots_cont resd 1
+ai.feat.move_cont resd 1
+
 ; 1-up 2-down 3-left 4-right 5-shot
 ai.predictions resd 5
 
@@ -98,6 +101,9 @@ ai.init:
     ;filling local vars of ai
     mov ax, [PARAM(0)]
     mov [ai.lives], ax
+
+    mov dword [ai.feat.move_cont], 0
+    mov dword [ai.feat.shots_cont], 0
     
     mov eax, [PARAM(1)]
     mov [row.offset], eax
@@ -144,24 +150,40 @@ ai.update:
         cmp dword [row.offset], 1
         je .update.map
         sub dword [row.offset], 1
+
+        inc dword [ai.feat.move_cont]
+        mov dword [ai.feat.shots_cont], 0
+
         jmp .update.map
 
     .update.move.down:
         cmp dword [row.offset], 24
         je .update.map
         add dword [row.offset], 1
+
+        inc dword [ai.feat.move_cont]
+        mov dword [ai.feat.shots_cont], 0
+
         jmp .update.map
 
     .update.move.left:
         cmp dword [col.offset], 0
         je .update.map
         sub dword [col.offset], 1
+
+        inc dword [ai.feat.move_cont]
+        mov dword [ai.feat.shots_cont], 0
+
         jmp .update.map
 
     .update.move.right:
         cmp dword [col.offset], 75
         je .update.map    
         add dword [col.offset], 1
+
+        inc dword [ai.feat.move_cont]
+        mov dword [ai.feat.shots_cont], 0
+
         jmp .update.map
 
     .update.shoot:
@@ -179,7 +201,10 @@ ai.update:
         mov [LOCAL(1)], eax
 
         CALL weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
-        
+
+        inc dword [ai.feat.shots_cont]
+        mov dword [ai.feat.move_cont], 0
+
         jmp .update.map 
 
     .update.map:
@@ -481,7 +506,13 @@ ai.comp_feats:
         jmp .comp_feats.while_i
     .comp_feats.while_i.end:
 
-    mov dword [ai.features + (AI.FEAT - 1)*4], 1
+    mov eax, [ai.feat.move_cont]
+    mov [ai.features + 7*4], eax
+    
+    mov eax, [ai.feat.shots_cont]
+    mov [ai.features + 8*4], eax
+
+    mov dword [ai.features + 9*4], 1
 
 
         ; ; debug
