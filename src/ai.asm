@@ -577,30 +577,50 @@ ai.is_enemy_right:
 
 ai.is_danger_left:
     FUNC.START
+    RESERVE(1)
     sub dword [col.offset], 2
-    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)], 4
+    mov [LOCAL(0)], eax
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)], 2
+    add [LOCAL(0)], eax
     add dword [col.offset], 2
+    mov eax, [LOCAL(0)]
     FUNC.END
 
 ai.is_danger_right:
     FUNC.START
+    RESERVE(1)
     add dword [col.offset], 2
-    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)], 4
+    mov [LOCAL(0)], eax
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)], 2
+    add [LOCAL(0)], eax
     sub dword [col.offset], 2
+    mov eax, [LOCAL(0)]
     FUNC.END
 
 ai.is_danger_forward:
     FUNC.START
+    RESERVE(1)
     dec dword [row.offset]
-    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)], 4
+    mov [LOCAL(0)], eax
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)], 2
+    add [LOCAL(0)], eax
     inc dword [row.offset]
+    mov eax, [LOCAL(0)]
     FUNC.END
 
 ai.is_danger_backward:
     FUNC.START
+    RESERVE(1)
     inc dword [row.offset]
-    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)], 4
+    mov [LOCAL(0)], eax
+    CALL ai.is_danger, [PARAM(0)], [PARAM(1)], [PARAM(2)], [PARAM(3)], 2
+    add [LOCAL(0)], eax
     dec dword [row.offset]
+    mov eax, [LOCAL(0)]
     FUNC.END
 
 ai.is_killable:
@@ -651,6 +671,7 @@ ai.is_killable:
     .killable.end:
     FUNC.END
 
+; ai.is_***(dword i, dword j, dword hash, dword inst, dword dist)
 ai.is_danger:
     FUNC.START
 
@@ -664,7 +685,7 @@ ai.is_danger:
     jl is_danger.false
 
     mov eax, [row.offset]
-    sub eax, 4
+    sub eax, [PARAM(4)]
     cmp [PARAM(0)], eax
     jl is_danger.false
 
