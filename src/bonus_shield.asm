@@ -23,7 +23,7 @@ extern shield_life
 extern arrayd.shiftl
 
 %define SIZE 100
-%define BONUS.COORDS 4
+%define BONUS.COORDS 1
 
 section .data
 
@@ -34,8 +34,8 @@ count dd 0
 graphics dd 4|FG.CYAN|BG.BLACK,\
             
             
-rows dd 0, 0, 1, 1
-cols dd 0, 1, 0, 1
+rows dd 0
+cols dd 0
 
 next_inst dd 1
 
