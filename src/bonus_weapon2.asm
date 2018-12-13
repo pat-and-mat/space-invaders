@@ -15,11 +15,13 @@ extern rand
 extern actual.score
 extern engine.add_collision
 extern player.take_damage
+extern player2.take_damage
 extern can_move
 extern old_map
 extern array.index_of
 extern arrayd.shiftl
-extern multi_bullet
+extern player.multi_bullet
+extern player2.multi_bullet
 
 %define SIZE 100
 %define BONUS.COORDS 1
@@ -296,6 +298,9 @@ bonus_weapon2.collision:
     cmp dword [PARAM(1)], HASH.PLAYER
     je crash_player
 
+    cmp dword [PARAM(1)], HASH.PLAYER2
+    je crash_player2
+
     cmp dword [PARAM(1)], HASH.SHOT
     je crash_shoot
 
@@ -309,7 +314,12 @@ bonus_weapon2.collision:
     FUNC.END
 
     crash_player:
-    mov dword [multi_bullet], 15
+    mov dword [player.multi_bullet], 15
+    CALL destroy.bonus, [LOCAL(0)]
+    jmp crashed
+
+    crash_player2:
+    mov dword [player2.multi_bullet], 15
     CALL destroy.bonus, [LOCAL(0)]
     jmp crashed
 

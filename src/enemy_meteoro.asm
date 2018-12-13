@@ -16,6 +16,7 @@ extern actual.score
 extern play_meteoro_enemy_die
 extern engine.add_collision
 extern player.take_damage
+extern player2.take_damage
 extern ai.take_damage
 extern can_move
 extern old_map
@@ -256,6 +257,9 @@ enemy_meteoro.collision:
     cmp dword [PARAM(1)], HASH.PLAYER
     je crash_player
 
+    cmp dword [PARAM(1)], HASH.PLAYER2
+    je crash_player2
+
     cmp dword [PARAM(1)], HASH.SHOT
     je crash_shoot
 
@@ -279,6 +283,10 @@ enemy_meteoro.collision:
 
     crash_player:
     CALL player.take_damage, 25
+    jmp crashed
+
+    crash_player2:
+    CALL player2.take_damage, 25
     jmp crashed
 
     crash_shoot:

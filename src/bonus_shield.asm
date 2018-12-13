@@ -13,13 +13,14 @@ extern delay
 extern weapons.shoot
 extern rand
 extern actual.score
-extern play_shield_enemy_die
 extern engine.add_collision
 extern player.take_damage
+extern player2.take_damage
 extern can_move
 extern old_map
 extern array.index_of
-extern shield_life
+extern player.shield_life
+extern player2.shield_life
 extern arrayd.shiftl
 
 %define SIZE 100
@@ -297,6 +298,9 @@ bonus_shield.collision:
     cmp dword [PARAM(1)], HASH.PLAYER
     je crash_player
 
+    cmp dword [PARAM(1)], HASH.PLAYER2
+    je crash_player2
+
     cmp dword [PARAM(1)], HASH.SHOT
     je crash_shoot
 
@@ -310,7 +314,12 @@ bonus_shield.collision:
     FUNC.END
 
     crash_player:
-    mov dword [shield_life], 10
+    mov dword [player.shield_life], 10
+    CALL destroy.bonus, [LOCAL(0)]
+    jmp crashed
+
+    crash_player2:
+    mov dword [player2.shield_life], 10
     CALL destroy.bonus, [LOCAL(0)]
     jmp crashed
 

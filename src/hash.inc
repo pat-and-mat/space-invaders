@@ -19,4 +19,7 @@
 
 %define HASH.AI 13
 
+%define HASH.PLAYER2 16
+%define HASH.OTHER_SHOT 17
+
 %endif ; HASH_MAC

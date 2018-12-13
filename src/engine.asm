@@ -2,6 +2,7 @@
 %include "stack.inc"
 %include "hash.inc"
 %include "utils.inc"
+%include "keyboard.inc"
 
 %macro CLEAR_MAP 1
     mov eax, %1
@@ -42,12 +43,14 @@ section .text
 extern array.index_of
 
 extern player.init
+extern player2.init
 extern ai.init
 
 extern hard_weapons.reset
 extern multi_weapons.reset
 
 extern player.update
+extern player2.update
 extern weapons.update
 extern enemy.update
 extern sound.update
@@ -57,8 +60,10 @@ extern multi_weapons.update
 extern ai.update
 
 extern info.paint
+extern input
 
 extern player.collision
+extern player2.collision
 extern weapons.collision
 extern enemy_yellow.collision
 extern enemy_red.collision
@@ -76,6 +81,7 @@ extern ai.collision
 
 extern ai.paint
 extern player.paint
+extern player2.paint
 extern weapons.paint
 extern hard_weapons.paint
 extern multi_weapons.paint
@@ -86,6 +92,9 @@ extern video.clear
 extern video.refresh
 extern video.print
 extern delay
+
+extern player_on
+extern player2_on
 
 ; debug
 extern video.set_rect
@@ -107,7 +116,17 @@ engine.update:
     rep movsd
 
     CLEAR_MAP 0
+
+    cmp byte[player_on], 0
+    je no_player
     CALL player.update, map
+    no_player:
+    
+    cmp byte[player2_on], 0
+    je no_player2
+    CALL player2.update, map
+    no_player2:
+
     CALL weapons.update, map
     CALL hard_weapons.update, map
     CALL multi_weapons.update, map
@@ -122,7 +141,17 @@ engine.update:
 engine.paint:
     FUNC.START
     CALL video.clear, BG.BLACK
+
+    cmp byte[player_on], 0
+    je no_paint_player
     call player.paint
+    no_paint_player:
+
+    cmp byte[player2_on], 0
+    je no_paint_player2
+    call player2.paint
+    no_paint_player2:
+
     call weapons.paint
     call hard_weapons.paint
     call multi_weapons.paint
@@ -197,6 +226,9 @@ engine.invoke_handler:
     cmp dword [PARAM(0)], HASH.PLAYER
     je .handler.player
 
+    cmp dword [PARAM(0)], HASH.PLAYER2
+    je .handler.player2
+
     cmp dword [PARAM(0)], HASH.SHOT
     je .handler.shot
 
@@ -244,6 +276,10 @@ engine.invoke_handler:
 
     .handler.player:
     CALL player.collision, [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.player2:
+    CALL player2.collision, [PARAM(2)], [PARAM(3)]
     jmp .handler.end
 
     .handler.shot:
@@ -380,7 +416,17 @@ engine.find_hashes:
 global engine.start
 engine.start:
     FUNC.START
-    CALL player.init, 25, 20, 38
+
+    cmp byte[player_on], 0
+    je no_init_player
+    CALL player.init, 20, 20, 38
+    no_init_player:
+    
+    cmp byte[player2_on], 0
+    je no_init_player2
+    CALL player2.init, 20, 20, 30
+    no_init_player2:    
+    
     CALL ai.init, 25, 20, 56
     call enemy_manager.reset
     call weapons.reset
@@ -394,6 +440,16 @@ engine.start:
 global engine.run
 engine.run:
     FUNC.START
+    cmp byte [input], KEY.SPACE
+    jne cont1
+    mov byte [player_on], 1
+    cont1:
+
+    cmp byte [input], KEY.E
+    jne cont2
+    mov byte [player2_on], 1
+    cont2:
+
     call engine.update
     call engine.collision
     call engine.paint

@@ -5,6 +5,9 @@
 
 extern video.print
 extern player.lives
+extern player2.lives
+extern player_on
+extern player2_on
 
 section .data
 
@@ -17,7 +20,6 @@ section .text
 global info.paint
 info.paint:
     FUNC.START
-
     mov ecx, 0
     while:
     CALL video.print, ''|FG.BLACK|BG.GREEN, 0, ecx
@@ -25,7 +27,11 @@ info.paint:
     cmp ecx, 80
     jne while
 
-
+    ;**********************************************************************************
+    ;player1
+    cmp byte[player_on], 0
+    je end.while1
+    
     CALL video.print, 'L'|FG.BLACK|BG.GREEN, 0, 0 ;paint word player.lives
     CALL video.print, 'I'|FG.BLACK|BG.GREEN, 0, 1
     CALL video.print, 'V'|FG.BLACK|BG.GREEN, 0, 2
@@ -52,6 +58,38 @@ info.paint:
     jmp while1   
 
     end.while1:
+
+    ;***************************************************************************************
+    ;player2
+    cmp byte[player2_on], 0
+    je end._while1
+
+    CALL video.print, 'L'|FG.BLACK|BG.GREEN, 0, 30 ;paint word player2.lives
+    CALL video.print, 'I'|FG.BLACK|BG.GREEN, 0, 31
+    CALL video.print, 'V'|FG.BLACK|BG.GREEN, 0, 32
+    CALL video.print, 'E'|FG.BLACK|BG.GREEN, 0, 33
+    CALL video.print, 'S'|FG.BLACK|BG.GREEN, 0, 34
+    CALL video.print, ':'|FG.BLACK|BG.GREEN, 0, 35
+
+    xor eax, eax
+    mov ax, word [player2.lives]
+    add eax, 36
+    mov ecx, 36  ;paint las character in col 8
+    ;paint the player2.lives
+    _while1:
+
+    push ecx
+    push eax
+    CALL video.print, 3|FG.BLUE|BG.GREEN, 0, ecx 
+    pop eax
+    pop ecx
+
+    inc ecx
+    cmp ecx, eax
+    jg end._while1
+    jmp _while1   
+
+    end._while1:
 
     CALL video.print, 'S'|FG.BLACK|BG.GREEN, 0, 65 ;paint word score
     CALL video.print, 'C'|FG.BLACK|BG.GREEN, 0, 66

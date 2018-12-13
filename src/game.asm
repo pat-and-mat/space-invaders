@@ -21,9 +21,14 @@ extern engine.start
 extern sound_player_die.update
 extern delay
 extern player.lives
+extern player2.lives
 extern beep.off
 extern menu.lose
 extern bonus_lives.init
+
+extern player_on
+extern player2_on
+extern ai.lives
 
 global game
 game:
@@ -60,6 +65,12 @@ game:
     cmp word [player.lives], 0
     jne game.loop
 
+    cmp word [player2.lives], 0
+    jne game.loop
+
+    cmp word [ai.lives], 0
+    jne game.loop
+    
     .play_dead_sound:
         call sound_player_die.update   ;freeze the screen 1500ms and make lose sound
         CALL delay, lose.timer, 1500

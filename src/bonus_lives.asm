@@ -16,10 +16,12 @@ extern actual.score
 extern play_lives_enemy_die
 extern engine.add_collision
 extern player.take_damage
+extern player2.take_damage
 extern can_move
 extern old_map
 extern array.index_of
 extern player.lives
+extern player2.lives
 extern arrayd.shiftl
 
 %define SIZE 100
@@ -295,6 +297,9 @@ bonus_lives.collision:
     cmp dword [PARAM(1)], HASH.PLAYER
     je crash_player
 
+    cmp dword [PARAM(1)], HASH.PLAYER2
+    je crash_player2
+
     cmp dword [PARAM(1)], HASH.SHOT
     je crash_shoot
 
@@ -309,6 +314,11 @@ bonus_lives.collision:
 
     crash_player:
     mov word [player.lives], 25
+    CALL destroy.bonus, [LOCAL(0)]
+    jmp crashed
+
+    crash_player2:
+    mov word [player2.lives], 25
     CALL destroy.bonus, [LOCAL(0)]
     jmp crashed
 

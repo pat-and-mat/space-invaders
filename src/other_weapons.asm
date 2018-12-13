@@ -40,6 +40,7 @@ extern array.shiftl
 extern array.index_of
 extern engine.add_collision
 extern player.take_damage
+extern player2.take_damage
 extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
@@ -305,6 +306,9 @@ other_weapons.collision:
     cmp dword [PARAM(1)], HASH.PLAYER
     je .kill.player
 
+    cmp dword [PARAM(1)], HASH.PLAYER2
+    je .kill.player2
+
     cmp dword [PARAM(1)], HASH.AI
     je .kill.ai
 
@@ -334,6 +338,21 @@ other_weapons.collision:
 
         jmp .collision.check_lives
 
+    .kill.player2:
+        CALL player2.take_damage, 1
+        mov [LOCAL(1)], eax
+
+        mov eax, [LOCAL(0)]
+        dec word [other_shots.lives + eax]
+
+        cmp word [other_shots.lives + eax], 0
+        je .collision.check_lives
+
+        cmp dword [LOCAL(1)], 0
+        ja .kill.player2
+
+        jmp .collision.check_lives
+
     .kill.ai:
         CALL ai.take_damage, 1
         mov [LOCAL(1)], eax
@@ -345,7 +364,7 @@ other_weapons.collision:
         je .collision.check_lives
 
         cmp dword [LOCAL(1)], 0
-        ja .kill.player
+        ja .kill.ai
 
         jmp .collision.check_lives
 

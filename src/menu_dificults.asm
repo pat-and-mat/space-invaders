@@ -10,6 +10,7 @@ extern video.refresh
 extern scan
 extern delay
 extern video.print
+extern video.set_rect
 extern actual.score
 extern best_scores
 extern menu.add_score
@@ -47,6 +48,26 @@ section .data
 ;0-piece of cake 1-cake 2-poker face 3-insane 4- dont try
 dificult dw 2
 
+string_player1_off  dw  "P"|FG.RED|BG.GREEN, "l"|FG.RED|BG.GREEN,\
+                        "a"|FG.RED|BG.GREEN, "y"|FG.RED|BG.GREEN,\
+                        "e"|FG.RED|BG.GREEN, "r"|FG.RED|BG.GREEN,\
+                        " "|FG.RED|BG.GREEN, "1"|FG.RED|BG.GREEN, 0 
+
+string_player2_off  dw  "P"|FG.RED|BG.GREEN, "l"|FG.RED|BG.GREEN,\
+                        "a"|FG.RED|BG.GREEN, "y"|FG.RED|BG.GREEN,\
+                        "e"|FG.RED|BG.GREEN, "r"|FG.RED|BG.GREEN,\
+                        " "|FG.RED|BG.GREEN, "2"|FG.RED|BG.GREEN, 0
+
+string_player1_on   dw  "P"|FG.RED|BG.BLACK, "l"|FG.RED|BG.BLACK,\
+                        "a"|FG.RED|BG.BLACK, "y"|FG.RED|BG.BLACK,\
+                        "e"|FG.RED|BG.BLACK, "r"|FG.RED|BG.BLACK,\
+                        " "|FG.RED|BG.BLACK, "1"|FG.RED|BG.BLACK, 0
+
+string_player2_on   dw  "P"|FG.RED|BG.BLACK, "l"|FG.RED|BG.BLACK,\
+                        "a"|FG.RED|BG.BLACK, "y"|FG.RED|BG.BLACK,\
+                        "e"|FG.RED|BG.BLACK, "r"|FG.RED|BG.BLACK,\
+                        " "|FG.RED|BG.BLACK, "2"|FG.RED|BG.BLACK, 0
+
 global colors
 colors dd 0, 0, 1, 1, 2, 2, 3, 0, 0, 0, 0, 0
 global colors_count
@@ -59,6 +80,11 @@ global bonus_time
 bonus_time dd 5000
 global boss_time
 boss_time dd 30000
+
+global player_on
+player_on db 1
+global player2_on
+player2_on db 0
 
 piece.row.offset dw 1
 piece.col.offset dw 15
@@ -92,7 +118,7 @@ chose_dificult:
     CALL paint_poker_gr, FG.GREEN|BG.BLACK
     CALL paint_insane_gr, FG.GREEN|BG.BLACK
     CALL paint_can_not_gr, FG.GREEN|BG.BLACK
-    jmp input_key
+    jmp player1
     no0:
 
     cmp word [dificult], 1
@@ -102,7 +128,7 @@ chose_dificult:
     CALL paint_poker_gr, FG.GREEN|BG.BLACK
     CALL paint_insane_gr, FG.GREEN|BG.BLACK
     CALL paint_can_not_gr, FG.GREEN|BG.BLACK
-    jmp input_key
+    jmp player1
     no1:
 
     cmp word [dificult], 2
@@ -112,7 +138,7 @@ chose_dificult:
     CALL paint_poker_gr, FG.MAGENTA|BG.BLACK
     CALL paint_insane_gr, FG.GREEN|BG.BLACK
     CALL paint_can_not_gr, FG.GREEN|BG.BLACK
-    jmp input_key
+    jmp player1
     no2:
 
     cmp word [dificult], 3
@@ -122,7 +148,7 @@ chose_dificult:
     CALL paint_poker_gr, FG.GREEN|BG.BLACK
     CALL paint_insane_gr, FG.MAGENTA|BG.BLACK
     CALL paint_can_not_gr, FG.GREEN|BG.BLACK
-    jmp input_key
+    jmp player1
     no3:
 
     cmp word [dificult], 4
@@ -132,8 +158,26 @@ chose_dificult:
     CALL paint_poker_gr, FG.GREEN|BG.BLACK
     CALL paint_insane_gr, FG.GREEN|BG.BLACK
     CALL paint_can_not_gr, FG.MAGENTA|BG.BLACK
-    jmp input_key
+    jmp player1
     no4:
+
+    player1:
+    cmp byte [player_on], 0
+    je no_player1
+    CALL video.set_rect, string_player1_off, 13, 5, 1, 8
+    jmp player2
+    no_player1:
+    CALL video.set_rect, string_player1_on, 13, 5, 1, 8
+    jmp player2
+
+    player2:
+    cmp byte [player2_on], 0
+    je no_player2
+    CALL video.set_rect, string_player2_off, 13, 65, 1, 8
+    jmp input_key
+    no_player2:
+    CALL video.set_rect, string_player2_on, 13, 65, 1, 8
+    jmp input_key
 
     input_key:
     call video.refresh
@@ -143,6 +187,10 @@ chose_dificult:
     je up
     cmp al, KEY.DOWN
     je down
+    cmp al, KEY.LEFT
+    je left
+    cmp al, KEY.RIGHT
+    je right
 
     continue:
     cmp al, KEY.ENTER
@@ -173,6 +221,24 @@ chose_dificult:
     je paint
     inc word [dificult]
     ;update pointer
+    jmp paint
+
+    left:
+    cmp byte [player_on], 0
+    je left.on
+    dec byte [player_on]
+    jmp paint
+    left.on:
+    inc byte [player_on]
+    jmp paint
+
+    right:
+    cmp byte [player2_on], 0
+    je right.on
+    dec byte [player2_on]
+    jmp paint
+    right.on:
+    inc byte [player2_on]
     jmp paint
 
     piece_of_cake:
