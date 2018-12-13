@@ -69,6 +69,7 @@ extern bonus_lives.collision
 extern bonus_shield.collision
 extern bonus_weapon1.collision
 extern bonus_weapon2.collision
+extern bonus_AI.collision
 extern hard_weapons.collision
 extern multi_weapons.collision
 extern ai.collision
@@ -106,7 +107,7 @@ engine.update:
     rep movsd
 
     CLEAR_MAP 0
-    ; CALL player.update, map
+    CALL player.update, map
     CALL weapons.update, map
     CALL hard_weapons.update, map
     CALL multi_weapons.update, map
@@ -121,7 +122,7 @@ engine.update:
 engine.paint:
     FUNC.START
     CALL video.clear, BG.BLACK
-    ; call player.paint
+    call player.paint
     call weapons.paint
     call hard_weapons.paint
     call multi_weapons.paint
@@ -225,6 +226,9 @@ engine.invoke_handler:
 
     cmp dword [PARAM(0)], HASH.BONUS_WEAPON2
     je .handler.bonus_weapon2
+
+    cmp dword [PARAM(0)], HASH.BONUS_AI
+    je .handler.bonus_ai
     
     cmp dword [PARAM(0)], HASH.HARD_SHOT
     je .handler.hard_shot
@@ -280,6 +284,10 @@ engine.invoke_handler:
 
     .handler.bonus_weapon2:
     CALL bonus_weapon2.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
+    jmp .handler.end
+
+    .handler.bonus_ai:
+    CALL bonus_AI.collision, [PARAM(1)], [PARAM(2)], [PARAM(3)]
     jmp .handler.end
 
     .handler.hard_shot:

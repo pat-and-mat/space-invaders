@@ -20,6 +20,10 @@ extern bonus_weapon2.update
 extern bonus_weapon2.init
 extern bonus_weapon2.paint
 extern bonus_weapon2.reset
+extern bonus_AI.update
+extern bonus_AI.init
+extern bonus_AI.paint
+extern bonus_AI.reset
 
 extern colors
 extern colors_count
@@ -54,6 +58,8 @@ bonus.generate:
     je weapon1
     cmp [PARAM(1)], dword 3
     je weapon2
+    cmp [PARAM(1)], dword 4
+    je ai
     continue:
     FUNC.END
 
@@ -74,6 +80,10 @@ bonus.generate:
     CALL bonus_weapon2.init, eax, 1
     jmp continue
 
+    ai:
+    CALL bonus_AI.init, eax, 1
+    jmp continue
+
 ; update(dword map)
 ; It is here where all the actions related to this object will be taking place
 global bonus.update
@@ -89,7 +99,7 @@ bonus.update:
     inc eax
     mov [LOCAL(0)], eax   ;LOCAL(0) = col to generate the bonus
 
-    CALL rand, 4
+    CALL rand, 5
     mov [LOCAL(1)], eax  ;LOCAL(1) = type of bonus to generate
     CALL bonus.generate, [LOCAL(0)], [LOCAL(1)]
 
@@ -99,6 +109,7 @@ bonus.update:
     CALL bonus_shield.update, [PARAM(0)]
     CALL bonus_weapon1.update, [PARAM(0)]
     CALL bonus_weapon2.update, [PARAM(0)]
+    CALL bonus_AI.update, [PARAM(0)]
     FUNC.END
 
 ; paint()
@@ -110,6 +121,7 @@ bonus.paint:
     call bonus_shield.paint
     call bonus_weapon1.paint
     call bonus_weapon2.paint
+    call bonus_AI.paint
     FUNC.END
 
 ; bonus_manager.reset()
@@ -121,6 +133,7 @@ bonus_manager.reset:
     call bonus_shield.reset
     call bonus_weapon1.reset
     call bonus_weapon2.reset
+    call bonus_AI.reset
     FUNC.END
 
 
