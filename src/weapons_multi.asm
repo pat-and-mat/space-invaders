@@ -332,6 +332,8 @@ multi_weapons.collision:
         mov [LOCAL(1)], eax
 
         mov eax, [LOCAL(0)]
+        shl eax, 1
+        
         dec word [multi_shots.lives + eax]
 
         cmp word [multi_shots.lives + eax], 0
@@ -347,13 +349,15 @@ multi_weapons.collision:
         mov [LOCAL(1)], eax
 
         mov eax, [LOCAL(0)]
+        shl eax, 1
+        
         dec word [multi_shots.lives + eax]
 
         cmp word [multi_shots.lives + eax], 0
         je .collision.check_lives
 
         cmp dword [LOCAL(1)], 0
-        ja .kill.player
+        ja .kill.ai
 
         jmp .collision.check_lives
 
@@ -362,6 +366,8 @@ multi_weapons.collision:
         mov [LOCAL(1)], eax
 
         mov eax, [LOCAL(0)]
+        shl eax, 1
+        
         dec word [multi_shots.lives + eax]
 
         cmp word [multi_shots.lives + eax], 0
@@ -377,6 +383,8 @@ multi_weapons.collision:
         mov [LOCAL(1)], eax
         
         mov eax, [LOCAL(0)]
+        shl eax, 1
+        
         dec word [multi_shots.lives + eax]
 
         cmp word [multi_shots.lives + eax], 0
@@ -392,6 +400,8 @@ multi_weapons.collision:
         mov [LOCAL(1)], eax
 
         mov eax, [LOCAL(0)]
+        shl eax, 1
+        
         dec word [multi_shots.lives + eax]
 
         cmp word [multi_shots.lives + eax], 0
@@ -407,6 +417,8 @@ multi_weapons.collision:
         mov [LOCAL(1)], eax
 
         mov eax, [LOCAL(0)]
+        shl eax, 1
+        
         dec word [multi_shots.lives + eax]
 
         cmp word [multi_shots.lives + eax], 0
@@ -422,6 +434,8 @@ multi_weapons.collision:
         mov [LOCAL(1)], eax
 
         mov eax, [LOCAL(0)]
+        shl eax, 1
+        
         dec word [multi_shots.lives + eax]
 
         cmp word [multi_shots.lives + eax], 0
@@ -434,6 +448,8 @@ multi_weapons.collision:
 
     .collision.check_lives:
         mov eax, [LOCAL(0)]
+        shl eax, 1
+        
         cmp word [multi_shots.lives + eax], 0
         jne .collision.end
 

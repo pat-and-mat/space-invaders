@@ -106,7 +106,7 @@ engine.update:
     rep movsd
 
     CLEAR_MAP 0
-    ; CALL player.update, map
+    CALL player.update, map
     CALL weapons.update, map
     CALL hard_weapons.update, map
     CALL multi_weapons.update, map
@@ -121,7 +121,7 @@ engine.update:
 engine.paint:
     FUNC.START
     CALL video.clear, BG.BLACK
-    ; call player.paint
+    call player.paint
     call weapons.paint
     call hard_weapons.paint
     call multi_weapons.paint

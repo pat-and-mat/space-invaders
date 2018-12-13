@@ -299,7 +299,7 @@ global ai.take_damage
 ai.take_damage:
     FUNC.START
 
-    mov dword [PARAM(0)], 0 ;debug
+    ; mov dword [PARAM(0)], 0 ;debug
     
     mov eax, [PARAM(0)]
     cmp [ai.lives], ax
