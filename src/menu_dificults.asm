@@ -5,15 +5,9 @@
 %include "sound.inc"
 %include "utils.inc"
 
-extern video.set
 extern video.refresh
 extern scan
-extern delay
 extern video.print
-extern video.set_rect
-extern actual.score
-extern best_scores
-extern menu.add_score
 extern video.clear
 
 

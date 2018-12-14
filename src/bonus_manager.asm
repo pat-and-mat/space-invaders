@@ -25,10 +25,6 @@ extern bonus_AI.init
 extern bonus_AI.paint
 extern bonus_AI.reset
 
-extern colors
-extern colors_count
-extern generate_time
-extern generate_amount
 extern bonus_time
 extern boss_time
 

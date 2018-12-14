@@ -10,7 +10,6 @@ lose.timer resd 2
 
 section .text
 
-extern video.clear
 extern scan
 extern calibrate
 extern menu.main
@@ -26,8 +25,6 @@ extern beep.off
 extern menu.lose
 extern bonus_lives.init
 
-extern player_on
-extern player2_on
 extern ai.lives
 
 global game

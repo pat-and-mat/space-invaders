@@ -6,15 +6,12 @@
 %include "utils.inc"
 
 extern arrayd.shiftl
-extern video.print_at
 extern video.print
-extern video.clear
-extern scan
 extern delay
 extern weapons.shoot
 extern rand
 extern actual.score
-extern play_red_enemy_die
+extern play_yellow_enemy_die
 extern engine.add_collision
 extern player.take_damage
 extern player2.take_damage
@@ -22,9 +19,6 @@ extern ai.take_damage
 extern can_move
 extern old_map
 extern array.index_of
-extern debug_info
-extern engine.debug
-extern other_weapons.shoot
 
 
 ;each ship will have 4 parts, that's why it's reserved space for 500 ships(COLS * ROWS / 4)

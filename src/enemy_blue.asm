@@ -6,15 +6,12 @@
 %include "utils.inc"
 
 extern arrayd.shiftl
-extern video.print_at
 extern video.print
-extern video.clear
-extern scan
 extern delay
 extern weapons.shoot
 extern rand
 extern actual.score
-extern play_blue_enemy_die
+extern play_yellow_enemy_die
 extern engine.add_collision
 extern player.take_damage
 extern player2.take_damage

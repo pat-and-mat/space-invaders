@@ -5,11 +5,8 @@
 %include "sound.inc"
 %include "utils.inc"
 
-extern video.print_at
 extern arrayd.shiftl
 extern video.print
-extern video.clear
-extern scan
 extern delay
 extern weapons.shoot
 extern rand
