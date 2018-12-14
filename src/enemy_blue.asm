@@ -322,6 +322,15 @@ global enemy_blue.collision
 enemy_blue.collision:
     FUNC.START
     
+    cmp dword [PARAM(1)], HASH.ENEMY_BLUE
+    je crash_enemy
+
+    cmp dword [PARAM(1)], HASH.ENEMY_RED
+    je crash_enemy
+
+    cmp dword [PARAM(1)], HASH.ENEMY_YELLOW
+    je crash_enemy
+
     cmp dword [PARAM(1)], HASH.PLAYER
     je crash_player
 
@@ -342,6 +351,10 @@ enemy_blue.collision:
 
     crashed:
     FUNC.END
+
+    crash_enemy:
+    CALL enemy_blue.take_damage, 1, [PARAM(0)]
+    jmp crashed
 
     crash_player:
     CALL player.take_damage, 5
