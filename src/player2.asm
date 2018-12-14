@@ -22,15 +22,15 @@ extern multi_weapons.shoot
 ; Data section is meant to hold constant values, do not modify
 section .data
 
-graphics dd '/'|FG.GRAY|BG.BLACK,\
-            '-'|FG.GRAY|BG.BLACK,\
-            '^'|FG.GRAY|BG.BLACK,\
-            '-'|FG.GRAY|BG.BLACK,\
-            '\'|FG.GRAY|BG.BLACK,\
+graphics dd '/'|FG.BLUE|BG.BLACK,\
+            '-'|FG.BLUE|BG.BLACK,\
+            '^'|FG.BLUE|BG.BLACK,\
+            '-'|FG.BLUE|BG.BLACK,\
+            '\'|FG.BLUE|BG.BLACK,\
 
-shield_graphics dd  ' '|FG.YELLOW|BG.BLACK,'-'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,'-'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,'-'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,\
-                    '|'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,'|'|FG.YELLOW|BG.BLACK,\
-                    ' '|FG.YELLOW|BG.BLACK,'_'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,'_'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,'_'|FG.YELLOW|BG.BLACK,' '|FG.YELLOW|BG.BLACK,\
+shield_graphics dd  ' '|FG.CYAN|BG.BLACK,'-'|FG.CYAN|BG.BLACK,' '|FG.CYAN|BG.BLACK,'-'|FG.CYAN|BG.BLACK,' '|FG.CYAN|BG.BLACK,'-'|FG.CYAN|BG.BLACK,' '|FG.CYAN|BG.BLACK,\
+                    '|'|FG.CYAN|BG.BLACK,' '|FG.CYAN|BG.BLACK,' '|FG.CYAN|BG.BLACK,' '|FG.CYAN|BG.BLACK,' '|FG.CYAN|BG.BLACK,' '|FG.CYAN|BG.BLACK,'|'|FG.CYAN|BG.BLACK,\
+                    ' '|FG.CYAN|BG.BLACK,'_'|FG.CYAN|BG.BLACK,' '|FG.CYAN|BG.BLACK,'_'|FG.CYAN|BG.BLACK,' '|FG.CYAN|BG.BLACK,'_'|FG.CYAN|BG.BLACK,' '|FG.CYAN|BG.BLACK,\
             
 rows dd 0, 0, 0, 0, 0
 cols dd 0, 1, 2, 3, 4
@@ -45,18 +45,18 @@ col.right dd 3
 
 weapon.row dd 0
 weapon.col dd 2
-global player.hard_bullet
-player.hard_bullet dd 0
-global player.multi_bullet
-player.multi_bullet dd 0
+global player2.hard_bullet
+player2.hard_bullet dd 0
+global player2.multi_bullet
+player2.multi_bullet dd 0
 
 graphics.style db 0
 
-global player.shield_life
-player.shield_life dd 0
+global player2.shield_life
+player2.shield_life dd 0
 
-global player.lives
-player.lives dw 0
+global player2.lives
+player2.lives dw 0
 
 section .bss
 
@@ -69,16 +69,16 @@ lose.timer resd 2
 
 section .text
 
-; init(word player.lives, dword r.offset, dword c.offset)
-; Initialize player
-global player.init
-player.init:
+; init(word player2.lives, dword r.offset, dword c.offset)
+; Initialize player2
+global player2.init
+player2.init:
     FUNC.START
-    ;filling local vars of player
+    ;filling local vars of player2
     mov bx, [PARAM(0)]
-    mov [player.lives], bx
+    mov [player2.lives], bx
 
-    mov dword [player.shield_life], 10
+    mov dword [player2.shield_life], 10
     
     mov ebx, [PARAM(1)]
     mov [row.offset], ebx
@@ -90,32 +90,33 @@ player.init:
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
-global player.update
-player.update:
+global player2.update
+player2.update:
     FUNC.START
     RESERVE(2);shoot.row, shoot.col
-    cmp word [player.lives], 0
+    cmp word [player2.lives], 0
     je update.end
+
     continue:
     
     ;down button
-    cmp byte [input], KEY.UP
+    cmp byte [input], KEY.W
     je up
 
     ;down button
-    cmp byte [input], KEY.DOWN
+    cmp byte [input], KEY.S
     je down  
 
     ;left button
-    cmp byte [input], KEY.LEFT
+    cmp byte [input], KEY.A
     je left  
 
     ;right button
-    cmp byte [input], KEY.RIGHT
+    cmp byte [input], KEY.D
     je right
 
     ; space button
-    cmp byte [input], KEY.SPACE
+    cmp byte [input], KEY.E
     je space
 
     jmp update.map
@@ -146,7 +147,7 @@ player.update:
 
     space:        
         ;animating the shoot
-        mov dword [graphics + 8], 173|FG.GRAY|BG.BLACK
+        mov dword [graphics + 8], 173|FG.BLUE|BG.BLACK
         mov dword [animation.timer], 0
         ;shoot sound
         call play_shoot
@@ -161,15 +162,15 @@ player.update:
         add eax, [col.offset]
         mov [LOCAL(1)], eax
 
-        cmp dword [player.hard_bullet], 0
+        cmp dword [player2.hard_bullet], 0
         je no_hard
-        dec dword [player.hard_bullet]
+        dec dword [player2.hard_bullet]
         CALL hard_weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
         jmp update.map
         no_hard:
-        cmp dword [player.multi_bullet], 0
+        cmp dword [player2.multi_bullet], 0
         je no_multi
-        dec dword [player.multi_bullet]
+        dec dword [player2.multi_bullet]
         CALL multi_weapons.shoot, [LOCAL(0)], [LOCAL(1)], 1
         dec dword [LOCAL(1)]
         CALL multi_weapons.shoot, [LOCAL(0)], [LOCAL(1)], 6
@@ -184,12 +185,13 @@ player.update:
         jmp update.map 
 
     update.map:
-        CALL player.put_in_map, [PARAM(0)]   
-    update.end:
+        CALL player2.put_in_map, [PARAM(0)]  
+
+    update.end:    
     FUNC.END
 
-; player.put_in_map(dword *map)
-player.put_in_map:
+; player2.put_in_map(dword *map)
+player2.put_in_map:
     FUNC.START
     RESERVE(4) ; i, row, col, offset
 
@@ -219,14 +221,14 @@ player.put_in_map:
         je .map.while.cont
 
         ; Collision
-        CALL engine.add_collision, HASH.PLAYER << 16, [eax]
+        CALL engine.add_collision, HASH.PLAYER2 << 16, [eax]
 
         .map.while.cont:
             mov eax, [LOCAL(3)]
             shl eax, 2
             add eax, [PARAM(0)]
 
-            mov dword [eax], HASH.PLAYER << 16
+            mov dword [eax], HASH.PLAYER2 << 16
             inc dword [LOCAL(0)]
             jmp .map.while
     .map.while.end:
@@ -234,8 +236,8 @@ player.put_in_map:
 
 ; collision(dword hash_other, dword inst_other)
 ; It is here where collisions will be handled
-global player.collision
-player.collision:
+global player2.collision
+player2.collision:
     FUNC.START
     cmp dword [PARAM(0)], HASH.ENEMY_BLUE
     je crash_blue
@@ -263,14 +265,14 @@ player.collision:
 
 ; paint()
 ; Puts the object's graphics in the screen
-global player.paint
-player.paint:
+global player2.paint
+player2.paint:
     FUNC.START
     RESERVE(4)
-    cmp word [player.lives], 0
+    cmp word [player2.lives], 0
     je while.end
 
-    cmp dword [player.shield_life], 0
+    cmp dword [player2.shield_life], 0
     jle cont
     mov eax, [row.offset]
     dec eax
@@ -311,38 +313,38 @@ player.paint:
 
     set.form1:
         mov byte [graphics.style], 1
-        mov dword [graphics + 8], '^'|FG.GRAY|BG.BLACK
+        mov dword [graphics + 8], '^'|FG.BLUE|BG.BLACK
         jmp cont
 
-; player.take_damage(dword damage)
-; Takes player.lives away from player
-; returns 1 if player remains alive after damage, 0 otherwise
-global player.take_damage
-player.take_damage:
+; player2.take_damage(dword damage)
+; Takes player2.lives away from player2
+; returns 1 if player2 remains alive after damage, 0 otherwise
+global player2.take_damage
+player2.take_damage:
     FUNC.START
 
     mov eax, [PARAM(0)]
 
-    cmp eax, [player.shield_life]
+    cmp eax, [player2.shield_life]
     jge destroy_shield
-    sub [player.shield_life], eax
+    sub [player2.shield_life], eax
     jmp end
 
     destroy_shield:
-    mov dword [player.shield_life], 0
-    sub eax, [player.shield_life]
+    mov dword [player2.shield_life], 0
+    sub eax, [player2.shield_life]
     
-    cmp [player.lives], ax
+    cmp [player2.lives], ax
     jng .destroyed
-    sub [player.lives], ax
+    sub [player2.lives], ax
     jmp end
 
     .destroyed:
-        mov word [player.lives], 0
+        mov word [player2.lives], 0
 
     end:
         xor eax, eax
-        mov ax, [player.lives]
+        mov ax, [player2.lives]
         FUNC.END
 
 ;paint_shield(dword row.offset, dword col.offset)
@@ -392,41 +394,41 @@ paint_shield:
     
     set.shield_form2:
         mov byte [shield_graphics.style], 0
-        mov dword [shield_graphics], '/'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 4], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 8], '-'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 12], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 16], '-'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 20], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 24], '\'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 28], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 52], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 56], '\'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 60], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 64], '_'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 68], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 72], '_'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 76], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 80], '/'|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics], '/'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 4], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 8], '-'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 12], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 16], '-'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 20], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 24], '\'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 28], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 52], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 56], '\'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 60], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 64], '_'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 68], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 72], '_'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 76], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 80], '/'|FG.CYAN|BG.BLACK
         jmp shield_cont
 
 
     set.shield_form1:
         mov byte [shield_graphics.style], 1
-        mov dword [shield_graphics], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 4], '-'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 8], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 12], '-'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 16], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 20], '-'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 24], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 28], '|'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 52], '|'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 56], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 60], '_'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 64], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 68], '_'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 72], ' '|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 76], '_'|FG.YELLOW|BG.BLACK
-        mov dword [shield_graphics + 80], ' '|FG.YELLOW|BG.BLACK
+        mov dword [shield_graphics], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 4], '-'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 8], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 12], '-'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 16], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 20], '-'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 24], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 28], '|'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 52], '|'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 56], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 60], '_'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 64], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 68], '_'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 72], ' '|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 76], '_'|FG.CYAN|BG.BLACK
+        mov dword [shield_graphics + 80], ' '|FG.CYAN|BG.BLACK
         jmp shield_cont

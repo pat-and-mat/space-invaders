@@ -2,6 +2,8 @@
 %include "stack.inc"
 %include "utils.inc"
 
+extern delay
+
 ; Frame buffer location
 %define FBUFFER 0xB8000
 
@@ -90,9 +92,9 @@ video.set_rect:
 global video.print
 video.print:
     FUNC.START
-    mov ebx, [PARAM(0)]
     OFFSET [PARAM(1)], [PARAM(2)]
     shl eax, 1
+    mov ebx, [PARAM(0)]
     mov [screen + eax], bx
     FUNC.END
 

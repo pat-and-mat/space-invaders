@@ -6,13 +6,9 @@ extern video.set
 extern video.set_rect
 extern video.refresh
 extern scan
-extern video.print_word
-extern delay
 extern video.print
 extern video.print_number
-extern engine.start
 extern actual.score
-extern menu.main
 
 section .data
 

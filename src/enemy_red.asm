@@ -5,10 +5,8 @@
 %include "sound.inc"
 %include "utils.inc"
 
-extern video.print_at
+extern arrayd.shiftl
 extern video.print
-extern video.clear
-extern scan
 extern delay
 extern weapons.shoot
 extern rand
@@ -16,6 +14,8 @@ extern actual.score
 extern play_red_enemy_die
 extern engine.add_collision
 extern player.take_damage
+extern player2.take_damage
+extern ai.take_damage
 extern can_move
 extern old_map
 extern array.index_of
@@ -38,14 +38,9 @@ graphics dd 'o'|FG.RED|BG.BLACK,\
 rows dd 0, 0, 0
 cols dd 0, 2, 1
 
-col.left dd 0
-col.right dd 3
-
 weapon.row dd 1
 weapon.col dd 1
 next_inst dd 1
-
-hash dd 3
 
 graphics.style db 0
 
@@ -63,6 +58,7 @@ lives resd SIZE
 down.count resd SIZE
 
 timer.red resd 2
+debug_timer resd 2
 
 animation.timer resd 2
 
@@ -114,7 +110,7 @@ enemy_red.update:
 
     CALL delay, timer.red, 250  ;timing condition to move
     cmp eax, 0
-    je working.on.map
+    je update.map
 
     cmp dword [count], 0
     je end
@@ -124,6 +120,7 @@ enemy_red.update:
     start:
         mov ecx, [LOCAL(3)]
         shl ecx, 2
+
         CALL rand, 35
         cmp eax, 0
         je red.shoot
@@ -143,7 +140,7 @@ enemy_red.update:
         
 
         left:
-        cmp dword [col.offset + ecx], 2
+        cmp dword [col.offset + ecx], 3
         jle move.right
         jmp move.left
 
@@ -157,7 +154,7 @@ enemy_red.update:
         mov ecx, [LOCAL(3)]
         cmp ecx, [count]  ;compare ecx with the number of blue ships on map
         jl start
-        jmp working.on.map  ;end cicle
+        jmp update.map  ;end cicle
 
         move.right: 
         push ecx
@@ -199,8 +196,8 @@ enemy_red.update:
         jmp condition
 
         destroy:
-        CALL destroy.ship, ecx
-        sub ecx, 4
+        CALL destroy.ship, [LOCAL(3)]
+        dec dword [LOCAL(3)]
         jmp condition
 
         red.shoot:
@@ -217,7 +214,7 @@ enemy_red.update:
         pop ecx
         jmp after.shoot       
         
-        working.on.map:
+        update.map:
         CALL red.put_all_in_map, [PARAM(0)]
         end:
 
@@ -280,8 +277,6 @@ red.put_one_in_map:
         add [LOCAL(3)], eax
 
         OFFSET [LOCAL(2)], [LOCAL(3)]
-        ; CALL video.print, 'X'|FG.GREEN|BG.YELLOW, [LOCAL(2)], [LOCAL(3)]
-        ; call video.refresh
 
         mov [LOCAL(1)], eax
         shl eax, 2
@@ -310,33 +305,69 @@ red.put_one_in_map:
 ; It is here where collisions will be handled
 global enemy_red.collision
 enemy_red.collision:
-    FUNC.START    
+    FUNC.START
 
+    cmp dword [PARAM(1)], HASH.ENEMY_BLUE
+    je crash_enemy
+
+    cmp dword [PARAM(1)], HASH.ENEMY_RED
+    je crash_enemy
+
+    cmp dword [PARAM(1)], HASH.ENEMY_YELLOW
+    je crash_enemy
+    
     cmp dword [PARAM(1)], HASH.PLAYER
     je crash_player
+
+    cmp dword [PARAM(1)], HASH.PLAYER2
+    je crash_player2
 
     cmp dword [PARAM(1)], HASH.SHOT
     je crash_shoot
 
+    cmp dword [PARAM(1)], HASH.ENEMY_BOSS
+    je crash_boss
+
+    cmp dword [PARAM(1)], HASH.ENEMY_METEORO
+    je crash_meteoro
+
+    cmp dword [PARAM(1)], HASH.AI
+    je crash_ai
+
     crashed:
     FUNC.END
+
+    crash_enemy:
+    CALL enemy_red.take_damage, 1, [PARAM(0)]
+    jmp crashed
 
     crash_player:
     CALL player.take_damage, 5
     jmp crashed
 
+    crash_player2:
+    CALL player2.take_damage, 5
+    jmp crashed
+
     crash_shoot:
     jmp crashed
-    ;  FUNC.START
-    ;  inc byte[graphics]
-     FUNC.END
+
+    crash_boss:
+    jmp crashed
+
+    crash_meteoro:
+    jmp crashed
+
+    crash_ai:
+    CALL ai.take_damage, 5
+    jmp crashed
 
 ;paint()
 ;move all the red enemies
 global enemy_red.paint
 enemy_red.paint:
     FUNC.START
-    RESERVE(4)
+    RESERVE(6)
     
     cmp dword [count], 0
     je while.end
@@ -352,9 +383,10 @@ enemy_red.paint:
     je set.form2
     jmp set.form1
 
-    
+    return:
+
     ;painting ship number LOCAL(2)
-    while.internal:           
+    while.internal: 
         mov ecx, [LOCAL(3)]
         shl ecx, 2
         mov ebx, [LOCAL(2)]
@@ -374,27 +406,25 @@ enemy_red.paint:
         mov ecx, [LOCAL(3)]
         cmp ecx, SHIP.COORDS
         jl while.internal   
-        ;while end
 
-    ;updating esi
     while.external:
         mov dword [LOCAL(3)], 0  
         inc dword [LOCAL(2)]
         mov eax, [LOCAL(2)]
         cmp eax, dword [count]
-        jl while.internal
+        jl return
         while.end:
     FUNC.END
 
     set.form2:
         mov byte [graphics.style], 0
         mov dword [graphics + 8], '-'|FG.RED|BG.BLACK
-        jmp while.internal
+        jmp return
 
     set.form1:
         mov byte [graphics.style], 1
         mov dword [graphics + 8], '='|FG.RED|BG.BLACK
-        jmp while.internal
+        jmp return
 
 ; enemy_red.take_damage(dword damage, dword instance)
 ; Takes lives away from an enemy
@@ -409,48 +439,37 @@ enemy_red.take_damage:
     shl eax, 2
     mov ecx, [PARAM(0)]
 
-    
     cmp dword [lives + eax], ecx
     jg take_end
     add dword [actual.score], 100
     mov eax, [LOCAL(0)]
     CALL destroy.ship, eax
+    mov eax, 0
+    jmp take_damage.end
 
     take_end:
     sub [lives + eax], ecx
+
+    mov eax, [lives + eax]
+    take_damage.end:
     FUNC.END
 
 ;destroy.ship(dword index)
 ;destroyes the ship that is in the index position
 destroy.ship:
-    FUNC.START    
+    FUNC.START
+    RESERVE(1)    
 
     call play_red_enemy_die
 
-   mov eax, [PARAM(0)]
+    mov eax, [PARAM(0)]
     mov [LOCAL(0)], eax
-    while:
-        ;move forward the elements of all the arrays
-        mov eax, [LOCAL(0)]
-        cmp eax, dword [count]
-        je end.while
-
-        shl eax, 2
-        mov ebx, [lives + eax + 4]
-        mov dword [lives + eax], ebx
-        mov ebx, [row.offset + eax + 4]
-        mov dword [row.offset + eax], ebx
-        mov ebx, [col.offset + eax + 4]
-        mov dword [col.offset + eax], ebx
-        mov ebx, [down.count + eax + 4]
-        mov dword [down.count + eax], ebx
-        mov ebx, [inst + eax + 4]
-        mov dword [inst + eax], ebx
-
-        inc dword [LOCAL(0)]
-        jmp while
-
-    end.while:
+    
+    CALL arrayd.shiftl, lives, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, row.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, col.offset, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, down.count, [count], [LOCAL(0)]
+    CALL arrayd.shiftl, inst, [count], [LOCAL(0)]
 
     sub dword [count], 1
     FUNC.END
@@ -461,5 +480,5 @@ destroy.ship:
 global enemy_red.reset
 enemy_red.reset:
     FUNC.START
-    mov dword[count], 0
+    mov dword [count], 0
     FUNC.END

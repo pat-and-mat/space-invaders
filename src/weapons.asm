@@ -29,7 +29,7 @@ shots.cols resw ROWS * COLS
 shots.dirs resw ROWS * COLS
 shots.insts resw ROWS * COLS
 
-timer resd 1
+timer resd 2
 
 section .text
 
@@ -39,9 +39,16 @@ extern array.shiftl
 extern array.index_of
 extern engine.add_collision
 extern player.take_damage
+extern player2.take_damage
 extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
+extern enemy_boss.take_damage
+extern enemy_meteoro.take_damage
+extern ai.take_damage
+
+extern debug_info
+extern engine.debug
 
 ; update(dword *map)
 ; It is here where all the actions related to this object will be taking place
@@ -58,7 +65,7 @@ weapons.update:
     mov dword [LOCAL(0)], 0
     .update.move:
         mov ecx, [LOCAL(0)]
-        
+
         cmp cx, [shots.count]
         jae .update.move.end
 
@@ -253,6 +260,12 @@ weapons.collision:
     cmp dword [PARAM(1)], HASH.PLAYER
     je .kill.player
 
+    cmp dword [PARAM(1)], HASH.PLAYER2
+    je .kill.player2
+
+    cmp dword [PARAM(1)], HASH.AI
+    je .kill.ai
+
     cmp dword [PARAM(1)], HASH.ENEMY_BLUE
     je .kill.enemy_blue
 
@@ -262,10 +275,33 @@ weapons.collision:
     cmp dword [PARAM(1)], HASH.ENEMY_YELLOW
     je .kill.enemy_yellow
 
+    cmp dword [PARAM(1)], HASH.ENEMY_METEORO
+    je .kill.meteoro
+
+    cmp dword [PARAM(1)], HASH.ENEMY_BOSS
+    je .kill.boss
+
+    
     jmp .collision.end
 
     .kill.player:
-        CALL player.take_damage, 10
+        CALL player.take_damage, 3
+        jmp .collision.end
+
+    .kill.player2:
+        CALL player2.take_damage, 3
+        jmp .collision.end
+
+    .kill.ai:
+        CALL ai.take_damage, 5
+        jmp .collision.end
+
+    .kill.meteoro:
+        CALL enemy_meteoro.take_damage, 1, [PARAM(2)]
+        jmp .collision.end
+
+    .kill.boss:
+        CALL enemy_boss.take_damage, 1, [PARAM(2)]
         jmp .collision.end
 
     .kill.enemy_blue:
@@ -279,7 +315,7 @@ weapons.collision:
     .kill.enemy_yellow:
         CALL enemy_yellow.take_damage, 1, [PARAM(2)]
         jmp .collision.end
-
+    
     .collision.end:
     FUNC.END
 
@@ -290,6 +326,12 @@ weapons.collision:
 global weapons.shoot
 weapons.shoot:
     FUNC.START
+
+    cmp dword [PARAM(0)], ROWS
+    jae .shoot.end
+
+    cmp dword [PARAM(1)], COLS
+    jae .shoot.end
 
     CALL weapons.find_shot, [PARAM(0)], [PARAM(1)]
 
@@ -317,6 +359,21 @@ weapons.shoot:
 
     .shoot.end:
         FUNC.END
+
+global weapons.get_dir
+weapons.get_dir:
+    FUNC.START
+    xor eax, eax
+    mov ax, [shots.count]
+    CALL array.index_of, shots.insts, eax, [PARAM(0)], 2
+    cmp ax, [shots.count]
+    je .get_dir.end
+    mov ecx, eax
+    shl ecx, 1
+    xor eax, eax
+    mov ax, [shots.dirs + ecx]
+    .get_dir.end:
+    FUNC.END
 
 ; find_shot(dword row, dword col)
 ; returns index of a shot at row, col
