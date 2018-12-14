@@ -11,10 +11,6 @@ section .data
 
 screen times ROWS*COLS dw BG.BLACK
 
-section .bss
-
-debug_timer resd 2
-
 section .text
 
 ; video.clear(dword char-attrs)

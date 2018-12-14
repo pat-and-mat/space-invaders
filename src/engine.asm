@@ -40,8 +40,6 @@ old_map resd COLS * ROWS
 
 section .text
 
-extern array.index_of
-
 extern player.init
 extern player2.init
 extern ai.init
@@ -90,8 +88,6 @@ extern bonus.paint
 
 extern video.clear
 extern video.refresh
-extern video.print
-extern delay
 
 extern player_on
 extern player2_on

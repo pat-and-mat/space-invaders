@@ -5,15 +5,12 @@
 %include "sound.inc"
 %include "utils.inc"
 
-extern video.print_at
+extern arrayd.shiftl
 extern video.print
-extern video.clear
-extern scan
 extern delay
 extern weapons.shoot
 extern rand
 extern actual.score
-extern play_meteoro_enemy_die
 extern engine.add_collision
 extern player.take_damage
 extern player2.take_damage
@@ -21,10 +18,9 @@ extern ai.take_damage
 extern can_move
 extern old_map
 extern array.index_of
-extern enemy_red.take_damage
 extern enemy_blue.take_damage
+extern enemy_red.take_damage
 extern enemy_yellow.take_damage
-extern arrayd.shiftl
 
 
 

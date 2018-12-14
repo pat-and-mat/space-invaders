@@ -5,18 +5,10 @@
 %include "sound.inc"
 %include "utils.inc"
 
-extern video.print_at
 extern video.print
-extern video.clear
-extern scan
 extern delay
-extern weapons.shoot
 extern rand
-extern actual.score
-extern play_lives_enemy_die
 extern engine.add_collision
-extern player.take_damage
-extern player2.take_damage
 extern can_move
 extern old_map
 extern array.index_of

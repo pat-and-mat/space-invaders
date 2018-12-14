@@ -9,25 +9,13 @@ extern video.print
 extern weapons.shoot
 extern engine.add_collision
 extern input
-extern beep.on
-extern beep.set
-extern beep.off
 extern delay
 extern play_shoot
-extern play_player_die
-extern menu.lose
-extern sound_player_die.update
-extern sound.timer
 extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
 extern hard_weapons.shoot
 extern multi_weapons.shoot
-
-
-extern debug_info
-extern engine.debug
-extern other_weapons.shoot
 
 %define SHIP.COORDS 5
 
