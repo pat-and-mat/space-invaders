@@ -197,13 +197,6 @@ can_move:
     add dword [LOCAL(2)], eax
     mov eax, [PARAM(9)]
     sub dword [LOCAL(2)], eax
-
-    ; CALL video.print, BG.RED, [LOCAL(1)], [LOCAL(2)]
-    ; call video.refresh
-    ; debug:
-    ; CALL delay, debug_timer, 250
-    ; cmp eax, 0
-    ; je debug
     
     OFFSET [LOCAL(1)], [LOCAL(2)]
 

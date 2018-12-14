@@ -506,13 +506,7 @@ ai.comp_feats:
             mov [LOCAL(2)], eax            
 
             CALL ai.is_enemy_left, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
-            add [ai.features + 0*4], eax   
-
-            ; cmp eax, 0
-            ; je .debug_continue
-            ; CALL video.print_number, eax, 79, 24
-            ; call video.refresh
-            ; .debug_continue:         
+            add [ai.features + 0*4], eax       
 
             CALL ai.is_enemy_right, [LOCAL(0)], [LOCAL(1)], [LOCAL(2)], [LOCAL(3)]
             add [ai.features + 1*4], eax
@@ -547,21 +541,6 @@ ai.comp_feats:
     mov [ai.features + 8*4], eax
 
     mov dword [ai.features + 9*4], 1
-
-
-        ; ; debug
-        ; CALL video.print_number, [ai.features + 0*4], 9, 24
-        ; CALL video.print_number, [ai.features + 1*4], 19, 24
-        ; CALL video.print_number, [ai.features + 2*4], 29, 24
-        ; CALL video.print_number, [ai.features + 3*4], 39, 24
-        ; CALL video.print_number, [ai.features + 4*4], 49, 24
-        ; CALL video.print_number, [ai.features + 5*4], 59, 24
-        ; CALL video.print_number, [ai.features + 6*4], 69, 24
-        ; call video.refresh
-        ; debug:
-        ; CALL delay, debug_timer, 1000
-        ; cmp eax, 0
-        ; je debug
 
     FUNC.END
 
