@@ -11,7 +11,7 @@ extern delay
 extern weapons.shoot
 extern rand
 extern actual.score
-extern play_yellow_enemy_die
+extern play_red_enemy_die
 extern engine.add_collision
 extern player.take_damage
 extern player2.take_damage

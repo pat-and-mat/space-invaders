@@ -11,7 +11,7 @@ extern delay
 extern weapons.shoot
 extern rand
 extern actual.score
-extern play_yellow_enemy_die
+extern play_boss_enemy_die
 extern engine.add_collision
 extern player.take_damage
 extern player2.take_damage
@@ -19,6 +19,10 @@ extern ai.take_damage
 extern can_move
 extern old_map
 extern array.index_of
+extern enemy_blue.take_damage
+extern enemy_red.take_damage
+extern enemy_yellow.take_damage
+extern enemy_meteoro.take_damage
 
 
 

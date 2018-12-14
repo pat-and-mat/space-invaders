@@ -92,33 +92,11 @@ video.set_rect:
 global video.print
 video.print:
     FUNC.START
-    cmp dword [PARAM(1)], ROWS
-    jnb .bad_print
-
-    cmp dword [PARAM(2)], COLS
-    jnb .bad_print
-
-    cmp dword [PARAM(1)], 0
-    jl .bad_print
-
-    cmp dword [PARAM(2)], 0
-    jl .bad_print
 
     OFFSET [PARAM(1)], [PARAM(2)]
     shl eax, 1
     mov ebx, [PARAM(0)]
     mov [screen + eax], bx
-    jmp .print.end
-
-    .bad_print:
-
-    CALL video.print_number, [PARAM(1)], 20, 24
-    CALL video.print_number, [PARAM(2)], 70, 24
-    call video.refresh
-    .debug_time:
-    CALL delay, debug_timer, 20000
-    cmp eax, 0
-    je .debug_time
 
     .print.end:
     FUNC.END
