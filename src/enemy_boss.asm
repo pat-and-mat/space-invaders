@@ -153,12 +153,12 @@ enemy_boss.update:
         
 
         left:
-        cmp dword [col.offset + ecx], 2
+        cmp dword [col.offset + ecx], 10
         jle move.right
         jmp move.left
 
         right:
-        cmp dword [col.offset + ecx], 76
+        cmp dword [col.offset + ecx], 70
         jge move.left
         jmp move.right
 
@@ -195,9 +195,9 @@ enemy_boss.update:
         jmp condition
 
         move.down:
-        ;check position
-        ; cmp dword [row.offset + ecx] , 15
-        ; jge no_mov
+        ; check position
+        cmp dword [row.offset + ecx] , 18
+        jge destroy
 
         ; push ecx
         ; CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 1, 0, 0, 0, [LOCAL(2)]
