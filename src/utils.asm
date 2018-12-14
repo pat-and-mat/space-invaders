@@ -3,6 +3,8 @@
 %include "keyboard.inc"
 %include "utils.inc"
 
+section .text
+
 ;rand(dword range)
 global rand
 rand:
@@ -198,7 +200,7 @@ can_move:
     cmp dword [eax], edx
     jne can_be_false
     no_false:
-    mov dword [eax], 1
+    mov dword [eax], edx
     add dword [LOCAL(0)], 1
     jmp while
 

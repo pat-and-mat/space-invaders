@@ -354,6 +354,21 @@ weapons.shoot:
     .shoot.end:
         FUNC.END
 
+global weapons.get_dir
+weapons.get_dir:
+    FUNC.START
+    xor eax, eax
+    mov ax, [shots.count]
+    CALL array.index_of, shots.insts, eax, [PARAM(0)], 2
+    cmp ax, [shots.count]
+    je .get_dir.end
+    mov ecx, eax
+    shl ecx, 1
+    xor eax, eax
+    mov ax, [shots.dirs + ecx]
+    .get_dir.end:
+    FUNC.END
+
 ; find_shot(dword row, dword col)
 ; returns index of a shot at row, col
 weapons.find_shot:
