@@ -122,6 +122,9 @@ enemy_blue.update:
     cmp eax, 0
     je working.on.map
 
+    cmp dword [count], 0
+    je end
+
     mov dword [LOCAL(3)], 0   ;actual ship
 
     start:                          ;while start
