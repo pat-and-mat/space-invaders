@@ -44,12 +44,12 @@ timer resd 2
 section .text
 
 ;0-lives, 1-shield, 2-weapon1 3-weapon2
-; generate(dword col, dword color)
+; generate(dword row, dword color)
 ; generate an enemie
 global bonus.generate
 bonus.generate:
     FUNC.START
-    mov eax, [PARAM(0)]  ;number of ships to generate
+    mov eax, [PARAM(0)]  
     cmp [PARAM(1)], dword 0  ;type of ships to generate
     je lives
     cmp [PARAM(1)], dword 1
@@ -95,8 +95,8 @@ bonus.update:
     cmp eax, 0
     je end
 
-    CALL rand, 22
-    inc eax
+    CALL rand, 20
+    add eax, 2
     mov [LOCAL(0)], eax   ;LOCAL(0) = col to generate the bonus
 
     CALL rand, 5

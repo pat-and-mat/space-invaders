@@ -71,8 +71,8 @@ weapon.col dd 2
 ai.shoot.weights dd  0,  0,   0,   0,  0,  0, 30, 10, -7, 10
 ai.right.weights dd  0,  1,  12, -20, 20,  1, -1, -5,  7,  0
 ai.left.weights  dd  1,  0, -20,  12, 20,  1, -1, -5,  7,  0
-ai.up.weights    dd  0,  0,   0,   0, -5,  4, -1, -5,  7,  5
-ai.down.weights  dd  0,  0,   0,   0,  1, -5, -1, -5,  7,  0
+ai.up.weights    dd  0,  0,   5,   5, -5,  4, -1, -5,  7,  0
+ai.down.weights  dd  0,  0,   5,   5,  1, -5, -1, -5,  7,  0
 
 section .bss
 
