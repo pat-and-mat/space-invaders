@@ -465,6 +465,12 @@ global multi_weapons.shoot
 multi_weapons.shoot:
     FUNC.START
 
+    cmp dword [PARAM(0)], ROWS
+    jae .shoot.end
+
+    cmp dword [PARAM(1)], COLS
+    jae .shoot.end
+
     CALL multi_weapons.find_shot, [PARAM(0)], [PARAM(1)]
 
     mov ecx, eax
