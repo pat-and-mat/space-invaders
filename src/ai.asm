@@ -12,7 +12,7 @@ extern engine.add_collision
 extern input
 extern beep.on
 extern beep.set
-extern beep.off
+extern beep.offrows
 extern delay
 extern play_shoot
 extern play_ai_die
@@ -26,6 +26,7 @@ extern debug_info
 extern video.print_number
 extern video.refresh
 extern weapons.get_dir
+extern can_move
 
 %define SHIP.COORDS 5
 %define AI.FEAT 10
@@ -326,8 +327,6 @@ global ai.take_damage
 ai.take_damage:
     FUNC.START
 
-    mov dword [PARAM(0)], 0 ;debug
-    
     mov eax, [PARAM(0)]
     cmp [ai.lives], ax
     jng .destroyed
@@ -351,6 +350,7 @@ ai.comp_next:
 
     CALL ai.comp_feats, [PARAM(0)]
     call ai.comp_preds
+    CALL ai.rm_impossible, [PARAM(0)]
     
     mov dword [LOCAL(1)], 0
     mov dword [LOCAL(2)], 0
@@ -400,13 +400,47 @@ ai.comp_preds:
     mov [ai.predictions + 3*4], eax
     CALL ai.comp_pred, ai.shoot.weights
     mov [ai.predictions + 4*4], eax
-    call ai.rm_impossible
 
     FUNC.END
 
+; ai.rm_impossible(dword *map)
 ai.rm_impossible:
     FUNC.START
-    ; TODO: Check collision with player
+    CALL can_move, [PARAM(0)], [row.offset], [col.offset], rows, cols, SHIP.COORDS, 0, 1, 0, 0, HASH.AI << 16
+    cmp eax, 0
+    je .rm_impossible.move_up
+
+    CALL can_move, [PARAM(0)], [row.offset], [col.offset], rows, cols, SHIP.COORDS, 1, 0, 0, 0, HASH.AI << 16
+    cmp eax, 0
+    je .rm_impossible.move_down
+
+    CALL can_move, [PARAM(0)], [row.offset], [col.offset], rows, cols, SHIP.COORDS, 0, 0, 1, 0, HASH.AI << 16
+    cmp eax, 0
+    je .rm_impossible.move_right
+
+    CALL can_move, [PARAM(0)], [row.offset], [col.offset], rows, cols, SHIP.COORDS, 0, 0, 0, 1, HASH.AI << 16
+    cmp eax, 0
+    je .rm_impossible.move_left
+    
+    jmp .rm_impossible.end
+    
+    .rm_impossible.move_up:
+        mov dword [ai.predictions + 0*4], 0
+        jmp .rm_impossible.end
+    
+    .rm_impossible.move_down:
+        mov dword [ai.predictions + 1*4], 0
+        jmp .rm_impossible.end
+    
+    .rm_impossible.move_left:
+        mov dword [ai.predictions + 2*4], 0
+        jmp .rm_impossible.end
+    
+    .rm_impossible.move_right:
+        mov dword [ai.predictions + 3*4], 0
+        jmp .rm_impossible.end
+
+    .rm_impossible.end:
     FUNC.END
 
 ; ai.comp_pred(dword *weights)

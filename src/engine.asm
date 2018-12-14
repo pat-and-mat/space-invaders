@@ -102,7 +102,7 @@ engine.update:
     rep movsd
 
     CLEAR_MAP 0
-    ; CALL player.update, map
+    CALL player.update, map
     CALL weapons.update, map
     CALL other_weapons.update, map
     CALL enemy.update, map
@@ -116,7 +116,7 @@ engine.update:
 engine.paint:
     FUNC.START
     CALL video.clear, BG.BLACK
-    ; call player.paint
+    call player.paint
     call weapons.paint
     call other_weapons.paint
     call enemy.paint

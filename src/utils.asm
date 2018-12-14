@@ -3,6 +3,16 @@
 %include "keyboard.inc"
 %include "utils.inc"
 
+extern video.print
+extern video.refresh
+extern delay
+
+section .bss
+
+debug_timer resd 2
+
+section .text
+
 ;rand(dword range)
 global rand
 rand:
@@ -187,6 +197,13 @@ can_move:
     add dword [LOCAL(2)], eax
     mov eax, [PARAM(9)]
     sub dword [LOCAL(2)], eax
+
+    ; CALL video.print, BG.RED, [LOCAL(1)], [LOCAL(2)]
+    ; call video.refresh
+    ; debug:
+    ; CALL delay, debug_timer, 250
+    ; cmp eax, 0
+    ; je debug
     
     OFFSET [LOCAL(1)], [LOCAL(2)]
 
@@ -198,7 +215,7 @@ can_move:
     cmp dword [eax], edx
     jne can_be_false
     no_false:
-    mov dword [eax], 1
+    mov dword [eax], edx
     add dword [LOCAL(0)], 1
     jmp while
 
