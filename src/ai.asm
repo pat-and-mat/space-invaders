@@ -5,26 +5,14 @@
 %include "utils.inc"
 %include "hash.inc"
 
-extern engine.debug
 extern video.print
 extern weapons.shoot
 extern engine.add_collision
-extern input
-extern beep.on
-extern beep.set
-extern beep.off
 extern delay
 extern play_shoot
-extern play_ai_die
-extern menu.lose
-extern sound_ai_die.update
-extern sound.timer
 extern enemy_blue.take_damage
 extern enemy_red.take_damage
 extern enemy_yellow.take_damage
-extern debug_info
-extern video.print_number
-extern video.refresh
 extern weapons.get_dir
 extern can_move
 
@@ -60,9 +48,6 @@ graphics dd '/'|FG.GREEN|BG.BLACK,\
 rows dd 0, 0, 0, 0, 0
 cols dd 0, 1, 2, 3, 4
 
-col.left dd 0
-col.right dd 3
-
 weapon.row dd 0
 weapon.col dd 2
 
@@ -90,7 +75,6 @@ ai.feat.move_cont resd 1
 ai.predictions resd 5
 
 ai.timer resd 2
-debug_timer resd 2
 
 section .text
 
@@ -188,9 +172,6 @@ ai.update:
         jmp .update.map
 
     .update.shoot:
-        ;shoot sound
-        ; call play_shoot
-
         ;calculate the position of the shot
         mov eax, [weapon.row]
         add eax, [row.offset]
@@ -383,7 +364,6 @@ ai.comp_next:
     .comp_next.while.end:
     
     mov eax, [LOCAL(1)]
-    ; mov eax, 5
 
     FUNC.END
 
@@ -605,7 +585,6 @@ ai.is_enemy_right:
     je enemy_right.true
    
     jmp enemy_right.false
-
 
     enemy_right.true:
     mov eax, 1

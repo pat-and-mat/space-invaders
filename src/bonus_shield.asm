@@ -32,7 +32,7 @@ timer dd 0
 
 count dd 0
 
-graphics dd 4|FG.CYAN|BG.BLACK,\
+graphics dd 4|FG.CYAN|BG.BLACK
             
             
 rows dd 0
@@ -105,7 +105,7 @@ bonus_shield.update:
 
     CALL delay, timer.shield, 150  ;timing condition to move
     cmp eax, 0
-    je working.on.map
+    je update.map
 
     cmp dword [count], 0
     je end
@@ -144,7 +144,7 @@ bonus_shield.update:
         mov ecx, [LOCAL(3)]
         cmp ecx, [count]  ;compare ecx with the number of blue bonus on map
         jl start
-        jmp working.on.map  ;end cicle
+        jmp update.map  ;end cicle
 
         move.right:
         cmp dword [col.offset + ecx] , 79
@@ -196,7 +196,7 @@ bonus_shield.update:
         dec dword [LOCAL(3)]
         jmp condition
 
-        working.on.map:
+        update.map:
         CALL shield.put_all_in_map, [PARAM(0)]
         end:
 
@@ -259,8 +259,6 @@ shield.put_one_in_map:
         add [LOCAL(3)], eax
 
         OFFSET [LOCAL(2)], [LOCAL(3)]
-        ; CALL video.print, 'X'|FG.GREEN|BG.YELLOW, [LOCAL(2)], [LOCAL(3)]
-        ; call video.refresh
 
         mov [LOCAL(1)], eax
         shl eax, 2
@@ -347,14 +345,9 @@ bonus_shield.paint:
     mov dword [LOCAL(2)], 0    
     mov dword [LOCAL(3)], 0
 
-    ; CALL delay, animation.timer, 100   ;the form of the bonus change every 100ms
-    ; cmp eax, 0
-    ; je while.internal
-
     cmp byte [graphics.style], 1
     je set.form2
     jmp set.form1
-
     
     ;painting bonus number LOCAL(2)
     while.internal:           
@@ -377,9 +370,7 @@ bonus_shield.paint:
         mov ecx, [LOCAL(3)]
         cmp ecx, BONUS.COORDS
         jl while.internal   
-        ;while end
 
-    ;updating esi
     while.external:
         mov dword [LOCAL(3)], 0  
         inc dword [LOCAL(2)]

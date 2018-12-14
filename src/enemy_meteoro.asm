@@ -74,10 +74,6 @@ enemy_meteoro.init:
     mov edx, HASH.ENEMY_METEORO << 16
     mov [LOCAL(0)], edx
 
-    ; CALL can_move, old_map, [PARAM(0)], [PARAM(1)], rows, cols, meteoro COORDS, 0, 0, 0, 0, [LOCAL(0)]       
-    ; cmp eax, 0
-    ; je .end
-
     ;filling local vars
     mov eax, dword [count]    
     shl eax, 2     
@@ -110,7 +106,7 @@ enemy_meteoro.update:
 
     CALL delay, timer.meteoro, 400  ;timing condition to move
     cmp eax, 0
-    je working.on.map
+    je update.map
    
     mov dword [LOCAL(1)], 0   ;actual meteoro 
     start:
@@ -127,7 +123,7 @@ enemy_meteoro.update:
         mov ecx, [LOCAL(1)]
         cmp ecx, [count]  ;compare ecx with the number of blue meteoro  on map
         jl start
-        jmp working.on.map  ;end cicle
+        jmp update.map  ;end cicle
 
         move.right: 
         add dword [col.offset + ecx] , 2
@@ -145,11 +141,6 @@ enemy_meteoro.update:
         ;check position
         cmp dword [row.offset + ecx], 21
         jge destroy
-        ; push ecx
-        ; CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, meteoro COORDS, 1, 0, 0, 0, [LOCAL(2)]
-        ; pop ecx
-        ; cmp eax, 0
-        ; je condition
                 
         add dword [row.offset + ecx] , 1
         jmp condition
@@ -159,7 +150,7 @@ enemy_meteoro.update:
         dec dword [LOCAL(1)]
         jmp condition
 
-        working.on.map:
+        update.map:
         CALL meteoro.put_all_in_map, [PARAM(0)]
         end:
 
@@ -222,8 +213,6 @@ meteoro.put_one_in_map:
         add [LOCAL(3)], eax
 
         OFFSET [LOCAL(2)], [LOCAL(3)]
-        ; CALL video.print, 'X'|FG.GREEN|BG.YELLOW, [LOCAL(2)], [LOCAL(3)]
-        ; call video.refresh
 
         mov [LOCAL(1)], eax
         shl eax, 2
@@ -333,7 +322,6 @@ enemy_meteoro.paint:
     cmp byte [graphics.style], 1
     je set.form2
     jmp set.form1
-
     
     ;painting meteoro number LOCAL(2)
     while.internal:           
@@ -356,9 +344,7 @@ enemy_meteoro.paint:
         mov ecx, [LOCAL(3)]
         cmp ecx, meteoro.COORDS
         jl while.internal   
-        ;while end
 
-    ;updating esi
     while.external:
         mov dword [LOCAL(3)], 0  
         inc dword [LOCAL(2)]
@@ -426,8 +412,6 @@ enemy_meteoro.take_damage:
 destroy.meteoro: 
     FUNC.START
     RESERVE(1)    
-
-    ; call play_meteoro_enemy_die
 
     mov eax, [PARAM(0)]
     mov [LOCAL(0)], eax

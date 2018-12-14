@@ -31,18 +31,6 @@ extern other_weapons.shoot
 
 %define SHIP.COORDS 5
 
-%macro SHIP.ROW 1
-    xor eax, eax
-    ; mov ax, [row.offset]
-    ; add ax, %1
-%endmacro
-
-%macro SHIP.COL 1
-    xor eax, eax
-    mov ax, [col.offset]
-    add ax, %1
-%endmacro
-
 ; Data section is meant to hold constant values, do not modify
 section .data
 

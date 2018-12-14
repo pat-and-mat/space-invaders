@@ -105,7 +105,7 @@ bonus_weapon1.update:
 
     CALL delay, timer.weapon1, 150  ;timing condition to move
     cmp eax, 0
-    je working.on.map
+    je update.map
 
     cmp dword [count], 0
     je end
@@ -127,7 +127,6 @@ bonus_weapon1.update:
         CALL rand, 10
         cmp eax, 5
         jge down
-        
 
         up:
         cmp dword [row.offset + ecx], 2
@@ -144,7 +143,7 @@ bonus_weapon1.update:
         mov ecx, [LOCAL(3)]
         cmp ecx, [count]  ;compare ecx with the number of weapon1 bonus on map
         jl start
-        jmp working.on.map  ;end cicle
+        jmp update.map  ;end cicle
 
         move.right: 
         push ecx
@@ -195,7 +194,7 @@ bonus_weapon1.update:
         dec dword [LOCAL(3)]
         jmp condition
 
-        working.on.map:
+        update.map:
         CALL weapon1.put_all_in_map, [PARAM(0)]
         end:
 
@@ -258,8 +257,6 @@ weapon1.put_one_in_map:
         add [LOCAL(3)], eax
 
         OFFSET [LOCAL(2)], [LOCAL(3)]
-        ; CALL video.print, 'X'|FG.GREEN|BG.YELLOW, [LOCAL(2)], [LOCAL(3)]
-        ; call video.refresh
 
         mov [LOCAL(1)], eax
         shl eax, 2
@@ -347,10 +344,6 @@ bonus_weapon1.paint:
     mov dword [LOCAL(2)], 0    
     mov dword [LOCAL(3)], 0
 
-    ; CALL delay, animation.timer, 100   ;the form of the bonus change every 100ms
-    ; cmp eax, 0
-    ; je while.internal
-
     cmp byte [graphics.style], 1
     je set.form2
     jmp set.form1
@@ -377,9 +370,7 @@ bonus_weapon1.paint:
         mov ecx, [LOCAL(3)]
         cmp ecx, BONUS.COORDS
         jl while.internal   
-        ;while end
 
-    ;updating esi
     while.external:
         mov dword [LOCAL(3)], 0  
         inc dword [LOCAL(2)]

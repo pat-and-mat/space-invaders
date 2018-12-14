@@ -9,7 +9,6 @@ section .data
 
 ;the sound's bytes
 ;if one off then is 1, the sound is on
-music db 0
 shoot db 0
 boss_enemy_die db 0
 blue_enemy_die db 0
@@ -79,11 +78,6 @@ sound.update:
     FUNC.START
 
     ;each sound will be emited only if their sound byte is 1
-
-    cmp byte [music], 0  
-    je music.continue
-    call music.update
-    music.continue:
 
     cmp byte [shoot], 0     ;player's shoots sounds
     je shoot.continue
@@ -270,12 +264,4 @@ sound_boss_enemy_die.update:
 
     boss_enemy_die.end:
     FUNC.END
-
-
-; play the music
-;music.update()
-global music.update
-music.update:
-    FUNC.START
     
-    FUNC.END

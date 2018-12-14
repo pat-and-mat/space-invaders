@@ -51,8 +51,6 @@ weapon.col dd 1
 
 next_inst dd 1
 
-hash dd 3
-
 graphics.style db 0
 
 section .bss
@@ -120,7 +118,7 @@ enemy_blue.update:
 
     CALL delay, timer.blue, 150  ;timing condition to move
     cmp eax, 0
-    je working.on.map
+    je update.map
 
     cmp dword [count], 0
     je end
@@ -158,7 +156,7 @@ enemy_blue.update:
         mov ecx, [LOCAL(3)]
         cmp ecx, [count]  ;compare ecx with the number of blue ships on map
         jl start
-        jmp working.on.map  ;end cicle
+        jmp update.map  ;end cicle
 
         move.right:      
         push ecx
@@ -229,7 +227,7 @@ enemy_blue.update:
         jmp after.shoot
 
         
-        working.on.map:
+        update.map:
         CALL blue.put_all_in_map, [PARAM(0)]
 
         end:
@@ -424,9 +422,7 @@ enemy_blue.paint:
         mov ecx, [LOCAL(3)]
         cmp ecx, SHIP.COORDS
         jl while.internal   
-        ;while end
 
-    ;updating esi
     while.external:
         mov dword [LOCAL(3)], 0  
         inc dword [LOCAL(2)]
@@ -453,11 +449,6 @@ enemy_blue.paint:
         mov dword [graphics], '/'|FG.BLUE|BG.BLACK
         mov dword [graphics + 4], '\'|FG.BLUE|BG.BLACK
         jmp while.internal
-
-
-
-
-    
 
 ; enemy_blue.take_damage(dword damage, dword inst)
 ; Takes lives away from an enemy
@@ -488,7 +479,6 @@ enemy_blue.take_damage:
     .take_damage.end:
     FUNC.END
 
-
 ;destroy.ship(dword index)
 ;destroyes the ship that is in the index position
 destroy.ship:
@@ -508,7 +498,6 @@ destroy.ship:
 
     sub dword [count], 1
     FUNC.END
-
 
 ; enemy_blue.reset()
 ; reset the blue enemies

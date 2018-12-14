@@ -116,7 +116,7 @@ enemy_red.update:
 
     CALL delay, timer.red, 250  ;timing condition to move
     cmp eax, 0
-    je working.on.map
+    je update.map
 
     cmp dword [count], 0
     je end
@@ -160,7 +160,7 @@ enemy_red.update:
         mov ecx, [LOCAL(3)]
         cmp ecx, [count]  ;compare ecx with the number of blue ships on map
         jl start
-        jmp working.on.map  ;end cicle
+        jmp update.map  ;end cicle
 
         move.right: 
         push ecx
@@ -220,7 +220,7 @@ enemy_red.update:
         pop ecx
         jmp after.shoot       
         
-        working.on.map:
+        update.map:
         CALL red.put_all_in_map, [PARAM(0)]
         end:
 
@@ -283,8 +283,6 @@ red.put_one_in_map:
         add [LOCAL(3)], eax
 
         OFFSET [LOCAL(2)], [LOCAL(3)]
-        ; CALL video.print, 'X'|FG.GREEN|BG.YELLOW, [LOCAL(2)], [LOCAL(3)]
-        ; call video.refresh
 
         mov [LOCAL(1)], eax
         shl eax, 2
@@ -392,7 +390,6 @@ enemy_red.paint:
     jmp set.form1
 
     return:
-    ; mov dword [LOCAL(4)], 7
 
     ;painting ship number LOCAL(2)
     while.internal: 
@@ -415,9 +412,7 @@ enemy_red.paint:
         mov ecx, [LOCAL(3)]
         cmp ecx, SHIP.COORDS
         jl while.internal   
-        ;while end
 
-    ;updating esi
     while.external:
         mov dword [LOCAL(3)], 0  
         inc dword [LOCAL(2)]

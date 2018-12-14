@@ -315,8 +315,6 @@ chose_dificult:
     mov dword [boss_time], 30000
     jmp end
 
-
-
 paint_piece_gr:
     FUNC.START
     RESERVE(4)
@@ -393,7 +391,7 @@ paint_cake_gr:
     .cake.while.end:
     FUNC.END
 
-    paint_poker_gr:
+paint_poker_gr:
     FUNC.START
     RESERVE(4)
 
@@ -469,7 +467,7 @@ paint_insane_gr:
     .insane.while.end:
     FUNC.END
 
-    paint_can_not_gr:
+paint_can_not_gr:
     FUNC.START
     RESERVE(4)
 
@@ -507,7 +505,7 @@ paint_insane_gr:
     .can_not.while.end:
     FUNC.END
 
-    paint_p1_gr:
+paint_p1_gr:
     FUNC.START
     RESERVE(4)
 
@@ -545,7 +543,7 @@ paint_insane_gr:
     .p1.while.end:
     FUNC.END
 
-    paint_p2_gr:
+paint_p2_gr:
     FUNC.START
     RESERVE(4)
 

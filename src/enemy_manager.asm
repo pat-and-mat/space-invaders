@@ -51,8 +51,6 @@ global enemy.generate
 enemy.generate:
     FUNC.START
     RESERVE(3)
-    ; mov dword [LOCAL(2)], 1
-    ; mov ecx, 5
 
     mov eax, [PARAM(0)]
     mov [LOCAL(1)], eax
@@ -118,7 +116,7 @@ enemy.update:
     CALL rand, [colors_count]
     shl eax, 2
     mov ebx, [colors + eax]
-    mov [LOCAL(1)], ebx  ;LOCAL(2) = color of enemy to generate
+    mov [LOCAL(1)], ebx
     CALL enemy.generate, [LOCAL(0)], [LOCAL(1)]
 
     end:      
@@ -145,13 +143,6 @@ enemy.paint:
     call enemy_yellow.paint
     call enemy_boss.paint
     call enemy_meteoro.paint
-    FUNC.END
-
-; enemy.take_damage(dword damage)
-; Takes lives away from enemies
-global enemy.take_damage
-enemy.take_damage:
-    FUNC.START
     FUNC.END
 
 ; enemy_manager.reset()

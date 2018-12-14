@@ -102,7 +102,7 @@ bonus_AI.update:
 
     CALL delay, timer.AI, 150  ;timing condition to move
     cmp eax, 0
-    je working.on.map
+    je update.map
 
     cmp dword [count], 0
     je end
@@ -141,7 +141,7 @@ bonus_AI.update:
         mov ecx, [LOCAL(3)]
         cmp ecx, [count]  ;compare ecx with the number of blue bonus on map
         jl start
-        jmp working.on.map  ;end cicle
+        jmp update.map  ;end cicle
 
         move.right:
         cmp dword [col.offset + ecx] , 79
@@ -164,7 +164,6 @@ bonus_AI.update:
         cmp eax, 0
         je condition
 
-        
         sub dword [col.offset + ecx] , 1
         jmp condition
 
@@ -193,7 +192,7 @@ bonus_AI.update:
         dec dword [LOCAL(3)]
         jmp condition
 
-        working.on.map:
+        update.map:
         CALL AI.put_all_in_map, [PARAM(0)]
         end:
 
@@ -344,14 +343,9 @@ bonus_AI.paint:
     mov dword [LOCAL(2)], 0    
     mov dword [LOCAL(3)], 0
 
-    ; CALL delay, animation.timer, 100   ;the form of the bonus change every 100ms
-    ; cmp eax, 0
-    ; je while.internal
-
     cmp byte [graphics.style], 1
     je set.form2
     jmp set.form1
-
     
     ;painting bonus number LOCAL(2)
     while.internal:           
@@ -374,9 +368,7 @@ bonus_AI.paint:
         mov ecx, [LOCAL(3)]
         cmp ecx, BONUS.COORDS
         jl while.internal   
-        ;while end
 
-    ;updating esi
     while.external:
         mov dword [LOCAL(3)], 0  
         inc dword [LOCAL(2)]

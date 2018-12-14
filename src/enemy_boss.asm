@@ -30,9 +30,6 @@ extern debug_info
 extern engine.debug
 extern video.refresh
 
-
-
-
 %define SIZE 10
 %define SHIP.COORDS 28
 
@@ -88,10 +85,6 @@ enemy_boss.init:
     mov edx, HASH.ENEMY_BOSS << 16
     mov [LOCAL(0)], edx
 
-    ; CALL can_move, old_map, [PARAM(0)], [PARAM(1)], rows, cols, SHIP.COORDS, 0, 0, 0, 0, [LOCAL(0)]       
-    ; cmp eax, 0
-    ; je .end
-
     ;filling local vars
     mov eax, dword [count]    
     shl eax, 2     
@@ -127,7 +120,7 @@ enemy_boss.update:
    
     CALL delay, timer.boss, 800  ;timing condition to move
     cmp eax, 0
-    je working.on.map
+    je update.map
     
     mov dword [LOCAL(3)], 0   ;actual ship
 
@@ -168,25 +161,13 @@ enemy_boss.update:
         mov ecx, [LOCAL(3)]
         cmp ecx, [count]  ;compare ecx with the number of blue ships on map
         jl start
-        jmp working.on.map  ;end cicle
+        jmp update.map  ;end cicle
 
         move.right: 
-        ; push ecx
-        ; CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 2, 0, [LOCAL(2)]       
-        ; pop ecx
-        ; cmp eax, 0
-        ; je condition
-
         add dword [col.offset + ecx] , 2
         jmp condition
 
         move.left:
-        ; push ecx
-        ; CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 0, 0, 0, 2, [LOCAL(2)]
-        ; pop ecx
-        ; cmp eax, 0
-        ; je condition
-
         sub dword [col.offset + ecx] , 2
         jmp condition
 
@@ -198,15 +179,8 @@ enemy_boss.update:
         ; check position
         cmp dword [row.offset + ecx] , 18
         jge destroy
-
-        ; push ecx
-        ; CALL can_move, old_map, [row.offset + ecx], [col.offset + ecx], rows, cols, SHIP.COORDS, 1, 0, 0, 0, [LOCAL(2)]
-        ; pop ecx
-        ; cmp eax, 0
-        ; je condition
                 
         add dword [row.offset + ecx] , 1
-        ; no_mov:
         mov dword [down.count + ecx], 0
         jmp condition
 
@@ -241,7 +215,7 @@ enemy_boss.update:
         pop ecx
         jmp after.shoot       
         
-        working.on.map:
+        update.map:
         CALL boss.put_all_in_map, [PARAM(0)]
         end:
 
@@ -395,9 +369,6 @@ enemy_boss.collision:
     CALL ai.take_damage, 25, [PARAM(2)]
     jmp crashed
 
-    
-    FUNC.END
-
 ;paint()
 ;paint all the boss enemies
 global enemy_boss.paint
@@ -441,11 +412,8 @@ enemy_boss.paint:
         mov ecx, [LOCAL(3)]
         cmp ecx, SHIP.COORDS
         jl while.internal   
-        ;while end
 
-    ;updating esi
     while.external:
-        
         mov dword [LOCAL(3)], 0  
         inc dword [LOCAL(2)]
         mov eax, [LOCAL(2)]
