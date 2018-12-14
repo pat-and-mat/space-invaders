@@ -53,7 +53,7 @@ weapon.col dd 2
 
 ; 0-enemyl 1-enemyr 2-dangerl 3-dangerr 4-dangerf 5-dangerb 6-Killable 7-move_cont 8-shots_cont 9-1
 ;                    0   1    2    3   4   5   6   7   8   9
-ai.shoot.weights dd  0,  0,   0,   0,  0,  0, 30, 10, -7, 10
+ai.shoot.weights dd  0,  0,   0,   0,  0,  0, 30, 10, -15, 10
 ai.right.weights dd  0,  1,  12, -20, 20,  1, -1, -5,  7,  0
 ai.left.weights  dd  1,  0, -20,  12, 20,  1, -1, -5,  7,  0
 ai.up.weights    dd  0,  0,   5,   5, -5,  4, -1, -5,  7,  0
